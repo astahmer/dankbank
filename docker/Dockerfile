@@ -4,9 +4,9 @@ FROM node:10-alpine
 WORKDIR /usr/app
 
 # Only copy necessary files
-COPY tsconfig.json package*.json ./
+COPY package*.json ./
 COPY ./src ./src
 
 # Expose app & debug
 EXPOSE 4000
-EXPOSE 9229
+# EXPOSE 9231
