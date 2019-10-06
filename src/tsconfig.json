@@ -15,6 +15,7 @@
         "jsx": "preserve",
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
+        "noImplicitAny": false,
         "outDir": "./.next"
     },
     "exclude": ["node_modules"],

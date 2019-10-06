@@ -55,7 +55,7 @@ restart:
 
 docker-compose-up: # Start a container
 	@echo "Starting container...";
-	@if [ "$(shell docker ps | grep $(PROJECT_NAME))" != "" ]; then \
+	@if [ "$(shell docker ps | grep $(PROJECT_NAME)-nextjs)" != "" ]; then \
 		echo "Container already up. Skipping."; \
 	else \
 		docker-compose up -d --force-recreate nextjs; \
@@ -63,7 +63,7 @@ docker-compose-up: # Start a container
 
 docker-compose-down: # Stop a container
 	@echo "Stopping container...";
-	@if [ "$(shell docker ps | grep $(PROJECT_NAME))" != "" ]; then \
+	@if [ "$(shell docker ps | grep $(PROJECT_NAME)-nextjs)" != "" ]; then \
 		docker-compose down --remove-orphans --volumes; \
 	else \
 		echo "No container up. Skipping."; \
