@@ -1,6 +1,6 @@
 import { IAbstractEntity } from "./AbstractEntity";
-import { Visibility } from "./Visibility";
 import { IMemeBank } from "./MemeBank";
+import { Visibility } from "./Visibility";
 
 export interface IUser extends IAbstractEntity {
     name: string;

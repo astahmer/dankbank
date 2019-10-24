@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Twitter Authentication</title>
+    </head>
+    <body>
+        Redirecting
+    </body>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const accessToken = urlParams.get("accessToken");
+        const refreshToken = urlParams.get("refreshToken");
+        const err = urlParams.get("err");
+
+        if (accessToken && refreshToken) {
+            localStorage.setItem("tokens", JSON.stringify({ accessToken, refreshToken }));
+        } else {
+            localStorage.setItem("twitter_error", err);
+        }
+
+        window.close();
+    </script>
+</html>

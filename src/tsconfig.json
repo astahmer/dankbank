@@ -15,8 +15,12 @@
         "jsx": "preserve",
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
-        "noImplicitAny": false,
-        "outDir": "./.next"
+        "noImplicitAny": true,
+        "outDir": "./.next",
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["./*"]
+        }
     },
     "exclude": ["node_modules"],
     "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"]

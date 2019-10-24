@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { IUser } from "../../../entities/User";
+
+import { IUser } from "@/types/entities/User";
 
 export const UserLink = (props: Partial<IUser>) => (
     <li>

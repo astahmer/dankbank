@@ -1,47 +1,45 @@
-import { NextPage } from "next";
+import { PageProps } from "@/components/layout/Page/PageLayout";
+import { API } from "@/services/ApiManager";
+import { AuthAccess } from "@/services/AuthManager";
+import { IUser } from "@/types/entities/User";
 
-import Layout from "../components/layout/Layout";
-import { API } from "../config/api";
-import { CollectionResponse, PartialEntity } from "../globalTypes";
 import { UserLink } from "../components/modules/user/link";
-import { IUser } from "../entities/User";
 
 type HomeUser = PartialEntity<IUser, "name">;
-type HomeProps = { usersResponse: CollectionResponse<HomeUser> };
+type HomeProps = { usersResponse: CollectionResponse<HomeUser> } & PageProps;
 
-const Home: NextPage<HomeProps> = ({ usersResponse }) => (
-    <div>
-        <Layout>
-            <h1>Hello world!</h1>
-            {usersResponse && (
-                <>
-                    <ul>
-                        {usersResponse.items.map((user) => (
-                            <UserLink key={user.id} {...user} />
-                        ))}
-                    </ul>
-                    <div>{usersResponse.items.length} users fetched</div>
-                </>
-            )}
-        </Layout>
-    </div>
+const Home = ({ usersResponse }: HomeProps) => (
+    <>
+        <h1>Hello world!</h1>
+        {usersResponse && (
+            <>
+                <ul>
+                    {usersResponse.items.map((user) => (
+                        <UserLink key={user.id} {...user} />
+                    ))}
+                </ul>
+                <div>{usersResponse.items.length} users fetched</div>
+            </>
+        )}
+    </>
 );
 
+Home.AuthAccess = AuthAccess.LOGGED;
+Home.PageHead = {
+    title: "Dankbank",
+    description: "Dankbank home",
+    keywords: "dankbank dank bank index home memes meme 420 69",
+};
+
 Home.getInitialProps = async () => {
-    let userResult;
+    let usersResponse;
     try {
-        userResult = await API.get<HomeUser[]>("/users?take=10");
+        usersResponse = await API.get<HomeUser[]>("/users?take=10");
     } catch (error) {
-        console.log(error);
+        console.log(error.message);
     }
 
-    return { usersResponse: userResult && userResult.data };
+    return { usersResponse };
 };
 
 export default Home;
-
-// https://auth0.com/blog/next-js-practical-introduction-for-react-developers-part-1/
-// https://nextjs.org/learn/excel/typescript/home-page
-// https://nextjs.org/learn/basics/getting-started/setup
-// https://chakra-ui.com/
-// http://dankbank.lol/

@@ -90,6 +90,11 @@ term: ## Enter in container terminal as root
 prettier:
 	$(EXECUTOR) "npm run prettier"
 
+rl: ## Restart main container &
+rl:
+	@${MAKE} restart nextjs; \
+	 ${MAKE} logs nextjs; \
+
 #
 ##@ ENVIRONMENT
 #

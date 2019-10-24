@@ -1,13 +1,14 @@
-import { API } from "../../config/api";
+import { NextApiRequest, NextApiResponse } from "next";
 
-export default async (req, res) => {
+import { API } from "@/services/ApiManager";
+
+export default async (req: NextApiRequest, res: NextApiResponse) => {
     res.setHeader("Content-Type", "application/json");
     res.statusCode = 200;
 
     try {
         const url = "/users?take=10";
         const result = await API.get(url);
-        console.log(result.data);
         res.end(JSON.stringify(result.data));
     } catch (error) {
         console.log(error.message);

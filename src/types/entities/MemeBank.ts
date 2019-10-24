@@ -1,7 +1,7 @@
-import { Visibility } from "./Visibility";
 import { IAbstractEntity } from "./AbstractEntity";
-import { IUser } from "./User";
 import { IMeme } from "./Meme";
+import { IUser } from "./User";
+import { Visibility } from "./Visibility";
 
 export interface IMemeBank extends IAbstractEntity {
     title: string;
