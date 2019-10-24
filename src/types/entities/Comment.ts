@@ -1,6 +1,6 @@
 import { IAbstractEntity } from "./AbstractEntity";
-import { IUser } from "./User";
 import { IMeme } from "./Meme";
+import { IUser } from "./User";
 
 export interface IComment extends IAbstractEntity {
     message: string;

@@ -1,7 +1,7 @@
 import { IAbstractEntity } from "./AbstractEntity";
-import { IUser } from "./User";
-import { ITag } from "./Tag";
 import { IMemeBank } from "./MemeBank";
+import { ITag } from "./Tag";
+import { IUser } from "./User";
 
 export interface IMeme extends IAbstractEntity {
     title: string;

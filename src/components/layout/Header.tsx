@@ -1,23 +1,20 @@
+import { Box } from "@chakra-ui/core";
 import Link from "next/link";
-import Head from "next/head";
 
-const linkStyle = {
-    marginRight: 15,
-};
+import { ILinkItem } from "./Page/PageLayout";
 
-const Header = () => (
-    <div>
-        <Head>
-            <meta key="viewport" name="viewport" content="width=device-width, initial-scale=1" />
-        </Head>
+export type IHeaderLinkItem = Required<ILinkItem>;
 
-        <Link href="/">
-            <a style={linkStyle}>Home</a>
-        </Link>
-        <Link href="/about">
-            <a style={linkStyle}>About</a>
-        </Link>
-    </div>
-);
-
-export default Header;
+export function Header({ links }: { links: IHeaderLinkItem[] }) {
+    return (
+        <header>
+            {links.map((item) => (
+                <Link href={item.route} key={item.name}>
+                    <Box as="a" mr={15}>
+                        {item.name}
+                    </Box>
+                </Link>
+            ))}
+        </header>
+    );
+}

@@ -7,5 +7,4 @@ temp/
 .env
 *.sqlite
 *.log
-public
 var
