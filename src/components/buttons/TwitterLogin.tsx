@@ -8,9 +8,9 @@ import { isDev } from "@/functions/utils";
 import { Tokens } from "@/hooks/async/useAuth";
 import { Memory } from "@/services/MemoryManager";
 
-type TwitterLoginProps = Optional<ButtonProps, "children"> & { onLogged: (tokens: Tokens) => void };
+type TwitterLoginProps = Optional<ButtonProps, "children"> & { onLogged: (tokens: Tokens) => void; label?: string };
 
-export function TwitterLogin({ onLogged, ...props }: TwitterLoginProps) {
+export function TwitterLogin({ onLogged, label = "Login with Twitter", ...props }: TwitterLoginProps) {
     // Open a window for OAuth process
     const callbackWindow = useRef<Window>();
     const checkTwitter = useRef(null);
@@ -51,7 +51,7 @@ export function TwitterLogin({ onLogged, ...props }: TwitterLoginProps) {
             {...props}
             onClick={onClick}
         >
-            Login with Twitter
+            {label}
         </Button>
     );
 }
