@@ -1,10 +1,9 @@
-import { useColorMode } from "@chakra-ui/core";
+import { IconButton, useColorMode } from "@chakra-ui/core";
 import { ButtonProps } from "@chakra-ui/core/dist/Button";
 
-import { BtnIcon, BtnIconSpecificProps } from "@/components/buttons/BtnIcon";
 import { Cookies } from "@/services/CookieManager";
 
-export function ColorToggle(props: Omit<ButtonProps, "children"> & BtnIconSpecificProps) {
+export function ColorToggle(props: Omit<ButtonProps, "children"> & any) {
     const { colorMode, toggleColorMode } = useColorMode();
     const icon = colorMode === "light" ? "moon" : "sun";
 
@@ -13,5 +12,5 @@ export function ColorToggle(props: Omit<ButtonProps, "children"> & BtnIconSpecif
         toggleColorMode();
     };
 
-    return <BtnIcon icon={icon} onClick={handleOnClick} {...props} />;
+    return <IconButton aria-label="Color toggle" icon={icon} onClick={handleOnClick} {...props} />;
 }

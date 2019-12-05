@@ -1,11 +1,13 @@
+import "@/public/empty.css";
+
 import App, { AppContext } from "next/app";
 import React, { createContext } from "react";
 
 import { PageHeadProps } from "@/components/layout/Page/PageHead";
-import { AuthProvider } from "@/functions/hooks/useAuth";
-import { RouteHistoryProvider } from "@/functions/hooks/useRouteHistory";
 import { redirectToHome, redirectToLogin } from "@/functions/route";
 import { future } from "@/functions/utils";
+import { AuthProvider } from "@/hooks/async/useAuth";
+import { RouteHistoryProvider } from "@/hooks/useRouteHistory";
 import { Auth, AuthAccess } from "@/services/AuthManager";
 import { Cookies } from "@/services/CookieManager";
 import { css, Global } from "@emotion/core";

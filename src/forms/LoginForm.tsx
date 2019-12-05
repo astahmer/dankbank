@@ -3,9 +3,9 @@ import { FormEvent, useContext } from "react";
 
 import { PasswordInput } from "@/components/field/PasswordInput";
 import { API_ROUTES } from "@/config/api";
-import { FormState, useForm } from "@/functions/hooks/form/useForm";
-import { useAPI } from "@/functions/hooks/useAPI";
-import { AuthContext } from "@/functions/hooks/useAuth";
+import { useAPI } from "@/hooks/async/useAPI";
+import { AuthContext } from "@/hooks/async/useAuth";
+import { FormState, useForm } from "@/hooks/form/useForm";
 import { LoginBody, LoginResponse } from "@/types/routes/login";
 
 export function LoginTemplate({ onSubmit, isLoading }: FormProps) {

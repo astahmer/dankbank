@@ -1,7 +1,7 @@
 import { Spinner } from "@chakra-ui/core";
 import { SpinnerProps } from "@chakra-ui/core/dist/Spinner";
 
-import { useLoading } from "@/functions/hooks/useLoading";
+import { useLoading } from "@/hooks/async/useLoading";
 
 export type LoaderProps = SpinnerProps & {
     isLoading: boolean;

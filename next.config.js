@@ -1,8 +1,10 @@
 require("@babel/polyfill");
 const path = require("path");
 const TsConfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
+const withCSS = require("@zeit/next-css");
 
-module.exports = {
+module.exports = withCSS({
+    cssModules: false,
     distDir: "../build",
     publicRuntimeConfig: {
         API_URL: process.env.CLIENT_API_URL,
@@ -22,6 +24,6 @@ module.exports = {
         ];
         return config;
     },
-};
+});
 
 // https://github.com/ryohlan/next-ts-template/blob/master/next.config.js
