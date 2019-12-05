@@ -9,10 +9,12 @@ export function PageHead({ title, description, keywords, metatags }: PageHeadPro
             <meta httpEquiv="Content-Type" content="text/html; charset=utf-8" />
             <meta name="viewport" content="initial-scale=1.0, width=device-width" />
             <meta name="Author" content="Alexandre STAHMER" />
-            <meta name="description" content={description} />
-            <meta name="keywords" content={keywords} />
+            <meta name="apple-mobile-web-app-capable" content="yes"></meta>
+            <meta name="mobile-web-app-capable" content="yes"></meta>
+            {description && <meta name="description" content={description} />}
+            {keywords && <meta name="keywords" content={keywords} />}
             {metatags}
-            <title> {title || "DK"} </title>
+            <title> {title || "Dankbank"} </title>
         </Head>
     );
 }

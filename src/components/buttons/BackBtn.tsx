@@ -2,9 +2,8 @@ import { Box, Icon, Tooltip } from "@chakra-ui/core";
 import { BoxProps } from "@chakra-ui/core/dist/Box";
 import { useContext } from "react";
 
-import { HistoryContext } from "@/functions/hooks/useRouteHistory";
-
-import { useResponsive } from "../layout/ResponsiveLayout";
+import { useResponsive } from "@/hooks/dom/useResponsive";
+import { HistoryContext } from "@/hooks/useRouteHistory";
 
 export function BackBtn({ children, ...props }: BoxProps) {
     const { history, goBack } = useContext(HistoryContext);

@@ -1,7 +1,7 @@
 import { Button } from "@chakra-ui/core";
 import { useContext } from "react";
 
-import { AuthContext } from "@/functions/hooks/useAuth";
+import { AuthContext } from "@/hooks/async/useAuth";
 
 export function LogoutBtn() {
     const auth = useContext(AuthContext);

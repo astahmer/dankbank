@@ -1,7 +1,7 @@
 export const COMMON_COLORS = {
     bgColor: {
-        light: "gray.50",
-        dark: "gray.600",
+        light: "gray.100",
+        dark: "gray.700",
     },
     color: {
         light: "gray.700",
@@ -15,15 +15,4 @@ export const COMMON_COLORS = {
         light: "blue.100",
         dark: "blue.400",
     },
-};
-
-export const TAB_BAR_BTN_COLORS = {
-    selected: {
-        light: "blue.400",
-        dark: "blue.200",
-    },
-};
-
-export const THEME_COLORS = {
-    common: COMMON_COLORS,
 };

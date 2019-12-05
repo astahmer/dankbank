@@ -1,27 +1,27 @@
-import { Box, Flex, useColorMode } from "@chakra-ui/core";
+import { Box, Flex } from "@chakra-ui/core";
 import { useRouter } from "next/router";
-import { ReactNode, useContext, useMemo } from "react";
+import { ReactNode, useContext, useMemo, useRef } from "react";
 import {
-    IoMdAddCircle, IoMdContact, IoMdFlame, IoMdHeart, IoMdHome, IoMdLogIn, IoMdSearch
+    IoMdAddCircle, IoMdContact, IoMdHeart, IoMdHome, IoMdLogIn, IoMdSearch
 } from "react-icons/io";
 
 import { BackBtn } from "@/components/buttons/BackBtn";
+import { TagsAutocomplete } from "@/components/field/TagsAutocomplete";
+import { Header, TabBar } from "@/components/layout";
 import { ColorToggle } from "@/components/layout/Color/ColorToggle";
-import { Header } from "@/components/layout/Header";
-import { useResponsive } from "@/components/layout/ResponsiveLayout";
-import { TabBar } from "@/components/layout/TabBar";
-import { COMMON_COLORS } from "@/config/theme";
-import { AuthContext } from "@/functions/hooks/useAuth";
+import { makeTranslate3d, useClientEffect } from "@/functions/utils";
+import { AuthContext } from "@/hooks/async/useAuth";
+import { useResponsive } from "@/hooks/dom/useResponsive";
 import { AuthAccess } from "@/services/AuthManager";
 
+import { Swipable, SwipeAxis } from "../Swipable";
 import { PageHead, PageHeadProps } from "./PageHead";
 
 export type PageProps = { head: PageHeadProps };
 export type PageLayoutProps = { children: ReactNode } & PageProps;
 
 export const PageLayout = ({ children, head }: PageLayoutProps) => {
-    const { colorMode } = useColorMode();
-    const { isMobile } = useResponsive();
+    const { isMobile, width, height } = useResponsive();
     const { isTokenValid } = useContext(AuthContext);
     const router = useRouter();
 
@@ -30,23 +30,52 @@ export const PageLayout = ({ children, head }: PageLayoutProps) => {
         router.route,
         isTokenValid,
     ]);
-    const [bg, color] = [COMMON_COLORS.bgColor[colorMode], COMMON_COLORS.color[colorMode]];
+
+    const searchInputStyle = useRef<any>();
+    // TODO
+    useClientEffect(() => {
+        searchInputStyle.current = { transform: makeTranslate3d(-width + 40) };
+    }, []);
+
+    // Scroll back on active input when focusing it on mobile (and thefore resizing window through keyboard showing)
+    useClientEffect(() => {
+        if (isMobile && inputTags.includes(document.activeElement.tagName)) {
+            document.activeElement.scrollIntoView();
+        }
+    }, [height]);
 
     return (
-        <Box id="dankbank-app" display="flex" minW="100vw" maxW="100vw" minH="100vh" maxH="100vh">
+        <Box id="dankbank-app" display="flex" w="100vw" minH="100vh">
             <PageHead {...head} />
-            <Flex direction="column" justifyContent="space-between" width="100%" bg={bg} color={color}>
+            <Flex direction="column" justifyContent="space-between" width="100%">
                 {!isMobile && <Header links={shownLinks} />}
-                <Flex flex="1" direction="column" p="20px" overflowY="auto">
+                <Flex flex="1" direction="column" p="20px">
                     <Flex justify="space-between">
                         <BackBtn />
                         <ColorToggle ml="auto" />
                     </Flex>
-                    <Flex direction="column" flex="1">
+                    <Flex direction="column" flex="1" paddingBottom="48px">
                         {children}
                     </Flex>
                 </Flex>
-                {isMobile && <TabBar tabs={shownLinks} />}
+                {isMobile && (
+                    <Swipable
+                        axis={SwipeAxis.X}
+                        xDistance={width - 30}
+                        pos="fixed"
+                        width="100%"
+                        bottom="0px"
+                        zIndex={1}
+                    >
+                        <TabBar tabs={shownLinks} />
+                        <TagsAutocomplete
+                            pos="absolute"
+                            top={0}
+                            style={searchInputStyle.current || { visibility: "hidden" }}
+                            setSelecteds={() => ({})}
+                        />
+                    </Swipable>
+                )}
             </Flex>
         </Box>
     );
@@ -63,6 +92,7 @@ const links = [
     { route: "/add", name: "Add", icon: IoMdAddCircle, access: AuthAccess.LOGGED },
     { route: "/favorites", name: "Favorites", icon: IoMdHeart, access: AuthAccess.LOGGED },
     { route: "/profile", name: "Profile", icon: IoMdContact, access: AuthAccess.LOGGED },
-    { route: "/login", name: "Login", icon: IoMdLogIn, access: AuthAccess.ANONYMOUS },
-    { route: "/register", name: "Register", icon: IoMdFlame, access: AuthAccess.ANONYMOUS },
+    { route: "/auth", name: "Sign in", icon: IoMdLogIn, access: AuthAccess.ANONYMOUS },
 ];
+
+const inputTags = ["INPUT", "TEXTAREA"];

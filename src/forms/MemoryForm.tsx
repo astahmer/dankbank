@@ -1,6 +1,7 @@
+import { Button, Input } from "@chakra-ui/core";
 import { MouseEvent } from "react";
-import { useInput } from "@/functions/hooks/form/useInput";
-import { Input, Button } from "@chakra-ui/core";
+
+import { useInput } from "@/hooks/form/useInput";
 import { Memory } from "@/services/MemoryManager";
 
 export function MemoryForm() {

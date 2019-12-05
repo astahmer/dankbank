@@ -4,13 +4,13 @@ import { useRef } from "react";
 import { IoLogoTwitter } from "react-icons/io";
 
 import { API_ROUTES, clientApiUrl } from "@/config/api";
-import { Tokens } from "@/functions/hooks/useAuth";
 import { isDev } from "@/functions/utils";
+import { Tokens } from "@/hooks/async/useAuth";
 import { Memory } from "@/services/MemoryManager";
 
 type TwitterLoginProps = Optional<ButtonProps, "children"> & { onLogged: (tokens: Tokens) => void };
 
-export default function TwitterLogin({ onLogged, ...props }: TwitterLoginProps) {
+export function TwitterLogin({ onLogged, ...props }: TwitterLoginProps) {
     // Open a window for OAuth process
     const callbackWindow = useRef<Window>();
     const checkTwitter = useRef(null);
