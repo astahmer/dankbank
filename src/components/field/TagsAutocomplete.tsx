@@ -1,11 +1,16 @@
+import { FlexProps } from "@chakra-ui/core";
 import { IoMdPricetag } from "react-icons/io";
 
 import { API_ROUTES } from "@/config/api";
 import { useAPI } from "@/hooks/async/useAPI";
 
-import { Autocomplete, AutocompleteWrapperProps } from "./Autocomplete/Autocomplete";
+import {
+    Autocomplete, AutocompleteWrapperProps, BaseAutocompleteProps
+} from "./Autocomplete/Autocomplete";
 
-export function TagsAutocomplete({ setSelecteds, ...props }: AutocompleteWrapperProps) {
+type TagsAutocomplete = Optional<BaseAutocompleteProps> & AutocompleteWrapperProps & FlexProps;
+
+export function TagsAutocomplete({ setSelecteds, ...props }: TagsAutocomplete) {
     const [async, run, reset, canceler] = useAPI(API_ROUTES.Search.tag, { initialData: { items: [] } });
 
     const suggestionFn = (value: string) => {

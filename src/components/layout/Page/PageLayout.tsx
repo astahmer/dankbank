@@ -89,7 +89,7 @@ export interface ILinkItem {
 const links = [
     { route: "/", name: "Home", icon: IoMdHome, access: AuthAccess.LOGGED },
     { route: "/search", name: "Search", icon: IoMdSearch, access: AuthAccess.BOTH },
-    { route: "/add", name: "Add", icon: IoMdAddCircle, access: AuthAccess.LOGGED },
+    { route: "/add", name: "Add", icon: IoMdAddCircle, access: AuthAccess.BOTH },
     { route: "/favorites", name: "Favorites", icon: IoMdHeart, access: AuthAccess.LOGGED },
     { route: "/profile", name: "Profile", icon: IoMdContact, access: AuthAccess.LOGGED },
     { route: "/auth", name: "Sign in", icon: IoMdLogIn, access: AuthAccess.ANONYMOUS },

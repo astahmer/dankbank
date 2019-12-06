@@ -23,7 +23,7 @@ export function AuthForm() {
     return (
         <>
             <Flex justify="flex-end" wrap="wrap">
-                <Button size="sm" variantColor="blue" variant="link" onClick={toggle}>
+                <Button size="sm" variantColor="blue" variant="link" onClick={toggle as any}>
                     {isRegistering ? "Login" : "Register"}
                 </Button>
             </Flex>

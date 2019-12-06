@@ -3,7 +3,7 @@ import { MutableRefObject, useRef, useState } from "react";
 import { useEnhancedEffect } from "@/functions/utils";
 
 export function useDimensions(): [MutableRefObject<HTMLElement>, Dimensions] {
-    const ref = useRef();
+    const ref = useRef<HTMLElement>();
     const [dimensions, setDimensions] = useState(null);
     useEnhancedEffect(() => {
         if (ref.current) {
@@ -43,10 +43,10 @@ function getDimensionObject(node: HTMLElement): Dimensions {
     return {
         width: rect.width,
         height: rect.height,
-        top: "x" in rect ? rect.x : rect.top,
-        left: "y" in rect ? rect.y : rect.left,
-        x: "x" in rect ? rect.x : rect.left,
-        y: "y" in rect ? rect.y : rect.top,
+        top: rect.top,
+        left: rect.left,
+        x: rect.left,
+        y: rect.top,
         right: rect.right,
         bottom: rect.bottom,
     };

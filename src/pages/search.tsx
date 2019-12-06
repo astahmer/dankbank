@@ -1,13 +1,20 @@
 import { Heading } from "@chakra-ui/core";
 
-import { ExpandableTagsAutocomplete } from "@/components/field/ExpandableTagsAutocomplete";
+import { ExpandableMemesAutocomplete } from "@/components/field/ExpandableMemesAutocomplete";
+import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { AuthAccess } from "@/services/AuthManager";
 
 export default function Search() {
+    // TODO grid via ratio des items found ? useTransition + check masongrid
+    // TODO infinite scroll meme search ?
+
+    const [containerRef, getRef] = useCallbackRef();
+
     return (
         <div>
             <Heading>Search page</Heading>
-            <ExpandableTagsAutocomplete isFloating position="relative" direction="left" setSelecteds={console.log} />
+            <div ref={getRef}></div>
+            <ExpandableMemesAutocomplete container={containerRef.current} setSelecteds={console.log} />
         </div>
     );
 }

@@ -24,10 +24,6 @@ export function MemeFormTemplate({ onSubmit, isLoading }: FormProps) {
             <Stack spacing={2}>
                 <ImageUploader onUploadComplete={handleUploadResults} multiple mb={"20px"} />
                 <TagsAutocomplete mt="10px" setSelecteds={handleSelectedTags} />
-                {/* <Flex justify="center" align="center">
-                    <FormLabel>Is public ?</FormLabel>
-                    <Switch />
-                </Flex> */}
             </Stack>
             <Button mt={4} variantColor="blue" isFullWidth variant="outline" isLoading={isLoading} type="submit">
                 Post
@@ -44,8 +40,7 @@ export function MemeForm() {
         event.preventDefault();
         const payload = {
             ...form.fields,
-            owner: user.id,
-            isMultipartMeme: form.fields.pictures.length > 1,
+            owner: user && user.id,
             visibility: Visibility.PUBLIC,
         };
 

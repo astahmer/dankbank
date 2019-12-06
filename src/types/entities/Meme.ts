@@ -9,7 +9,6 @@ export interface IMeme extends IAbstractEntity {
     upvoteCount: number;
     downvoteCount: number;
     views: number;
-    isMultipartMeme: boolean;
     visibility: Visibility;
     pictures: File[];
     banks: IMemeBank[];

@@ -23,6 +23,17 @@ declare global {
     // https://stackoverflow.com/questions/43537520/how-do-i-extract-a-type-from-an-array-in-typescript
     type Unpacked<T> = T extends (infer U)[] ? U : T;
 
+    // Modified version of
+    // https://github.com/sindresorhus/type-fest/blob/master/source/set-required.d.ts
+    type SetRequiredKeys<T, K extends keyof T = keyof T> = Pick<T, Exclude<keyof T, K>> &
+        Required<Pick<T, K>> extends infer U
+        ? { [KT in keyof U]: U[KT] }
+        : never;
+    type RequiredKeys<T, K extends keyof T = keyof T> = Pick<T, Exclude<keyof T, K>> & Required<Pick<T, K>>;
+
+    // https://stackoverflow.com/questions/52703321/make-some-properties-optional-in-a-typescript-type
+    type OptionalExceptFor<T, TRequired extends keyof T> = Partial<T> & Pick<T, TRequired>;
+
     type ResponseContext = {
         operation: string;
         entity: string;

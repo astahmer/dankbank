@@ -1,9 +1,11 @@
-import { Box, PseudoBox, useColorMode } from "@chakra-ui/core";
-import { forwardRef } from "react";
-import { animated, useSpring } from "react-spring";
+import { Box, IconButtonProps, PseudoBox, PseudoBoxProps, useColorMode } from "@chakra-ui/core";
+import { forwardRef, ForwardRefExoticComponent, PropsWithChildren, useRef } from "react";
+import { IconType } from "react-icons/lib/cjs";
+import { animated, config, useSpring } from "react-spring";
 
 import { COMMON_COLORS } from "@/config/theme";
 import { vwToPixel } from "@/functions/utils";
+import { useClickOutside } from "@/hooks/dom";
 import { useToggle } from "@/hooks/useToggle";
 
 import { ActionBtn } from "./ActionBtn";
@@ -15,30 +17,39 @@ export const ExpandableBtn = forwardRef<HTMLInputElement, ExpandableBtnProps>(
     ({ direction = "left", position = "absolute", ...props }, ref) => {
         const { colorMode } = useColorMode();
 
-        const [isExpanded, { toggle }] = useToggle();
+        const [isExpanded, { toggle, close }] = useToggle();
         const spring = useSpring({
-            config: { tension: 320, friction: 26 },
+            config: { tension: 320, friction: 32 },
             width: isExpanded ? `${vwToPixel(100) - 40}px` : "0px",
             opacity: isExpanded ? 1 : 0,
-            paddingRight: isExpanded ? "48px" : "0px",
             borderRadius: "50px",
         });
 
+        const { x } = useSpring({
+            config: { tension: 400, friction: 31, duration: 50 },
+            x: isExpanded ? -vwToPixel(100) + 40 + 48 : 0,
+        });
+
+        const selfRef = useRef<HTMLElement>();
+        useClickOutside(selfRef, close);
+
         return (
-            <Box position={position} w="48px">
+            <Box position={position} w="48px" ref={selfRef}>
                 <Box position="absolute" top="0" {...getInputBoxStyle(direction)}>
                     <AnimatedInput
                         h="48px"
-                        pl="20px"
                         bg={"gray.300"}
                         color={COMMON_COLORS.color["light"]}
+                        _placeholder={{ color: "gray.500", fontSize: "0.9em" }}
                         {...props}
+                        pl="56px"
+                        pr="15px"
                         as="input"
                         ref={ref}
                         style={spring}
                     />
                 </Box>
-                <ActionBtn
+                <AnimatedActionBtn
                     size="lg"
                     bg={colorMode === "dark" ? "blue.500" : "blue.300"}
                     color="gray.50"
@@ -48,14 +59,21 @@ export const ExpandableBtn = forwardRef<HTMLInputElement, ExpandableBtnProps>(
                     _hover={{}}
                     _focusWithin={{}}
                     {...props}
-                    onClick={toggle}
+                    onClick={toggle as any}
+                    style={{
+                        transform: x.interpolate((x: number) => `translate3d(${x}px, 0px, 0px)`),
+                    }}
                 />
             </Box>
         );
     }
 );
 
-const AnimatedInput = animated(PseudoBox);
+const AnimatedInput = animated(PseudoBox) as ForwardRefExoticComponent<
+    PropsWithChildren<PseudoBoxProps & { type?: string }>
+>;
+
+const AnimatedActionBtn = animated(ActionBtn);
 
 const positionByDirection = {
     left: { left: "100%", transform: "translate3d(-100%, 0, 0)" },
@@ -66,4 +84,7 @@ const getInputBoxStyle = (direction: ExpandDirection) => positionByDirection[dir
 
 type ExpandDirection = "left" | "right" | "center";
 
-export type ExpandableBtnWrapperProps = Omit<Optional<ExpandableBtnProps>, "icon"> & { isFloating?: boolean };
+export type ExpandableBtnWrapperProps = {
+    isFloating?: boolean;
+    icon?: IconType | IconButtonProps["icon"];
+};

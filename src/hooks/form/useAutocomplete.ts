@@ -15,7 +15,7 @@ import { useClickOutside } from "@/hooks/dom/useClickOutside";
 
 import { SelectionActions } from "../array/useSelection";
 
-export function useAutocomplete(
+export function useAutocomplete<T = any>(
     {
         onSelectionChange,
         async,
@@ -30,9 +30,9 @@ export function useAutocomplete(
         max = 20,
         delay = 180,
         isDisabled,
-    }: UseAutocompleteProps,
+    }: UseAutocompleteProps<T>,
     { ownRef, inputRef, resultListRef }: UseAutocompleteRefProps
-): UseAutocompleteReturn {
+): UseAutocompleteReturn<T> {
     const { colorMode } = useColorMode();
     // Input value
     const [value, setValue] = useState("");
@@ -370,8 +370,8 @@ export type UseAutocompleteRefProps = {
     inputRef: MutableRefObject<HTMLInputElement>;
     resultListRef: MutableRefObject<HTMLElement>;
 };
-export type UseAutocompleteProps = Pick<
-    AutocompleteProps,
+export type UseAutocompleteProps<T = any> = Pick<
+    AutocompleteProps<T, any>,
     | "onSelectionChange"
     | "async"
     | "reset"
@@ -387,20 +387,20 @@ export type UseAutocompleteProps = Pick<
     | "isDisabled"
 >;
 
-export type UseAutocompleteReturnValues = {
+export type UseAutocompleteReturnValues<T = any> = {
     value: string;
     totalResults: string | number;
-    selecteds: any[];
-    selection: SelectionActions<any>;
+    selecteds: T[];
+    selection: SelectionActions<T>;
     ghostIndex: number;
     timer: number;
     isOpen: boolean;
     closeSuggestions: () => void;
     shouldDisplayList: boolean;
-    shouldHideLeftEl: any;
-    shouldDisplayGhost: any;
+    shouldHideLeftEl: boolean;
+    shouldDisplayGhost: boolean;
 };
-export type UseAutocompleteReturnRefs = {
+export type UseAutocompleteReturnRefs<T = any> = {
     self: {
         onKeyDown: (event: KeyboardEvent<Element>) => void;
     };
@@ -412,8 +412,8 @@ export type UseAutocompleteReturnRefs = {
         isDisabled: boolean;
     };
     resultItem: (
-        item: any,
-        ActionBtn?: any
+        item: T,
+        ActionBtn?: ReactElement
     ) => {
         key: string | number;
         colorMode: "light" | "dark";
@@ -425,7 +425,7 @@ export type UseAutocompleteReturnRefs = {
         actionBtn: ReactElement;
     };
     selectedItem: (
-        tag: any,
+        tag: T,
         i: any
     ) => {
         key: string | number;
@@ -436,4 +436,4 @@ export type UseAutocompleteReturnRefs = {
         onCloseClick: (e: MouseEvent) => void;
     };
 };
-export type UseAutocompleteReturn = [UseAutocompleteReturnValues, UseAutocompleteReturnRefs];
+export type UseAutocompleteReturn<T = any> = [UseAutocompleteReturnValues<T>, UseAutocompleteReturnRefs<T>];

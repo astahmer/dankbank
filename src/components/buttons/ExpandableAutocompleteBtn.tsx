@@ -1,17 +1,19 @@
-import { Portal, Switch as ChakraSwitch, SwitchProps } from "@chakra-ui/core";
-import { FunctionComponent, useRef } from "react";
+import { Portal, PortalProps } from "@chakra-ui/core";
+import { useRef } from "react";
 
 import { useAutocomplete } from "@/hooks/form";
 
 import {
-    AutocompleteProps, AutocompleteResultListRenderProp, AutocompleteWrapperProps, getArgs
+    AutocompleteResultListRenderProp, AutocompleteWrapperProps, BaseAutocompleteProps, getArgs
 } from "../field/Autocomplete/Autocomplete";
 import { ExpandableBtn, ExpandableBtnProps, ExpandableBtnWrapperProps } from "./ExpandableBtn";
 import { FloatingBtn } from "./FloatingBtn";
 
-export type ExpandableAutocompleteBtnProps<T = any> = AutocompleteProps<T, ExpandableBtnProps> &
+export type ExpandableAutocompleteBtnProps<T = any> = Omit<BaseAutocompleteProps<T>, "helpTxt" | "icon"> &
+    ExpandableBtnProps &
     ExpandableBtnWrapperProps &
-    AutocompleteResultListRenderProp;
+    AutocompleteResultListRenderProp<T> &
+    Pick<PortalProps, "container" | "onRendered">;
 
 export function ExpandableAutocompleteBtn(props: ExpandableAutocompleteBtnProps) {
     const {
@@ -31,6 +33,8 @@ export function ExpandableAutocompleteBtn(props: ExpandableAutocompleteBtnProps)
         withGhostSuggestion,
         isDisabled,
         usePortal,
+        container,
+        onRendered,
         ...rest
     } = props;
 
@@ -39,35 +43,36 @@ export function ExpandableAutocompleteBtn(props: ExpandableAutocompleteBtnProps)
 
     const [hook, bindings] = useAutocomplete(getArgs(props), { inputRef, resultListRef, ownRef: inputRef });
 
-    const {
-        icon,
-        helpTxt,
-        emptyResultsTxt = "No results found",
-        label,
-        placeholder,
-        fontSize = "1rem",
-        ...wrapperProps
-    } = rest;
+    const { emptyResultsTxt = "No results found", ...wrapperProps } = rest;
 
     // Render items & conditions
-    const Button = <ExpandableBtn ref={inputRef} label="Search" icon="search" {...wrapperProps} {...bindings.input} />;
+    const Button = <ExpandableBtn ref={inputRef} type={"search" as any} {...wrapperProps} {...bindings.input} />;
     const ResultList = () =>
         hook.shouldDisplayList && resultList
-            ? (resultList({ ...hook, bind: bindings.resultItem, resultListRef }) as JSX.Element)
+            ? (resultList({
+                  ...hook,
+                  items: async.data.items,
+                  bind: bindings.resultItem,
+                  resultListRef,
+              }) as JSX.Element)
             : null;
 
     return (
         <div {...bindings.self}>
             {isFloating ? <FloatingBtn button={Button} /> : Button}
             {/* TODO displayEmptyResult renderProp ? */}
-            {usePortal ? <Portal children={<ResultList />} /> : <ResultList />}
+            {/* {usePortal ? <Portal container={container} children={<ResultList />} /> : <ResultList />} */}
+            {<Portal isDisabled={!usePortal} onRendered={onRendered} container={container} children={<ResultList />} />}
         </div>
     );
 }
 
-// Fix Chakra-UI typing mistake
-const Switch = ChakraSwitch as FunctionComponent<Optional<SwitchProps, "children">>;
-
-export type ExpandableAutocompleteWrapperBtnProps<T = any> = AutocompleteWrapperProps<T, ExpandableBtnProps> &
-    ExpandableBtnWrapperProps &
-    AutocompleteResultListRenderProp;
+// export type ExpandableAutocompleteWrapperBtnProps<T = any> = Overwrite<
+//     Optional<ExpandableAutocompleteBtnProps<T>> & AutocompleteWrapperProps<T>,
+//     ExpandableAutocompleteBtnProps["resultList"]
+// >;
+export type ExpandableAutocompleteWrapperBtnProps<T = any> = OptionalExceptFor<
+    ExpandableAutocompleteBtnProps<T>,
+    "resultList"
+> &
+    AutocompleteWrapperProps<T>;

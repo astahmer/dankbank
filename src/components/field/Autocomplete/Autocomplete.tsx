@@ -23,7 +23,7 @@ import { AutocompleteResult } from "./AutocompleteResult";
 
 type AutocompleteResponse<T> = { items: T[]; total?: IAutocompleteResponseTotal };
 
-export type AutocompleteProps<T = any, P = FlexProps> = P & {
+export type BaseAutocompleteProps<T = any> = {
     onSelectionChange: (selecteds: T) => void;
     async: UseAsyncState<AutocompleteResponse<T>>;
     reset: AsyncReset;
@@ -44,6 +44,7 @@ export type AutocompleteProps<T = any, P = FlexProps> = P & {
     isDisabled?: InputProps["isDisabled"];
     usePortal?: boolean;
 };
+export type AutocompleteProps<T = any, P = FlexProps> = P & BaseAutocompleteProps<T>;
 
 export const Autocomplete = forwardRef<HTMLElement, AutocompleteProps>((props: AutocompleteProps, ref) => {
     const {
@@ -285,18 +286,19 @@ export interface IAutocompleteResponse<T = any> {
     total?: IAutocompleteResponseTotal;
 }
 
-export type AutocompleteWrapperProps<T = any, P = any> = Optional<AutocompleteProps<T, P>> & {
+export type AutocompleteWrapperProps<T = any> = {
     setSelecteds: (selecteds: T) => void;
 };
-export type AutocompleteResultListRenderPropArg = UseAutocompleteReturnValues & {
-    bind: UseAutocompleteReturnRefs["resultItem"];
+export type AutocompleteResultListRenderPropArg<T = any> = UseAutocompleteReturnValues<T> & {
+    items: T[];
+    bind: UseAutocompleteReturnRefs<T>["resultItem"];
     resultListRef: UseAutocompleteRefProps["resultListRef"];
 };
-export type AutocompleteResultListRenderProp = {
-    resultList: (props: AutocompleteResultListRenderPropArg) => ReactNode;
+export type AutocompleteResultListRenderProp<T = any> = {
+    resultList?: (props: AutocompleteResultListRenderPropArg<T>) => ReactNode;
 };
 
-export const getArgs = (props: AutocompleteProps) =>
+export const getArgs = (props: AutocompleteProps<any, any>) =>
     (pick(props, [
         "async",
         "displayFn",
