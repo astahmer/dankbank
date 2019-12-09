@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, Reducer, useCallback, useMemo, useRef } from "react";
+import { ChangeEvent, FormEvent, Reducer, useCallback, useMemo, useRef, useState } from "react";
 
 import { getProp } from "@/functions/utils";
 
@@ -8,9 +8,16 @@ export function useForm<Values extends FormValues>(
 ): FormReturn<Values> {
     const state = useRef({ ...initialState, data, validations });
     const dispatch = useCallback((action: FormActionPayload) => reducer(state.current, action), []);
+    const [, reRender] = useState();
 
-    const doAction = <T = FieldType>(type: FormActionType) => (name: string, value: T) =>
-        (state.current = dispatch({ type, name, value }));
+    const doAction = <T = FieldType>(type: FormActionType) => (name: string, value: T) => {
+        const wasValid = state.current.isValid;
+        state.current = dispatch({ type, name, value });
+        // TODO reRender on error change
+        if (wasValid !== state.current.isValid) {
+            reRender({});
+        }
+    };
 
     const actions = useMemo(
         () => ({
@@ -71,7 +78,7 @@ export type FormState<Values = any> = {
 };
 const initialState: FormState<any> = { data: {}, validations: {}, errors: {}, isValid: undefined };
 
-export type FormSubmitCallback<Values extends FormValues> = (data: Values, event: FormEvent) => void;
+export type FormSubmitCallback<Values extends FormValues> = (data: Values, event?: FormEvent) => void;
 export type FormActions<Values extends FormValues> = {
     // Getters
     get: (path: string | string[]) => any;
@@ -99,21 +106,16 @@ const reducer: Reducer<FormState<any>, FormActionPayload> = (state, { type, name
     switch (type) {
         case FormActionType.SET: {
             const data = { ...state.data, ...{ [name]: value } };
-            if (hasChanged) {
-                const validationResult = getValidationResult(state.validations, data);
-                state.isValid = validationResult.isValid;
-            }
+            const validationResult = hasChanged ? getValidationResult(state.validations, data) : {};
 
-            return { ...state, data: data };
+            return { ...state, ...validationResult, data };
         }
 
         case FormActionType.ADD: {
             const data = { ...state.data, ...{ [name]: state.data[name].concat(value) } };
-            if (hasChanged) {
-                const validationResult = getValidationResult(state.validations, data);
-                state.isValid = validationResult.isValid;
-            }
-            return { ...state, data: data };
+            const validationResult = hasChanged ? getValidationResult(state.validations, data) : {};
+
+            return { ...state, ...validationResult, data };
         }
 
         case FormActionType.REMOVE: {
@@ -122,12 +124,9 @@ const reducer: Reducer<FormState<any>, FormActionPayload> = (state, { type, name
             }
 
             const data = { ...state.data, ...{ [name]: state.data[name] } };
-            if (hasChanged) {
-                const validationResult = getValidationResult(state.validations, data);
-                state.isValid = validationResult.isValid;
-            }
+            const validationResult = hasChanged ? getValidationResult(state.validations, data) : {};
 
-            return { ...state, data: data };
+            return { ...state, ...validationResult, data };
         }
 
         case FormActionType.RESET:

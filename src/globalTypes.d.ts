@@ -4,7 +4,7 @@ import {
 import { Router } from "next/router";
 import { ReactElement, ReactNode } from "react";
 
-import { FormState } from "@/hooks/form/useForm";
+import { FormState, FormSubmitCallback, FormValues } from "@/hooks/form/useForm";
 
 import { PageHeadProps } from "./components/layout/Page/PageHead";
 import { AuthAccess } from "./hooks/async/useAuth";
@@ -64,7 +64,7 @@ declare global {
     type RenderProp<Prop = any> = { render: (state: Prop) => ReactNode };
 
     type FormHandler = (form: FormState) => void;
-    type FormProps = { onSubmit: FormHandler; isLoading?: boolean };
+    type FormProps<Values extends FormValues = any> = { onSubmit: FormSubmitCallback<Values>; isLoading?: boolean };
 }
 
 type Component = NextComponentType<NextPageContext> & { PageHead: PageHeadProps; AuthAccess: AuthAccess };

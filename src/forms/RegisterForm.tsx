@@ -1,26 +1,33 @@
 import { Box, Button, Input, Stack } from "@chakra-ui/core";
-import { FormEvent, useContext } from "react";
+import { useCallback, useContext } from "react";
 
 import { PasswordInput } from "@/components/field/PasswordInput";
 import { API_ROUTES } from "@/config/api";
 import { useAPI } from "@/hooks/async/useAPI";
 import { AuthContext } from "@/hooks/async/useAuth";
-import { FormState, useForm } from "@/hooks/form/useForm";
+import { FormSubmitCallback, useForm } from "@/hooks/form/useForm";
 import { RegisterBody, RegisterResponse } from "@/types/routes/register";
 
 export function RegisterTemplate({ onSubmit, isLoading }: FormProps) {
     const [form, actions] = useForm({ email: "", name: "", password: "" });
-    const { email, name, password } = form.fields;
-    const handleSubmit = (event: FormEvent) => onSubmit(form);
+    const handleSubmit = useCallback(actions.onSubmit(onSubmit), []);
 
     return (
         <Box as="form" paddingY="10px" marginY="10px" onSubmit={handleSubmit}>
             <Stack spacing={2}>
-                <Input isRequired type="email" value={email} onChange={actions.onChange("email")} placeholder="Email" />
-                <Input isRequired value={name} onChange={actions.onChange("name")} placeholder="Username" />
-                <PasswordInput isRequired value={password} onChange={actions.onChange("password")} />
+                <Input isRequired type="email" onChange={actions.onChange("email")} placeholder="Email" />
+                <Input isRequired onChange={actions.onChange("name")} placeholder="Username" />
+                <PasswordInput isRequired onChange={actions.onChange("password")} />
             </Stack>
-            <Button mt={4} variantColor="blue" isFullWidth variant="outline" isLoading={isLoading} type="submit">
+            <Button
+                type="submit"
+                mt={4}
+                variantColor="blue"
+                isFullWidth
+                variant="outline"
+                isLoading={isLoading}
+                isDisabled={!form.isValid}
+            >
                 Register
             </Button>
         </Box>
@@ -33,9 +40,9 @@ export function RegisterForm() {
     const [async, run] = useAPI<RegisterResponse, RegisterBody>(API_ROUTES.Auth.register, null, { method: "post" });
     const { actions } = useContext(AuthContext);
 
-    const onSubmit = async (form: FormState<RegisterFormState>) => {
-        event.preventDefault();
-        const { email, name, password } = form.fields;
+    const onSubmit: FormSubmitCallback<RegisterFormState> = async (data, e) => {
+        e.preventDefault();
+        const { email, name, password } = data;
         const [err, result] = await run({ email, name, password });
 
         if (result) {
