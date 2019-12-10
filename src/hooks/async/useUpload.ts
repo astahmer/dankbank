@@ -217,7 +217,7 @@ function getUploadConfig(
                 "X-Chunks-Total": fieldKeyOrChunkData.chunksTotal,
                 "X-Content-Id": fieldKeyOrChunkData.fileIdentifier,
                 "X-Content-Length": file.size,
-                "X-Content-Name": file.name,
+                "X-Content-Name": encodeURIComponent(file.name),
             },
         };
     }
