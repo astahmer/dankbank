@@ -1,5 +1,5 @@
 import {
-    Box, Flex, FlexProps, FormControl, FormErrorMessage, FormHelperText, FormLabel, Icon,
+    Box, Flex, FlexProps, FormControl, FormErrorMessage, FormHelperText, FormLabel,
     InputLeftElement, List, Popover as ChakraPopover, PopoverBody, PopoverContent, PopoverProps,
     Spinner, Switch as ChakraSwitch, SwitchProps, Text
 } from "@chakra-ui/core";
@@ -9,6 +9,7 @@ import { forwardRef, FunctionComponent, ReactNode, useCallback, useRef, useState
 import { IoMdClose } from "react-icons/io";
 import { IconType } from "react-icons/lib/cjs";
 
+import { CustomIcon } from "@/components/common/CustomIcon";
 import { pick, setRef } from "@/functions/utils";
 import { AsyncReset, AsyncRunReturn, UseAsyncState } from "@/hooks/async/useAsync";
 import {
@@ -92,13 +93,7 @@ export const Autocomplete = forwardRef<HTMLElement, AutocompleteProps>((props: A
     } = rest;
 
     // Either display loading or icon if there is any
-    const leftElIcon = icon ? (
-        icon instanceof Function ? (
-            <Box as={icon as IconType} size="24px" />
-        ) : (
-            <Icon {...icon} />
-        )
-    ) : null;
+    const leftElIcon = icon ? <CustomIcon icon={icon} size="24px" /> : null;
     const leftEl = async.isLoading ? <Spinner size="xs" /> : leftElIcon;
 
     // Render items & conditions
