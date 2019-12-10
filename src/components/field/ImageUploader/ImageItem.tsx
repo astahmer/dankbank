@@ -1,10 +1,11 @@
-import { Box, ButtonGroup, Flex, ImageProps, Stack, Text, useColorMode } from "@chakra-ui/core";
-import { forwardRef, useEffect } from "react";
+import { Box, ButtonGroup, Flex, Stack, Text, useColorMode } from "@chakra-ui/core";
+import { useEffect } from "react";
 import {
     IoMdClose, IoMdCloudUpload, IoMdCrop, IoMdRefresh, IoMdRemove, IoMdTrash
 } from "react-icons/io";
 
 import { ActionBtn } from "@/components/buttons/ActionBtn";
+import { CustomImage } from "@/components/common/CustomImage";
 import { FullscreenModal } from "@/components/layout/Modal/FullscreenModal";
 import { API_ROUTES } from "@/config/api";
 import { round } from "@/functions/utils";
@@ -116,9 +117,16 @@ export function ImageItem({
         <Flex w="100%" paddingY="10px" borderBottom="1px" borderBottomColor={borderBottomColor} {...props}>
             {dataUrl ? (
                 <>
-                    <Image onClick={open} width="135px" maxH="155px" objectFit="contain" src={dataUrl} mr="auto" />
+                    <CustomImage
+                        onClick={open}
+                        width="135px"
+                        maxH="155px"
+                        objectFit="contain"
+                        src={dataUrl}
+                        mr="auto"
+                    />
                     <FullscreenModal isOpen={isPreviewOpen} close={close}>
-                        <Image objectFit="contain" w="100%" src={imgSrc as string} />
+                        <CustomImage objectFit="contain" w="100%" src={imgSrc as string} />
                     </FullscreenModal>
                 </>
             ) : (
@@ -166,16 +174,6 @@ export function ImageItem({
         </Flex>
     );
 }
-
-// Awaiting Chakra's Fix on image component https://github.com/chakra-ui/chakra-ui/issues/225
-const NativeImage = forwardRef(({ htmlWidth, htmlHeight, alt, ...props }: any, ref) => (
-    <img width={htmlWidth} height={htmlHeight} ref={ref} alt={alt} {...props} />
-));
-
-const Image = forwardRef(({ src, fallbackSrc, onError, onLoad, ...props }: ImageProps, ref) => {
-    const imageProps = { src, onLoad, onError };
-    return <Box as={NativeImage} ref={ref} {...imageProps} {...props} />;
-});
 
 function getFileSize(size: number) {
     if (size < 1024) {
