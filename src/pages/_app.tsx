@@ -100,6 +100,7 @@ const globalStyle = css`
 
     * {
         box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
     }
 
     :focus {
