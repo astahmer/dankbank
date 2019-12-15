@@ -1,57 +1,41 @@
-import { Portal, PortalProps } from "@chakra-ui/core";
+import { Portal, Spinner } from "@chakra-ui/core";
 import { useRef } from "react";
 
 import { useAutocomplete } from "@/hooks/form";
-
 import {
-    AutocompleteResultListRenderProp, AutocompleteWrapperProps, BaseAutocompleteProps, getArgs
-} from "../field/Autocomplete/Autocomplete";
+    AutocompleteWrapperProps, AutocompleteProps, AutocompleteWithPortal
+} from "@/hooks/form/useAutocomplete";
+
 import { ExpandableBtn, ExpandableBtnProps, ExpandableBtnWrapperProps } from "./ExpandableBtn";
 import { FloatingBtn } from "./FloatingBtn";
 
-export type ExpandableAutocompleteBtnProps<T = any> = Omit<BaseAutocompleteProps<T>, "helpTxt" | "icon"> &
-    ExpandableBtnProps &
-    ExpandableBtnWrapperProps &
-    AutocompleteResultListRenderProp<T> &
-    Pick<PortalProps, "container" | "onRendered">;
+export type ExpandableAutocompleteBtnProps<T = any> = AutocompleteProps<T> & {
+    expandableProps?: ExpandableBtnProps & ExpandableBtnWrapperProps;
+};
 
 export function ExpandableAutocompleteBtn(props: ExpandableAutocompleteBtnProps) {
-    const {
-        isFloating,
-        resultList,
-        displayFn,
-        max,
-        shouldHideLeftElementOnFocus = true,
-        async,
-        reset,
-        suggestionFn,
-        createFn,
-        getId,
-        onSelectionChange,
-        delay,
-        shouldShowResultsOnFocus,
-        withGhostSuggestion,
-        isDisabled,
-        usePortal,
-        container,
-        onRendered,
-        ...rest
-    } = props;
+    const { data, display, fn, options, render, response } = props;
+    const { btnProps, ...expandableProps } = props.expandableProps;
 
     const inputRef = useRef<HTMLInputElement>();
     const resultListRef = useRef<HTMLInputElement>();
 
-    const [hook, bindings] = useAutocomplete(getArgs(props), { inputRef, resultListRef, ownRef: inputRef });
+    const [hook, bindings] = useAutocomplete(props, { inputRef, resultListRef, ownRef: inputRef });
 
-    const { emptyResultsTxt = "No results found", ...wrapperProps } = rest;
-
-    // Render items & conditions
-    const Button = <ExpandableBtn ref={inputRef} type={"search" as any} {...wrapperProps} {...bindings.input} />;
+    // Render items
+    const Button = (
+        <ExpandableBtn
+            ref={inputRef}
+            btnProps={{ type: "search" as any, ...btnProps }}
+            {...expandableProps}
+            {...bindings.input}
+        />
+    );
     const ResultList = () =>
-        hook.shouldDisplayList && resultList
-            ? (resultList({
+        hook.shouldDisplayList && render.resultList
+            ? (render.resultList({
                   ...hook,
-                  items: async.data.items,
+                  items: data.items,
                   bind: bindings.resultItem,
                   resultListRef,
               }) as JSX.Element)
@@ -59,20 +43,21 @@ export function ExpandableAutocompleteBtn(props: ExpandableAutocompleteBtnProps)
 
     return (
         <div {...bindings.self}>
-            {isFloating ? <FloatingBtn button={Button} /> : Button}
+            {expandableProps.isFloating ? <FloatingBtn button={Button} /> : Button}
             {/* TODO displayEmptyResult renderProp ? */}
-            {/* {usePortal ? <Portal container={container} children={<ResultList />} /> : <ResultList />} */}
-            {<Portal isDisabled={!usePortal} onRendered={onRendered} container={container} children={<ResultList />} />}
+            {
+                <Portal
+                    isDisabled={!options.usePortal}
+                    container={options.usePortal && (props.options as AutocompleteWithPortal).resultListContainer}
+                    children={response.isLoading ? <Spinner size="lg" /> : <ResultList />}
+                />
+            }
         </div>
     );
 }
 
-// export type ExpandableAutocompleteWrapperBtnProps<T = any> = Overwrite<
-//     Optional<ExpandableAutocompleteBtnProps<T>> & AutocompleteWrapperProps<T>,
-//     ExpandableAutocompleteBtnProps["resultList"]
-// >;
 export type ExpandableAutocompleteWrapperBtnProps<T = any> = OptionalExceptFor<
     ExpandableAutocompleteBtnProps<T>,
-    "resultList"
+    "render"
 > &
     AutocompleteWrapperProps<T>;

@@ -1,17 +1,22 @@
-import { FlexProps } from "@chakra-ui/core";
+import { BoxProps } from "@chakra-ui/core";
 import { IoMdPricetag } from "react-icons/io";
 
 import { API_ROUTES } from "@/config/api";
 import { useAPI } from "@/hooks/async/useAPI";
-
 import {
-    Autocomplete, AutocompleteWrapperProps, BaseAutocompleteProps
-} from "./Autocomplete/Autocomplete";
+    AutocompleteWrapperProps, AutocompleteDataProps, AutocompleteFnProps,
+    AutocompleteProps, AutocompleteResponseProps
+} from "@/hooks/form/useAutocomplete";
 
-type TagsAutocomplete = Optional<BaseAutocompleteProps> & AutocompleteWrapperProps & FlexProps;
+import { AutocompleteInput } from "./Autocomplete/AutocompleteInput";
+
+type TagsAutocomplete = Pick<AutocompleteProps, "display" | "options"> &
+    AutocompleteWrapperProps & { boxProps?: BoxProps };
 
 export function TagsAutocomplete({ setSelecteds, ...props }: TagsAutocomplete) {
-    const [async, run, reset, canceler] = useAPI(API_ROUTES.Search.tag, { initialData: { items: [] } });
+    const [async, run, resetFn, canceler] = useAPI(API_ROUTES.Search.tag, {
+        initialData: { items: [], total: undefined },
+    });
 
     const suggestionFn = (value: string) => {
         canceler && canceler();
@@ -20,18 +25,18 @@ export function TagsAutocomplete({ setSelecteds, ...props }: TagsAutocomplete) {
     const displayFn = (suggestion: ElasticDocument) => ("" + suggestion.text).toLowerCase();
     const getId = (suggestion: ElasticDocument) => suggestion._id;
     const createFn = (text: string) => ({ text });
-    const autocompleteProps = { async, reset, suggestionFn, displayFn, getId, createFn };
+
+    const data: AutocompleteDataProps = { onSelectionChange: setSelecteds, ...async.data };
+    const response: AutocompleteResponseProps = { ...async, resetFn };
+    const fn: AutocompleteFnProps = { suggestionFn, displayFn, getId, createFn };
+    const autocompleteProps: AutocompleteProps = { data, response, fn };
 
     return (
-        <Autocomplete
-            placeholder="Add tags"
-            icon={IoMdPricetag}
-            shouldShowResultsOnFocus
-            withGhostSuggestion
-            max={20}
-            onSelectionChange={setSelecteds}
+        <AutocompleteInput
             {...autocompleteProps}
-            {...props}
+            display={{ icon: IoMdPricetag, max: 20, placeholder: "Add tags", ...props.display }}
+            options={props.options}
+            boxProps={props.boxProps}
         />
     );
 }

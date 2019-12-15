@@ -26,7 +26,7 @@ export function MemeFormTemplate({ onSubmit, isLoading }: FormProps) {
         <Box as="form" paddingY="10px" marginY="10px" onSubmit={handleSubmit}>
             <Stack spacing={2}>
                 <ImageUploader onUploadComplete={handleUploadResults} multiple mb={"20px"} />
-                <TagsAutocomplete mt="10px" setSelecteds={handleSelectedTags} />
+                <TagsAutocomplete setSelecteds={handleSelectedTags} />
             </Stack>
             <Button
                 type="submit"

@@ -159,7 +159,7 @@ const getValidationResult = <Values extends FormValues>(
     for (const key in validations) {
         if (validations.hasOwnProperty(key)) {
             errorCount += validations[key](data[key]) ? 0 : 1;
-            console.log(validations[key](data[key]));
+            // console.log(validations[key](data[key]));
             // TODO add error when validator has a custom error message
             // result.errors[key] = validations[key](fields[key])
         }

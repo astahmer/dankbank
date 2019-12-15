@@ -1,4 +1,5 @@
 import { IAbstractEntity } from "./AbstractEntity";
+import { IImage } from "./Image";
 import { IMemeBank } from "./MemeBank";
 import { ITag } from "./Tag";
 import { IUser } from "./User";
@@ -10,7 +11,7 @@ export interface IMeme extends IAbstractEntity {
     downvoteCount: number;
     views: number;
     visibility: Visibility;
-    pictures: File[];
+    pictures: IImage[];
     banks: IMemeBank[];
     comments: Comment[];
     owner: IUser | number;

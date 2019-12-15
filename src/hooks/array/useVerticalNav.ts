@@ -28,7 +28,7 @@ export function useVerticalNav({
         } else {
             activableItems.current = [];
         }
-    }, [containerRef.current]);
+    }, [containerRef]);
 
     const [activeIndex, cursorActions] = useArrayCursor(activableItems.current && activableItems.current.length);
     const prevActiveIndex = usePrevious(activeIndex);

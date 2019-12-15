@@ -68,6 +68,7 @@ const initialState = (initialData: any): AsyncState => ({
     identifier: null,
 });
 
+// TODO type action like https://github.com/chakra-ui/chakra-ui/blob/dev-ts/packages/chakra-ui/src/Select/reducer.ts
 const reducer: Reducer<AsyncState, AsyncActionPayload> = (state, action) => {
     const { type, data, error, initialData } = action;
     switch (type) {

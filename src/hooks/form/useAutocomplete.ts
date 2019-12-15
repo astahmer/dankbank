@@ -1,36 +1,21 @@
-import { useColorMode } from "@chakra-ui/core";
+import { IconProps, InputProps, PortalProps, useColorMode } from "@chakra-ui/core";
 import {
-    ChangeEvent, cloneElement, FormEvent, KeyboardEvent, MouseEvent, MutableRefObject, ReactElement,
-    useCallback, useEffect, useMemo, useRef, useState
+    ChangeEvent, cloneElement, ElementType, FormEvent, KeyboardEvent, MouseEvent, MutableRefObject,
+    ReactElement, ReactNode, useCallback, useEffect, useMemo, useRef, useState
 } from "react";
+import { IconType } from "react-icons/lib/cjs";
 
-import {
-    AutocompleteProps, BaseAutocompleteProps, IAutocompleteResponseTotal
-} from "@/components/field/Autocomplete/Autocomplete";
 import { COMMON_COLORS } from "@/config/theme";
-import { isDev, useEnhancedEffect } from "@/functions/utils";
+import { useEnhancedEffect } from "@/functions/utils";
 import { useHorizontalNav, useSelection, useVerticalNav } from "@/hooks/array/";
 import { useDebounce } from "@/hooks/async/useDebounce";
 import { useClickOutside } from "@/hooks/dom/useClickOutside";
 
 import { SelectionActions } from "../array/useSelection";
+import { AsyncReset, AsyncRunReturn } from "../async/useAsync";
 
 export function useAutocomplete<T = any>(
-    {
-        onSelectionChange,
-        async,
-        reset,
-        suggestionFn,
-        displayFn,
-        getId,
-        createFn,
-        shouldShowResultsOnFocus = true,
-        shouldHideLeftElementOnFocus = true,
-        withGhostSuggestion = true,
-        max = 20,
-        delay = 180,
-        isDisabled,
-    }: UseAutocompleteProps<T>,
+    { data, fn, response, input = {}, options = defaultOptions }: UseAutocompleteProps<T>,
     { ownRef, inputRef, resultListRef }: UseAutocompleteRefProps
 ): UseAutocompleteReturn<T> {
     const { colorMode } = useColorMode();
@@ -45,14 +30,14 @@ export function useAutocomplete<T = any>(
     // Input focus
     const [isFocused, setIsFocused] = useState(null);
     const handleFocus = useCallback(() => {
-        if (shouldShowResultsOnFocus) {
+        if (options.shouldShowResultsOnFocus) {
             openSuggestions();
         }
 
         inputRef.current.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
         xNav.reset();
         setIsFocused(true);
-    }, [shouldShowResultsOnFocus]);
+    }, [options.shouldShowResultsOnFocus]);
     const handleBlur = useCallback(() => setIsFocused(false), []);
 
     // Is suggestions list open
@@ -63,10 +48,7 @@ export function useAutocomplete<T = any>(
         yNav.resetActive();
     }, []);
 
-    // Response state
-    const { items, total } = async.data;
-
-    const [debounced, timer] = useDebounce(suggestionFn, delay);
+    const [debounced, timer] = useDebounce(fn.suggestionFn, options.delay);
     const cancelOpening = useRef(null);
 
     // When value changes, call suggestionFn if there is a value, else reset & close suggestions list
@@ -76,34 +58,26 @@ export function useAutocomplete<T = any>(
             debounced(value);
         } else {
             cancelOpening.current = true;
-            reset();
+            response?.resetFn();
             closeSuggestions();
         }
     }, [value]);
 
     // On suggestionFn response
     useEffect(() => {
-        if (async.data) {
-            // If response doesn't have an "items" key, ignore it
-            if (!async.data.items && isDev) {
-                console.warn("suggestionFn should return an object with <item> & <total> keys", async.data);
-                return;
-            }
-
-            if (async.data.items.length) {
-                // If user already has selected an item, do not re-open suggestions
-                // & instead reset results items since we cleared value on selection
-                if (cancelOpening.current) {
-                    reset();
-                } else {
-                    openSuggestions();
-                }
+        if (data.items.length) {
+            // If user already has selected an item, do not re-open suggestions
+            // & instead reset results items since we cleared value on selection
+            if (cancelOpening.current) {
+                response?.resetFn();
+            } else {
+                openSuggestions();
             }
         }
-    }, [async.data]);
+    }, [data.items]);
 
     // Selected item(s) from suggestions
-    const [selecteds, selection] = useSelection({ getId, max: Number(max) });
+    const [selecteds, selection] = useSelection({ getId: fn.getId, max: Number(input.max) });
     const toggleSelectedEventHandler = useCallback(
         (item: any) => (event: MouseEvent | FormEvent) => {
             event.preventDefault();
@@ -115,13 +89,13 @@ export function useAutocomplete<T = any>(
         (index: number) => {
             // Adding a selected (yNav) result item
             if (index !== -1) {
-                selection.toggle(items[index]);
-            } else if (createFn && inputRef.current.value) {
-                const newItem = createFn(inputRef.current.value);
-                const byText = (arrItem: any) => displayFn(arrItem) === displayFn(newItem);
+                selection.toggle(data.items[index]);
+            } else if (fn.createFn && inputRef.current.value) {
+                const newItem = fn.createFn(inputRef.current.value);
+                const byText = (arrItem: any) => fn.displayFn(arrItem) === fn.displayFn(newItem);
 
                 // Item is either a result with a text matching input current value or a new item
-                const item = items.find(byText) || newItem;
+                const item = data.items.find(byText) || newItem;
 
                 // Checks that selection doesn't already have this new item
                 if (!selecteds.find(byText)) {
@@ -130,29 +104,29 @@ export function useAutocomplete<T = any>(
             }
             clearValue();
         },
-        [selecteds, items]
+        [selecteds, data.items]
     );
     const handleTabKeyDown = useCallback(
         (index: number) => {
-            const item = items[index !== -1 ? index : 0];
+            const item = data.items[index !== -1 ? index : 0];
             if (item && !selection.has(item)) {
-                updateNativeInputValue(inputRef, displayFn(item));
+                updateNativeInputValue(inputRef, fn.displayFn(item));
             }
         },
-        [items]
+        [data.items]
     );
 
     // If shouldShowResultsOnFocus === false, allow to open current results using Up/Down
     const openListWithArrowKeys = useMemo(
         () =>
-            !shouldShowResultsOnFocus
+            !options.shouldShowResultsOnFocus
                 ? (event: KeyboardEvent) => {
-                      if (items.length && (event.key === "ArrowUp" || event.key === "ArrowDown")) {
+                      if (data.items.length && (event.key === "ArrowUp" || event.key === "ArrowDown")) {
                           openSuggestions();
                       }
                   }
                 : null,
-        [shouldShowResultsOnFocus, items]
+        [options.shouldShowResultsOnFocus, data.items]
     );
 
     // Allow navigation using Up & Down keys
@@ -165,31 +139,31 @@ export function useAutocomplete<T = any>(
         onKeyDownWithoutList: openListWithArrowKeys,
     });
 
-    const isMaxSelected = selecteds.length >= max;
+    const isMaxSelected = selecteds.length >= input.max;
     useEffect(() => {
         if (isMaxSelected) {
             closeSuggestions();
             clearValue();
         }
-    }, [selecteds, max]);
+    }, [selecteds, input.max]);
 
     const ghostIndex = useMemo(
-        () => (!isFocused || isMaxSelected ? -1 : getGhostIndex(items, selecteds, getId, activeY)),
-        [items, selecteds, getId, activeY, max]
+        () => (!isFocused || isMaxSelected ? -1 : getGhostIndex(data.items, selecteds, fn.getId, activeY)),
+        [data.items, selecteds, fn.getId, activeY, input.max]
     );
 
     // When items change, reset active & activable items
     useEnhancedEffect(() => {
         yNav.resetActive();
         yNav.initActivableItems();
-    }, [items]);
+    }, [data.items]);
 
     const [activeX, xNav] = useHorizontalNav(selecteds.length, inputRef);
 
     // When selection change send it to parent & reset active
     useEffect(() => {
         xNav.reset();
-        onSelectionChange(selecteds);
+        data.onSelectionChange(selecteds);
     }, [selecteds]);
 
     // Reset activeX & close suggestion if clicking outside
@@ -234,7 +208,7 @@ export function useAutocomplete<T = any>(
                 yNav.onKeyDown(event);
             }
         },
-        [selecteds.length, xNav.isMovingCursor, activeX, activeY, items]
+        [selecteds.length, xNav.isMovingCursor, activeX, activeY, data.items]
     );
 
     const selectItem = useCallback(
@@ -265,18 +239,18 @@ export function useAutocomplete<T = any>(
         onChange: handleChange,
         onFocus: handleFocus,
         onBlur: handleBlur,
-        isDisabled: isDisabled || isMaxSelected,
+        isDisabled: input.isDisabled || isMaxSelected,
     };
 
     const bindResultItem = useCallback(
         (item: any, ActionBtn?: ReactElement) => ({
-            key: getId(item),
+            key: fn.getId(item),
             colorMode,
             isDisabled: selection.has(item),
             onClick: toggleSelectedEventHandler(item),
             color: COMMON_COLORS.color[colorMode],
             _selected: { backgroundColor: COMMON_COLORS.selected[colorMode] },
-            renderResult: displayFn(item),
+            renderResult: fn.displayFn(item),
             actionBtn:
                 ActionBtn &&
                 cloneElement(ActionBtn, {
@@ -285,15 +259,15 @@ export function useAutocomplete<T = any>(
                     onChange: () => {},
                 }),
         }),
-        [items, selecteds, colorMode]
+        [data.items, selecteds, colorMode]
     );
 
     const bindSelectedItem = useCallback(
         (tag, i) => ({
             key: i,
-            label: displayFn(tag),
+            label: fn.displayFn(tag),
             isCurrent: i === activeX,
-            isDisabled: isDisabled || isMaxSelected,
+            isDisabled: input.isDisabled || isMaxSelected,
             onClick: selectItem(i),
             onCloseClick: onCloseClick(i),
         }),
@@ -301,16 +275,14 @@ export function useAutocomplete<T = any>(
     );
 
     // Computeds
-    const totalResults = getTotalResults(total);
-    const shouldDisplayList = !async.isLoading && (value.length > 0 || items.length > 0);
-    const shouldHideLeftEl = shouldHideLeftElementOnFocus && (isFocused || value || selecteds.length);
+    const shouldDisplayList = isOpen && !response.isLoading && (value.length > 0 || data.items.length > 0);
+    const shouldHideLeftEl = options.shouldHideLeftElementOnFocus && (isFocused || value || selecteds.length);
 
     // Ghost will only be visible if there are results
-    const shouldDisplayGhost = !!(withGhostSuggestion && items.length && value && items[ghostIndex]);
+    const shouldDisplayGhost = !!(options.withGhostSuggestion && data.items.length && value && data.items[ghostIndex]);
 
     const returnValues = {
         value,
-        totalResults,
         selecteds,
         selection,
         ghostIndex,
@@ -325,7 +297,12 @@ export function useAutocomplete<T = any>(
     return [returnValues, refs];
 }
 
-const getGhostIndex = (items: any[], selecteds: any[], getId: AutocompleteProps["getId"], activeY: number): number => {
+const getGhostIndex = (
+    items: any[],
+    selecteds: any[],
+    getId: AutocompleteFnProps["getId"],
+    activeY: number
+): number => {
     if (!items.length) {
         return -1;
     }
@@ -345,18 +322,6 @@ const getGhostIndex = (items: any[], selecteds: any[], getId: AutocompleteProps[
     return activeY + 1 < items.length ? getGhostIndex(items, selecteds, getId, activeY + 1) : -1;
 };
 
-const getTotalResults = (total: IAutocompleteResponseTotal) => {
-    if (!total) {
-        return null;
-    }
-
-    if (typeof total === "number") {
-        return total;
-    } else {
-        return total.value + (total.relation === "gte" ? "+" : "");
-    }
-};
-
 const updateNativeInputValue = (inputRef: MutableRefObject<HTMLInputElement>, value: string) => {
     const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
     nativeInputValueSetter.call(inputRef.current, value);
@@ -370,42 +335,16 @@ export type UseAutocompleteRefProps = {
     inputRef: MutableRefObject<HTMLInputElement>;
     resultListRef: MutableRefObject<HTMLElement>;
 };
-export type UseAutocompleteProps<T = any> = Pick<
-    BaseAutocompleteProps<T>,
-    | "onSelectionChange"
-    | "async"
-    | "reset"
-    | "suggestionFn"
-    | "displayFn"
-    | "getId"
-    | "createFn"
-    | "shouldShowResultsOnFocus"
-    | "shouldHideLeftElementOnFocus"
-    | "withGhostSuggestion"
-    | "max"
-    | "delay"
-    | "isDisabled"
->;
-
-// export type UseAutocompleteProps<T = any> = {
-//     onSelectionChange: AutocompleteProps<T, any>["onSelectionChange"]
-//     async: AutocompleteProps<T, any>["async"]
-//     reset: AutocompleteProps<T, any>["reset"]
-//     suggestionFn: AutocompleteProps<T, any>["suggestionFn"]
-//     displayFn: AutocompleteProps<T, any>["displayFn"]
-//     getId: AutocompleteProps<T, any>["getId"]
-//     createFn: AutocompleteProps<T, any>["createFn"]
-//     shouldShowResultsOnFocus: AutocompleteProps<T, any>["shouldShowResultsOnFocus"]
-//     shouldHideLeftElementOnFocus: AutocompleteProps<T, any>["shouldHideLeftElementOnFocus"]
-//     withGhostSuggestion: AutocompleteProps<T, any>["withGhostSuggestion"]
-//     max: AutocompleteProps<T, any>["max"]
-//     delay: AutocompleteProps<T, any>["delay"]
-//     isDisabled: AutocompleteProps<T, any>["isDisabled"]
-// };
+export type UseAutocompleteProps<T = any> = {
+    data: Pick<AutocompleteDataProps, "onSelectionChange" | "items">;
+    response: Pick<AutocompleteResponseProps, "isLoading" | "resetFn">;
+    fn: AutocompleteFnProps<T>;
+    options?: Omit<AutocompleteOptionsProps, "usePortal">;
+    input?: Pick<AutocompleteInputProps, "isDisabled" | "max">;
+};
 
 export type UseAutocompleteReturnValues<T = any> = {
     value: string;
-    totalResults: string | number;
     selecteds: T[];
     selection: SelectionActions<T>;
     ghostIndex: number;
@@ -453,3 +392,79 @@ export type UseAutocompleteReturnRefs<T = any> = {
     };
 };
 export type UseAutocompleteReturn<T = any> = [UseAutocompleteReturnValues<T>, UseAutocompleteReturnRefs<T>];
+
+export const defaultOptions = {
+    delay: 180,
+    shouldHideLeftElementOnFocus: true,
+    shouldShowResultsOnFocus: true,
+    withGhostSuggestion: true,
+};
+
+export type AutocompleteProps<T = any> = {
+    data: AutocompleteDataProps<T>;
+    response: AutocompleteResponseProps;
+    fn: AutocompleteFnProps<T>;
+    render?: AutocompleteRendersProps;
+    display?: AutocompleteDisplayProps;
+    options?: AutocompleteOptionsProps;
+};
+
+export type AutocompleteRendersProps = {
+    wrapperElement?: ElementType;
+    autocompleteInput?: (props: any) => ReactNode;
+    resultList?: (props: AutocompleteResultListRenderPropArg) => ReactNode;
+    loader?: () => ReactNode;
+};
+export type AutocompleteDataProps<T = any> = {
+    onSelectionChange: (selecteds: T[]) => void;
+    items: T[];
+    total: number;
+};
+export type AutocompleteResponseProps = {
+    isLoading: boolean;
+    isDone: boolean;
+    error: string | Error;
+    resetFn: AsyncReset;
+};
+export type AutocompleteFnProps<T = any> = {
+    suggestionFn: (value: string) => AsyncRunReturn<T>;
+    displayFn: (item: T) => string;
+    getId: (item: T) => string | number;
+    createFn?: (value: string) => T;
+};
+export type AutocompleteDisplayProps = {
+    label?: string;
+    helpTxt?: string;
+    emptyResultsTxt?: string;
+    icon?: string | IconProps | IconType;
+} & AutocompleteInputProps;
+export type AutocompleteInputProps = {
+    placeholder?: InputProps["placeholder"];
+    max?: InputProps["max"];
+    isDisabled?: InputProps["isDisabled"];
+};
+export type AutocompleteOptionsProps = {
+    // usePortal?: boolean;
+    shouldShowResultsOnFocus?: boolean;
+    shouldHideLeftElementOnFocus?: boolean;
+    withGhostSuggestion?: boolean;
+    delay?: number;
+} & AutocompletePortalProps;
+
+export type AutocompleteWithPortal = { usePortal?: true; resultListContainer: PortalProps["container"] };
+export type AutocompleteWithoutPortal = { usePortal?: false };
+export type AutocompletePortalProps = AutocompleteWithPortal | AutocompleteWithoutPortal;
+
+export type AutocompleteResponse<T> = { items: T[]; total?: number };
+
+export type AutocompleteWrapperProps<T = any> = {
+    setSelecteds: (selecteds: T[]) => void;
+};
+export type AutocompleteResultListRenderPropArg<T = any> = UseAutocompleteReturnValues<T> & {
+    items: T[];
+    bind: UseAutocompleteReturnRefs<T>["resultItem"];
+    resultListRef: UseAutocompleteRefProps["resultListRef"];
+};
+export type AutocompleteResultListRenderProp<T = any> = {
+    resultList?: (props: AutocompleteResultListRenderPropArg<T>) => ReactNode;
+};

@@ -1,6 +1,7 @@
-import { Box, IconButtonProps, PseudoBox, PseudoBoxProps, useColorMode } from "@chakra-ui/core";
+import {
+    Box, BoxProps, InputProps, PseudoBox, PseudoBoxProps, useColorMode
+} from "@chakra-ui/core";
 import { forwardRef, ForwardRefExoticComponent, PropsWithChildren, useRef } from "react";
-import { IconType } from "react-icons/lib/cjs";
 import { animated, config, useSpring } from "react-spring";
 
 import { COMMON_COLORS } from "@/config/theme";
@@ -11,10 +12,15 @@ import { useToggle } from "@/hooks/useToggle";
 import { ActionBtn } from "./ActionBtn";
 import { FloatingBtnProps } from "./FloatingBtn";
 
-export type ExpandableBtnProps = FloatingBtnProps & { direction?: ExpandDirection };
+export type ExpandableBtnProps = {
+    direction?: ExpandDirection;
+    wrapperPosition?: BoxProps["position"];
+    btnProps?: FloatingBtnProps;
+    inputProps?: InputProps;
+};
 
 export const ExpandableBtn = forwardRef<HTMLInputElement, ExpandableBtnProps>(
-    ({ direction = "left", position = "absolute", icon, ...props }, ref) => {
+    ({ direction = "left", wrapperPosition = "absolute", btnProps, inputProps }, ref) => {
         const { colorMode } = useColorMode();
 
         const [isExpanded, { toggle, close }] = useToggle();
@@ -34,16 +40,16 @@ export const ExpandableBtn = forwardRef<HTMLInputElement, ExpandableBtnProps>(
         useClickOutside(selfRef, close);
 
         return (
-            <Box position={position} w="48px" ref={selfRef}>
+            <Box position={wrapperPosition} w="48px" ref={selfRef}>
                 <Box position="absolute" top="0" {...getInputBoxStyle(direction)}>
                     <AnimatedInput
                         h="48px"
                         bg={"gray.300"}
                         color={COMMON_COLORS.color["light"]}
                         _placeholder={{ color: "gray.500", fontSize: "0.9em" }}
-                        {...props}
                         pl="56px"
                         pr="15px"
+                        {...inputProps}
                         as="input"
                         ref={ref}
                         style={spring}
@@ -57,7 +63,7 @@ export const ExpandableBtn = forwardRef<HTMLInputElement, ExpandableBtnProps>(
                     _hover={{}}
                     // _focus={{}}
                     // _focusWithin={{}}
-                    icon={icon}
+                    {...btnProps}
                     onClick={() => toggle()}
                     style={{
                         transform: x.interpolate((x: number) => `translate3d(${x}px, 0px, 0px)`),
@@ -85,5 +91,5 @@ type ExpandDirection = "left" | "right" | "center";
 
 export type ExpandableBtnWrapperProps = {
     isFloating?: boolean;
-    icon?: IconType | IconButtonProps["icon"];
+    // icon?: IconType | IconButtonProps["icon"];
 };

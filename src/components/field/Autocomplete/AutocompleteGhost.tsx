@@ -1,6 +1,13 @@
 import { Box, BoxProps, Text } from "@chakra-ui/core";
 
-export type AutocompleteGhostProps = BoxProps & { ghostWidth: number; ghostValue: string; value: string };
+export type AutocompleteGhostProps = BoxProps & {
+    /** Actual css width of the ghost container */
+    ghostWidth: number;
+    /** Suggested text */
+    ghostValue: string;
+    /** Current user input leading to that suggested text */
+    value: string;
+};
 
 export function AutocompleteGhost({ ghostWidth, ghostValue, value, ...props }: AutocompleteGhostProps) {
     return (
@@ -16,10 +23,10 @@ export function AutocompleteGhost({ ghostWidth, ghostValue, value, ...props }: A
             style={{ width: ghostWidth }}
         >
             <Text as="span" style={{ visibility: "hidden" }}>
-                {ghostValue.slice(0, value.length)}
+                {ghostValue?.slice(0, value.length)}
             </Text>
 
-            <Text as="span">{ghostValue.slice(value.length)}</Text>
+            <Text as="span">{ghostValue?.slice(value.length)}</Text>
         </Box>
     );
 }

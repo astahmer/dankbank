@@ -49,7 +49,7 @@ export const PageLayout = ({ children, head }: PageLayoutProps) => {
             <PageHead {...head} />
             <Flex direction="column" justifyContent="space-between" width="100%">
                 {!isMobile && <Header links={shownLinks} />}
-                <Flex flex="1" direction="column" p="20px">
+                <Flex flex="1" direction="column">
                     <Flex justify="space-between">
                         <BackBtn />
                         <ColorToggle ml="auto" />
@@ -69,9 +69,11 @@ export const PageLayout = ({ children, head }: PageLayoutProps) => {
                     >
                         <TabBar tabs={shownLinks} />
                         <TagsAutocomplete
-                            pos="absolute"
-                            top={0}
-                            style={searchInputStyle.current || { visibility: "hidden" }}
+                            boxProps={{
+                                pos: "absolute",
+                                top: 0,
+                                style: searchInputStyle.current || { visibility: "hidden" },
+                            }}
                             setSelecteds={() => ({})}
                         />
                     </Swipable>
