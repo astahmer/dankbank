@@ -25,7 +25,7 @@ import { AutocompleteResult } from "./AutocompleteResult";
 type AutocompleteResponse<T> = { items: T[]; total?: IAutocompleteResponseTotal };
 
 export type BaseAutocompleteProps<T = any> = {
-    onSelectionChange: (selecteds: T) => void;
+    onSelectionChange: (selecteds: T[]) => void;
     async: UseAsyncState<AutocompleteResponse<T>>;
     reset: AsyncReset;
     suggestionFn: (value: string) => AsyncRunReturn<T>;
@@ -282,7 +282,7 @@ export interface IAutocompleteResponse<T = any> {
 }
 
 export type AutocompleteWrapperProps<T = any> = {
-    setSelecteds: (selecteds: T) => void;
+    setSelecteds: (selecteds: T[]) => void;
 };
 export type AutocompleteResultListRenderPropArg<T = any> = UseAutocompleteReturnValues<T> & {
     items: T[];

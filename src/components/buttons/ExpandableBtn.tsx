@@ -14,7 +14,7 @@ import { FloatingBtnProps } from "./FloatingBtn";
 export type ExpandableBtnProps = FloatingBtnProps & { direction?: ExpandDirection };
 
 export const ExpandableBtn = forwardRef<HTMLInputElement, ExpandableBtnProps>(
-    ({ direction = "left", position = "absolute", ...props }, ref) => {
+    ({ direction = "left", position = "absolute", icon, ...props }, ref) => {
         const { colorMode } = useColorMode();
 
         const [isExpanded, { toggle, close }] = useToggle();
@@ -53,13 +53,12 @@ export const ExpandableBtn = forwardRef<HTMLInputElement, ExpandableBtnProps>(
                     size="lg"
                     bg={colorMode === "dark" ? "blue.500" : "blue.300"}
                     color="gray.50"
-                    zIndex={1}
-                    _focus={{}}
                     _active={{}}
                     _hover={{}}
-                    _focusWithin={{}}
-                    {...props}
-                    onClick={toggle as any}
+                    // _focus={{}}
+                    // _focusWithin={{}}
+                    icon={icon}
+                    onClick={() => toggle()}
                     style={{
                         transform: x.interpolate((x: number) => `translate3d(${x}px, 0px, 0px)`),
                     }}

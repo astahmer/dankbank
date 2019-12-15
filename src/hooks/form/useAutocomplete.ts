@@ -5,7 +5,7 @@ import {
 } from "react";
 
 import {
-    AutocompleteProps, IAutocompleteResponseTotal
+    AutocompleteProps, BaseAutocompleteProps, IAutocompleteResponseTotal
 } from "@/components/field/Autocomplete/Autocomplete";
 import { COMMON_COLORS } from "@/config/theme";
 import { isDev, useEnhancedEffect } from "@/functions/utils";
@@ -306,7 +306,7 @@ export function useAutocomplete<T = any>(
     const shouldHideLeftEl = shouldHideLeftElementOnFocus && (isFocused || value || selecteds.length);
 
     // Ghost will only be visible if there are results
-    const shouldDisplayGhost = withGhostSuggestion && items.length && value && items[ghostIndex];
+    const shouldDisplayGhost = !!(withGhostSuggestion && items.length && value && items[ghostIndex]);
 
     const returnValues = {
         value,
@@ -371,7 +371,7 @@ export type UseAutocompleteRefProps = {
     resultListRef: MutableRefObject<HTMLElement>;
 };
 export type UseAutocompleteProps<T = any> = Pick<
-    AutocompleteProps<T, any>,
+    BaseAutocompleteProps<T>,
     | "onSelectionChange"
     | "async"
     | "reset"
@@ -386,6 +386,22 @@ export type UseAutocompleteProps<T = any> = Pick<
     | "delay"
     | "isDisabled"
 >;
+
+// export type UseAutocompleteProps<T = any> = {
+//     onSelectionChange: AutocompleteProps<T, any>["onSelectionChange"]
+//     async: AutocompleteProps<T, any>["async"]
+//     reset: AutocompleteProps<T, any>["reset"]
+//     suggestionFn: AutocompleteProps<T, any>["suggestionFn"]
+//     displayFn: AutocompleteProps<T, any>["displayFn"]
+//     getId: AutocompleteProps<T, any>["getId"]
+//     createFn: AutocompleteProps<T, any>["createFn"]
+//     shouldShowResultsOnFocus: AutocompleteProps<T, any>["shouldShowResultsOnFocus"]
+//     shouldHideLeftElementOnFocus: AutocompleteProps<T, any>["shouldHideLeftElementOnFocus"]
+//     withGhostSuggestion: AutocompleteProps<T, any>["withGhostSuggestion"]
+//     max: AutocompleteProps<T, any>["max"]
+//     delay: AutocompleteProps<T, any>["delay"]
+//     isDisabled: AutocompleteProps<T, any>["isDisabled"]
+// };
 
 export type UseAutocompleteReturnValues<T = any> = {
     value: string;
