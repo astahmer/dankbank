@@ -15,7 +15,7 @@ import { SelectionActions } from "../array/useSelection";
 import { AsyncReset, AsyncRunReturn } from "../async/useAsync";
 
 export function useAutocomplete<T = any>(
-    { data, fn, response, input = {}, options = defaultOptions }: UseAutocompleteProps<T>,
+    { data, fn, response, inputProps = {}, options = defaultOptions }: UseAutocompleteProps<T>,
     { ownRef, inputRef, resultListRef }: UseAutocompleteRefProps
 ): UseAutocompleteReturn<T> {
     const { colorMode } = useColorMode();
@@ -77,7 +77,7 @@ export function useAutocomplete<T = any>(
     }, [data.items]);
 
     // Selected item(s) from suggestions
-    const [selecteds, selection] = useSelection({ getId: fn.getId, max: Number(input.max) });
+    const [selecteds, selection] = useSelection({ getId: fn.getId, max: Number(inputProps.max) });
     const toggleSelectedEventHandler = useCallback(
         (item: any) => (event: MouseEvent | FormEvent) => {
             event.preventDefault();
@@ -139,17 +139,17 @@ export function useAutocomplete<T = any>(
         onKeyDownWithoutList: openListWithArrowKeys,
     });
 
-    const isMaxSelected = selecteds.length >= input.max;
+    const isMaxSelected = selecteds.length >= inputProps.max;
     useEffect(() => {
         if (isMaxSelected) {
             closeSuggestions();
             clearValue();
         }
-    }, [selecteds, input.max]);
+    }, [selecteds, inputProps.max]);
 
     const ghostIndex = useMemo(
         () => (!isFocused || isMaxSelected ? -1 : getGhostIndex(data.items, selecteds, fn.getId, activeY)),
-        [data.items, selecteds, fn.getId, activeY, input.max]
+        [data.items, selecteds, fn.getId, activeY, inputProps.max]
     );
 
     // When items change, reset active & activable items
@@ -239,7 +239,7 @@ export function useAutocomplete<T = any>(
         onChange: handleChange,
         onFocus: handleFocus,
         onBlur: handleBlur,
-        isDisabled: input.isDisabled || isMaxSelected,
+        isDisabled: inputProps.isDisabled || isMaxSelected,
     };
 
     const bindResultItem = useCallback(
@@ -267,7 +267,7 @@ export function useAutocomplete<T = any>(
             key: i,
             label: fn.displayFn(tag),
             isCurrent: i === activeX,
-            isDisabled: input.isDisabled || isMaxSelected,
+            isDisabled: inputProps.isDisabled || isMaxSelected,
             onClick: selectItem(i),
             onCloseClick: onCloseClick(i),
         }),
@@ -340,7 +340,7 @@ export type UseAutocompleteProps<T = any> = {
     response: Pick<AutocompleteResponseProps, "isLoading" | "resetFn">;
     fn: AutocompleteFnProps<T>;
     options?: Omit<AutocompleteOptionsProps, "usePortal">;
-    input?: Pick<AutocompleteInputProps, "isDisabled" | "max">;
+    inputProps?: InputProps;
 };
 
 export type UseAutocompleteReturnValues<T = any> = {
@@ -406,6 +406,7 @@ export type AutocompleteProps<T = any> = {
     fn: AutocompleteFnProps<T>;
     render?: AutocompleteRendersProps;
     display?: AutocompleteDisplayProps;
+    inputProps?: InputProps;
     options?: AutocompleteOptionsProps;
 };
 
@@ -437,19 +438,19 @@ export type AutocompleteDisplayProps = {
     helpTxt?: string;
     emptyResultsTxt?: string;
     icon?: string | IconProps | IconType;
-} & AutocompleteInputProps;
-export type AutocompleteInputProps = {
-    placeholder?: InputProps["placeholder"];
-    max?: InputProps["max"];
-    isDisabled?: InputProps["isDisabled"];
 };
-export type AutocompleteOptionsProps = {
+export type AutocompleteOptionsCommonProps = {
     // usePortal?: boolean;
     shouldShowResultsOnFocus?: boolean;
     shouldHideLeftElementOnFocus?: boolean;
     withGhostSuggestion?: boolean;
     delay?: number;
-} & AutocompletePortalProps;
+};
+// export type AutocompleteOptionsProps = AutocompleteOptionsCommonProps & AutocompletePortalProps;
+export type AutocompleteOptionsProps = AutocompleteOptionsCommonProps & {
+    usePortal?: boolean;
+    resultListContainer?: PortalProps["container"];
+};
 
 export type AutocompleteWithPortal = { usePortal?: true; resultListContainer: PortalProps["container"] };
 export type AutocompleteWithoutPortal = { usePortal?: false };

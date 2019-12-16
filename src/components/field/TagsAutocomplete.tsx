@@ -4,13 +4,13 @@ import { IoMdPricetag } from "react-icons/io";
 import { API_ROUTES } from "@/config/api";
 import { useAPI } from "@/hooks/async/useAPI";
 import {
-    AutocompleteWrapperProps, AutocompleteDataProps, AutocompleteFnProps,
-    AutocompleteProps, AutocompleteResponseProps
+    AutocompleteDataProps, AutocompleteFnProps, AutocompleteProps, AutocompleteResponseProps,
+    AutocompleteWrapperProps
 } from "@/hooks/form/useAutocomplete";
 
 import { AutocompleteInput } from "./Autocomplete/AutocompleteInput";
 
-type TagsAutocomplete = Pick<AutocompleteProps, "display" | "options"> &
+type TagsAutocomplete = Pick<AutocompleteProps, "display" | "options" | "inputProps"> &
     AutocompleteWrapperProps & { boxProps?: BoxProps };
 
 export function TagsAutocomplete({ setSelecteds, ...props }: TagsAutocomplete) {
@@ -34,7 +34,8 @@ export function TagsAutocomplete({ setSelecteds, ...props }: TagsAutocomplete) {
     return (
         <AutocompleteInput
             {...autocompleteProps}
-            display={{ icon: IoMdPricetag, max: 20, placeholder: "Add tags", ...props.display }}
+            display={{ icon: IoMdPricetag, ...props.display }}
+            inputProps={{ max: 20, placeholder: "Add tags", ...props.inputProps }}
             options={props.options}
             boxProps={props.boxProps}
         />

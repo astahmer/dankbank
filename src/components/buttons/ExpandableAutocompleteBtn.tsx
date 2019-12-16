@@ -2,20 +2,18 @@ import { Portal, Spinner } from "@chakra-ui/core";
 import { useRef } from "react";
 
 import { useAutocomplete } from "@/hooks/form";
-import {
-    AutocompleteWrapperProps, AutocompleteProps, AutocompleteWithPortal
-} from "@/hooks/form/useAutocomplete";
+import { AutocompleteProps, AutocompleteWrapperProps } from "@/hooks/form/useAutocomplete";
 
 import { ExpandableBtn, ExpandableBtnProps, ExpandableBtnWrapperProps } from "./ExpandableBtn";
 import { FloatingBtn } from "./FloatingBtn";
 
-export type ExpandableAutocompleteBtnProps<T = any> = AutocompleteProps<T> & {
+export type ExpandableAutocompleteBtnProps<T = any> = Omit<AutocompleteProps<T>, "inputProps"> & {
     expandableProps?: ExpandableBtnProps & ExpandableBtnWrapperProps;
 };
 
 export function ExpandableAutocompleteBtn(props: ExpandableAutocompleteBtnProps) {
-    const { data, display, fn, options, render, response } = props;
-    const { btnProps, ...expandableProps } = props.expandableProps;
+    const { data, options, render, response } = props;
+    const { btnProps, inputProps, ...expandableProps } = props.expandableProps;
 
     const inputRef = useRef<HTMLInputElement>();
     const resultListRef = useRef<HTMLInputElement>();
@@ -27,8 +25,8 @@ export function ExpandableAutocompleteBtn(props: ExpandableAutocompleteBtnProps)
         <ExpandableBtn
             ref={inputRef}
             btnProps={{ type: "search" as any, ...btnProps }}
+            inputProps={{ ...inputProps, ...bindings.input }}
             {...expandableProps}
-            {...bindings.input}
         />
     );
     const ResultList = () =>
@@ -48,7 +46,7 @@ export function ExpandableAutocompleteBtn(props: ExpandableAutocompleteBtnProps)
             {
                 <Portal
                     isDisabled={!options.usePortal}
-                    container={options.usePortal && (props.options as AutocompleteWithPortal).resultListContainer}
+                    container={options.usePortal && props.options.resultListContainer}
                     children={response.isLoading ? <Spinner size="lg" /> : <ResultList />}
                 />
             }

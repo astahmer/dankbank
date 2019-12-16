@@ -14,7 +14,10 @@ export default function Search() {
         <div>
             <Heading>Search page</Heading>
             <div ref={getRef}></div>
-            <ExpandableMemesAutocomplete container={containerRef.current} setSelecteds={console.log} />
+            <ExpandableMemesAutocomplete
+                options={{ resultListContainer: containerRef.current }}
+                setSelecteds={console.log}
+            />
         </div>
     );
 }

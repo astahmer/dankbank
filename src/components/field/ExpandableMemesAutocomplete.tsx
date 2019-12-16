@@ -4,8 +4,8 @@ import { IoMdImages } from "react-icons/io";
 import { API_ROUTES } from "@/config/api";
 import { useAPI } from "@/hooks/async/useAPI";
 import {
-    AutocompleteResultListRenderPropArg, AutocompleteDataProps, AutocompleteFnProps,
-    AutocompleteOptionsProps, AutocompleteProps, AutocompleteResponseProps
+    AutocompleteDataProps, AutocompleteFnProps, AutocompleteProps, AutocompleteResponseProps,
+    AutocompleteResultListRenderPropArg
 } from "@/hooks/form/useAutocomplete";
 import { IMeme } from "@/types/entities/Meme";
 
@@ -52,9 +52,13 @@ export function ExpandableMemesAutocomplete({
 
     return (
         <ExpandableAutocompleteBtn
-            display={{ placeholder: "Search memes by tags", icon: "search-2", max: 20 }}
-            expandableProps={{ isFloating: true, btnProps: { position: "relative" }, direction: "left" }}
-            options={{ usePortal: true } as AutocompleteOptionsProps}
+            expandableProps={{
+                isFloating: true,
+                btnProps: { position: "relative", icon: "search-2" },
+                direction: "left",
+                inputProps: { placeholder: "Search memes by tags", max: 20 },
+            }}
+            options={props.options}
             render={{ resultList }}
             {...autocompleteProps}
         />

@@ -8,7 +8,7 @@ export type FloatingBtnProps = ActionBtnProps & Optional<ChildrenProp> & { butto
 
 export function FloatingBtn({ children, button, ...props }: FloatingBtnProps) {
     return (
-        <Box position="fixed" right="20px" bottom="75px">
+        <Box position="fixed" right="70px" bottom="120px">
             {children}
             {button || <ActionBtn {...props} />}
         </Box>

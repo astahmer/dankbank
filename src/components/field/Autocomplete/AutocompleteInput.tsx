@@ -7,9 +7,7 @@ import { IoMdClose } from "react-icons/io";
 
 import { CustomIcon } from "@/components/common/CustomIcon";
 import { setRef } from "@/functions/utils";
-import {
-    AutocompleteProps, defaultOptions, useAutocomplete
-} from "@/hooks/form/useAutocomplete";
+import { AutocompleteProps, defaultOptions, useAutocomplete } from "@/hooks/form/useAutocomplete";
 import { useCombinedRefs } from "@/hooks/useCombinedRefs";
 
 import { AutogrowInput } from "../AutogrowInput";
@@ -21,7 +19,7 @@ export type AutocompleteInputProps<T = any> = { boxProps: BoxProps } & Autocompl
 
 export const AutocompleteInput = forwardRef<HTMLInputElement, AutocompleteInputProps>(
     (props: AutocompleteInputProps, ref) => {
-        const { boxProps, data, display, fn, options = defaultOptions, response } = props;
+        const { boxProps, data, display, fn, inputProps = {}, options = defaultOptions, response } = props;
 
         // Used to keep focus on search input on suggestion list opening
         const innerRef = useRef<HTMLInputElement>();
@@ -84,9 +82,9 @@ export const AutocompleteInput = forwardRef<HTMLInputElement, AutocompleteInputP
         const Help = useCallback(() => makeHelp(display.helpTxt), [display.helpTxt]);
         const Error = useCallback(() => makeError(response.error), [response.error]);
 
-        const SelectedCount = useCallback(() => makeSelectedCount(ml, hook.selecteds.length, display.max), [
+        const SelectedCount = useCallback(() => makeSelectedCount(ml, hook.selecteds.length, inputProps.max), [
             hook.selecteds.length,
-            display.max,
+            inputProps.max,
         ]);
         const TotalCount = useCallback(() => makeTotalCount(data.items.length, data.total), [
             data.items.length,
@@ -163,11 +161,11 @@ export const AutocompleteInput = forwardRef<HTMLInputElement, AutocompleteInputP
                                     height="32px"
                                     fontSize={(boxProps && boxProps.fontSize) || "1rem"}
                                     tabIndex={0}
+                                    textTransform="lowercase"
+                                    {...inputProps}
                                     ref={inputRef}
                                     hasIcon={!!leftEl}
-                                    placeholder={display.placeholder}
                                     shouldHidePlaceholder={hook.shouldHideLeftEl}
-                                    textTransform="lowercase"
                                     {...bindings.input}
                                 />
                             }
