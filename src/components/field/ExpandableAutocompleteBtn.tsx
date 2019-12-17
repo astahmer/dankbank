@@ -4,8 +4,10 @@ import { useRef } from "react";
 import { useAutocomplete } from "@/hooks/form";
 import { AutocompleteProps, AutocompleteWrapperProps } from "@/hooks/form/useAutocomplete";
 
-import { ExpandableBtn, ExpandableBtnProps, ExpandableBtnWrapperProps } from "./ExpandableBtn";
-import { FloatingBtn } from "./FloatingBtn";
+import {
+    ExpandableBtn, ExpandableBtnProps, ExpandableBtnWrapperProps
+} from "../buttons/ExpandableBtn";
+import { FloatingBtn } from "../buttons/FloatingBtn";
 
 export type ExpandableAutocompleteBtnProps<T = any> = Omit<AutocompleteProps<T>, "inputProps"> & {
     expandableProps?: ExpandableBtnProps & ExpandableBtnWrapperProps;

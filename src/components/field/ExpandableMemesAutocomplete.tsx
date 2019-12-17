@@ -9,11 +9,11 @@ import {
 } from "@/hooks/form/useAutocomplete";
 import { IMeme } from "@/types/entities/Meme";
 
-import {
-    ExpandableAutocompleteBtn, ExpandableAutocompleteWrapperBtnProps
-} from "../buttons/ExpandableAutocompleteBtn";
 import { CustomIcon } from "../common/CustomIcon";
 import { CustomImage } from "../common/CustomImage";
+import {
+    ExpandableAutocompleteBtn, ExpandableAutocompleteWrapperBtnProps
+} from "./ExpandableAutocompleteBtn";
 
 export function ExpandableMemesAutocomplete({
     setSelecteds,
