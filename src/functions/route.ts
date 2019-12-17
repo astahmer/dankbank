@@ -1,7 +1,7 @@
 import { NextPageContext } from "next";
 import Router from "next/router";
 
-export const loginPath = "/login";
+export const loginPath = "/auth";
 
 export const redirectToPath = (routePath: string, ctx?: NextPageContext) => {
     if (process.browser) {

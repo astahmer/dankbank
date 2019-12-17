@@ -10,7 +10,7 @@ type HomeProps = { usersResponse: CollectionResponse<HomeUser> } & PageProps;
 
 const Home = ({ usersResponse }: HomeProps) => (
     <>
-        <h1>Hello world!</h1>
+        <h1>Home</h1>
         {usersResponse && (
             <>
                 <ul>
