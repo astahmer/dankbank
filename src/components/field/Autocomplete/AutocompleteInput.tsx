@@ -50,7 +50,7 @@ export const AutocompleteInput = forwardRef<HTMLInputElement, AutocompleteInputP
         // Render items & conditions
         const displayResultItems = useMemo(
             () => data.items.map((item) => <AutocompleteResult {...bindings.resultItem(item, <Switch size="sm" />)} />),
-            [data.items]
+            [data.items, bindings.resultItem]
         );
         const displaySelecteds = useMemo(
             () =>
@@ -62,13 +62,13 @@ export const AutocompleteInput = forwardRef<HTMLInputElement, AutocompleteInputP
                         marginBottom="8px"
                     />
                 )),
-            [hook.selecteds]
+            [hook.selecteds, bindings.selectedItem]
         );
 
         const displayEmptyResult = useMemo(
             () => (
                 <Text p={2} fontSize="14px">
-                    {display.emptyResultsTxt}
+                    {display.emptyResultsTxt || "No results found"}
                 </Text>
             ),
             [display.emptyResultsTxt]
@@ -189,7 +189,7 @@ export const AutocompleteInput = forwardRef<HTMLInputElement, AutocompleteInputP
                                     style={popoverStyle}
                                 >
                                     <List ref={getResultListRef} spacing={2} maxH="33vh" overflowY="auto">
-                                        {data.items.length ? displayResultItems : displayNoResults}
+                                        {data.items.length && hook.isOpen ? displayResultItems : displayNoResults}
                                     </List>
                                 </Box>
                             )}

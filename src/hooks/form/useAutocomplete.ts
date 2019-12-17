@@ -275,7 +275,7 @@ export function useAutocomplete<T = any>(
     );
 
     // Computeds
-    const shouldDisplayList = isOpen && !response.isLoading && (value.length > 0 || data.items.length > 0);
+    const shouldDisplayList = !response.isLoading && (value.length > 0 || data.items.length > 0);
     const shouldHideLeftEl = options.shouldHideLeftElementOnFocus && (isFocused || value || selecteds.length);
 
     // Ghost will only be visible if there are results
@@ -285,6 +285,8 @@ export function useAutocomplete<T = any>(
         value,
         selecteds,
         selection,
+        activeX,
+        activeY,
         ghostIndex,
         timer,
         isOpen,
@@ -347,6 +349,8 @@ export type UseAutocompleteReturnValues<T = any> = {
     value: string;
     selecteds: T[];
     selection: SelectionActions<T>;
+    activeX: ReturnType<typeof useHorizontalNav>[0];
+    activeY: ReturnType<typeof useVerticalNav>[0];
     ghostIndex: number;
     timer: number;
     isOpen: boolean;
