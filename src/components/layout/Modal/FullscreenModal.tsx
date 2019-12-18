@@ -1,6 +1,6 @@
 import {
-    Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Text,
-    useColorMode
+    Button, Flex, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader,
+    ModalOverlay, Text, useColorMode
 } from "@chakra-ui/core";
 import { ReactNode, useEffect, useState } from "react";
 import { Transition } from "react-spring/renderprops.cjs";
@@ -13,6 +13,9 @@ type ModalProps = Optional<ChildrenProp> & {
     body?: ReactNode;
     footer?: ReactNode;
     isAnimated?: boolean;
+    withHeader?: boolean;
+    withFooter?: boolean;
+    withCloseBtn?: boolean;
 };
 
 export function FullscreenModal({
@@ -24,6 +27,9 @@ export function FullscreenModal({
     body,
     footer,
     isAnimated = true,
+    withHeader = true,
+    withFooter = true,
+    withCloseBtn = true,
 }: ModalProps) {
     const [immediate, setImmediate] = useState(false);
 
@@ -35,19 +41,29 @@ export function FullscreenModal({
     }, [isOpen]);
 
     const makeModal = (styles: any = {}) => (
-        <Modal isOpen={isOpen} onClose={close} isCentered>
+        <Modal isOpen={isOpen} onClose={close} isCentered scrollBehavior={"inside"}>
             <ModalOverlay opacity={styles.opacity} />
 
-            <ModalContent w="100vw" h="100vh" {...styles}>
-                <ModalHeader>{header || <Text color={color}>{title}</Text>}</ModalHeader>
-                <ModalCloseButton color={color} />
-                <ModalBody display="flex" paddingX="10px" mt={!header && !title && "10px"}>
+            <ModalContent w="100vw" h="100vh" maxH="100vh" noStyles {...styles}>
+                {withHeader && <ModalHeader>{header || <Text color={color}>{title}</Text>}</ModalHeader>}
+
+                {withCloseBtn && <ModalCloseButton color={color} />}
+
+                <ModalBody overflowY="auto" display="flex" paddingX="10px" mt={!header && !title && "10px"}>
                     {body || children}
                 </ModalBody>
 
-                <ModalFooter pt="5px" pb="10px">
-                    {footer}
-                </ModalFooter>
+                {withFooter && (
+                    <ModalFooter pt="5px" pb="10px">
+                        {footer || (
+                            <Flex w="100%" justify="flex-end">
+                                <Button variant="outline" mr={3} onClick={close}>
+                                    Close
+                                </Button>
+                            </Flex>
+                        )}
+                    </ModalFooter>
+                )}
             </ModalContent>
         </Modal>
     );
