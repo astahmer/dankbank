@@ -8,7 +8,7 @@ import {
     AutocompleteWrapperProps
 } from "@/hooks/form/useAutocomplete";
 
-import { AutocompleteInput } from "./Autocomplete/AutocompleteInput";
+import { AutocompleteInput } from "../../field/Autocomplete/AutocompleteInput";
 
 type TagsAutocomplete = Pick<AutocompleteProps, "display" | "options" | "inputProps"> &
     AutocompleteWrapperProps & { boxProps?: BoxProps };

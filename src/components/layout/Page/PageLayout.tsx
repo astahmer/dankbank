@@ -6,9 +6,9 @@ import {
 } from "react-icons/io";
 
 import { BackBtn } from "@/components/buttons/BackBtn";
-import { TagsAutocomplete } from "@/components/field/TagsAutocomplete";
 import { Header, TabBar } from "@/components/layout";
 import { ColorToggle } from "@/components/layout/Color/ColorToggle";
+import { TagsAutocomplete } from "@/components/modules/tag/TagsAutocomplete";
 import { makeTranslate3d, useClientEffect } from "@/functions/utils";
 import { AuthContext } from "@/hooks/async/useAuth";
 import { useResponsive } from "@/hooks/dom/useResponsive";

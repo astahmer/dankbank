@@ -1,6 +1,6 @@
 import { Heading } from "@chakra-ui/core";
 
-import { ExpandableMemesAutocomplete } from "@/components/field/ExpandableMemesAutocomplete";
+import { ExpandableMemesAutocomplete } from "@/components/modules/meme/ExpandableMemesAutocomplete";
 import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { AuthAccess } from "@/services/AuthManager";
 

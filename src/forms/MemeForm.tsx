@@ -2,7 +2,7 @@ import { Box, Button, Stack, Switch as ChakraSwitch, SwitchProps } from "@chakra
 import { FunctionComponent, useCallback, useContext } from "react";
 
 import { ImageUploader, UploadResult } from "@/components/field/ImageUploader/ImageUploader";
-import { TagsAutocomplete } from "@/components/field/TagsAutocomplete";
+import { TagsAutocomplete } from "@/components/modules/tag/TagsAutocomplete";
 import { useAPI } from "@/hooks/async/useAPI";
 import { AuthContext } from "@/hooks/async/useAuth";
 import { FormSubmitCallback, useForm } from "@/hooks/form/useForm";
