@@ -5,9 +5,6 @@ import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { AuthAccess } from "@/services/AuthManager";
 
 export default function Search() {
-    // TODO grid via ratio des items found ? useTransition + check masongrid
-    // TODO infinite scroll meme search ?
-
     const [containerRef, getRef] = useCallbackRef();
 
     return (
@@ -18,6 +15,8 @@ export default function Search() {
                 options={{ resultListContainer: containerRef.current }}
                 setSelecteds={console.log}
             />
+
+            {/* <MemeGrid meme={{} as any} /> */}
         </div>
     );
 }

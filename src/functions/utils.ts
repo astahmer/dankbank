@@ -81,6 +81,9 @@ export function makeFormData(data: any) {
 export const round = (number: number, decimal: number = 2) =>
     Math.round(number * Math.pow(10, decimal)) / Math.pow(10, decimal);
 
+export const chunk = <T = any>(arr: T[], size: number): T[][] =>
+    arr.reduce((chunks, el, i) => (i % size ? chunks[chunks.length - 1].push(el) : chunks.push([el])) && chunks, []);
+
 export const makeTranslate3d = (x: string | number, y: string | number = 0, z: string | number = 0, unit = "px") =>
     `translate3d(${x}${unit},${y}${unit},${z}${unit})`;
 export const vwToPixel = (value: number) => (window.innerWidth * value) / 100;

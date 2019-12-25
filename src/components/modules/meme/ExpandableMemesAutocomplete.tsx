@@ -1,4 +1,4 @@
-import { Box, Flex, Grid, useColorMode } from "@chakra-ui/core";
+import { Box, Grid, useColorMode } from "@chakra-ui/core";
 import { MouseEvent, useRef } from "react";
 import { IoMdImages } from "react-icons/io";
 
@@ -17,6 +17,8 @@ import {
 } from "@/hooks/form/useAutocomplete";
 import { useToggle } from "@/hooks/useToggle";
 import { IMeme } from "@/types/entities/Meme";
+
+import { MemeBox } from "./MemeBox";
 
 export function ExpandableMemesAutocomplete({
     setSelecteds,
@@ -44,6 +46,8 @@ export function ExpandableMemesAutocomplete({
         open();
     };
 
+    // TODO Display selecteds in FullScreenModal header (still as (removable) tags)
+    // API: Search by current inpue value + selecteds tags
     const resultList = (args: AutocompleteResultListRenderPropArg<MemeSearchResult>) => (
         <>
             <Grid gridTemplateColumns="repeat(3, 1fr)" autoRows="100px" gap={1}>
@@ -53,11 +57,18 @@ export function ExpandableMemesAutocomplete({
                         pos="relative"
                         display="flex"
                         bg={colorMode === "light" ? "gray.100" : "blue.900"}
-                        onClick={openMeme(item)}
+                        onMouseDown={openMeme(item)}
                     >
                         <CustomImage ignoreFallback objectFit="cover" src={item._source.pictures[0].url} />
                         {item._source.pictures.length > 1 ? (
-                            <CustomIcon icon={IoMdImages} pos="absolute" top="5px" right="5px" size="20px" />
+                            <CustomIcon
+                                icon={IoMdImages}
+                                color="white"
+                                pos="absolute"
+                                top="5px"
+                                right="5px"
+                                size="20px"
+                            />
                         ) : null}
                     </Box>
                 ))}
@@ -66,9 +77,10 @@ export function ExpandableMemesAutocomplete({
                 isOpen={isOpen}
                 close={close}
                 body={
-                    <Flex w="100%" h="100%">
-                        <Debug data={openedMemeRef.current?._source} />
-                    </Flex>
+                    <Box w="100%" h="100%">
+                        <Debug data={openedMemeRef.current?._source} initialState={false} />
+                        <MemeBox meme={openedMemeRef.current?._source} layout="slider" />
+                    </Box>
                 }
                 withHeader={false}
                 withCloseBtn={false}
@@ -96,4 +108,4 @@ export function ExpandableMemesAutocomplete({
     );
 }
 
-type MemeSearchResult = Omit<ElasticDocument<IMeme>, "text">;
+export type MemeSearchResult = Omit<ElasticDocument<IMeme>, "text">;

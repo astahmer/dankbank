@@ -3,13 +3,19 @@ import { MutableRefObject, useRef, useState } from "react";
 import { useEnhancedEffect } from "@/functions/utils";
 
 export function useDimensions(): [MutableRefObject<HTMLElement>, Dimensions] {
+    const hasUnmounted = useRef(null);
     const ref = useRef<HTMLElement>();
-    const [dimensions, setDimensions] = useState(null);
+    const [dimensions, setDimensions] = useState(initialDimensions);
     useEnhancedEffect(() => {
         if (ref.current) {
-            const measure = () => window.requestAnimationFrame(() => setDimensions(getDimensionObject(ref.current)));
+            const measure = () =>
+                window.requestAnimationFrame(
+                    () => !hasUnmounted.current && setDimensions(getDimensionObject(ref.current))
+                );
             measure();
         }
+
+        return () => (hasUnmounted.current = true);
     }, []);
 
     return [ref, dimensions];
@@ -27,17 +33,18 @@ export type Dimensions = {
 };
 
 export const initialDimensions = {
-    x: 0,
-    y: 0,
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    width: 0,
-    height: 0,
-};
+    x: null,
+    y: null,
+    top: null,
+    right: null,
+    bottom: null,
+    left: null,
+    width: null,
+    height: null,
+} as any;
 
 function getDimensionObject(node: HTMLElement): Dimensions {
+    if (!node) return;
     const rect = node.getBoundingClientRect();
 
     return {

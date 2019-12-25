@@ -14,7 +14,7 @@ import { AuthContext } from "@/hooks/async/useAuth";
 import { useResponsive } from "@/hooks/dom/useResponsive";
 import { AuthAccess } from "@/services/AuthManager";
 
-import { Swipable, SwipeAxis } from "../Swipable";
+import { Swipable } from "../Swipable";
 import { PageHead, PageHeadProps } from "./PageHead";
 
 export type PageProps = { head: PageHeadProps };
@@ -59,14 +59,7 @@ export const PageLayout = ({ children, head }: PageLayoutProps) => {
                     </Flex>
                 </Flex>
                 {isMobile && (
-                    <Swipable
-                        axis={SwipeAxis.X}
-                        xDistance={width - 30}
-                        pos="fixed"
-                        width="100%"
-                        bottom="0px"
-                        zIndex={1}
-                    >
+                    <Swipable axis={"X"} xDistance={30} pos="fixed" width="100%" bottom="0px" zIndex={1}>
                         <TabBar tabs={shownLinks} />
                         <TagsAutocomplete
                             boxProps={{
