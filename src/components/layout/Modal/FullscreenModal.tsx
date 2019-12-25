@@ -44,7 +44,7 @@ export function FullscreenModal({
         <Modal isOpen={isOpen} onClose={close} isCentered scrollBehavior={"inside"}>
             <ModalOverlay opacity={styles.opacity} />
 
-            <ModalContent w="100vw" h="100vh" maxH="100vh" noStyles {...styles}>
+            <ModalContent w="100vw" minW="100vw" h="100vh" maxH="100vh" noStyles {...styles}>
                 {withHeader && <ModalHeader>{header || <Text color={color}>{title}</Text>}</ModalHeader>}
 
                 {withCloseBtn && <ModalCloseButton color={color} />}

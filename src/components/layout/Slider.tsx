@@ -11,7 +11,7 @@ import { Swipable } from "./";
 export function Slider({ children, flexProps, stackProps, wrapperProps }: SliderProps) {
     const list = useMemo(() => (children ? Children.toArray<ReactElement>(children) : []), [children]);
 
-    const [{ x: activeSlide }, setSliderPos] = useState({ x: 0, y: 0 });
+    const [sliderPos, setSliderPos] = useState({ x: 0, y: 0 });
     const onSwipe = useCallback((direction, currentPos) => setSliderPos(currentPos), []);
     const [ref, { width }] = useDimensions();
 
@@ -25,6 +25,7 @@ export function Slider({ children, flexProps, stackProps, wrapperProps }: Slider
                 xDistance={width}
                 boundaries={{ x: [0, list.length - 1], y: [0, 0] }}
                 onSwipe={onSwipe}
+                currentPos={sliderPos}
                 ref={ref}
             >
                 {list.map((child, index) => (
@@ -33,18 +34,27 @@ export function Slider({ children, flexProps, stackProps, wrapperProps }: Slider
                     </Box>
                 ))}
             </Swipable>
-            <Stack isInline spacing="10px" justifyContent="center" paddingY="10px" {...stackProps}>
+            <Stack
+                isInline
+                spacing="10px"
+                justifyContent="center"
+                alignItems="center"
+                paddingY="10px"
+                minH="32px"
+                {...stackProps}
+            >
                 {list.map((child, index) => (
-                    <Box key={index}>
-                        <PseudoBox
-                            bg={COMMON_COLORS.hover["dark"]}
-                            aria-selected={index === activeSlide}
-                            _selected={{ backgroundColor: COMMON_COLORS.selected["dark"] }}
-                            borderRadius="50%"
-                            w="8px"
-                            h="8px"
-                        />
-                    </Box>
+                    <PseudoBox
+                        key={index}
+                        bg={COMMON_COLORS.hover["dark"]}
+                        aria-selected={index === sliderPos.x}
+                        _selected={{ backgroundColor: COMMON_COLORS.selected["dark"], width: "12px", height: "12px" }}
+                        borderRadius="50%"
+                        w="8px"
+                        h="8px"
+                        transition="all 0.3s"
+                        onClick={() => setSliderPos({ x: index, y: 0 })}
+                    />
                 ))}
             </Stack>
         </Flex>

@@ -1,5 +1,5 @@
 import { Box, BoxProps } from "@chakra-ui/core";
-import React, { forwardRef, useMemo, useState } from "react";
+import React, { forwardRef, useEffect, useMemo, useState } from "react";
 import { animated, interpolate, useSpring } from "react-spring";
 import { useDrag } from "react-use-gesture";
 import { Vector2 } from "react-use-gesture/dist/types";
@@ -16,17 +16,27 @@ export const Swipable = forwardRef<HTMLElement, SwipableProps>(
             yDistance = 1,
             AnimatedComponent = AnimatedBox,
             isDraggable = true,
+            currentPos: currentPosProp,
             ...props
         },
         ref
     ) => {
         const [pos, setPos] = useState<SwipePosition>({ x: 0, y: 0 });
-        const [{ x, y }, set] = useSpring(() => pos);
+        const currentPos = currentPosProp ? reversePos(currentPosProp) : pos;
+        const [{ x, y }, set] = useSpring(() => currentPos);
+
+        // On controlled currentPos change, set spring
+        useEffect(() => {
+            if (currentPosProp) {
+                const reversed = reversePos(currentPosProp);
+                set({ x: xDistance * reversed.x, y: yDistance * reversed.y });
+            }
+        }, [currentPosProp]);
 
         const { boundaries: propsBoundaries, onSwipe, ...rest } = props;
         const boundaries = useMemo(() => getBoundaries(propsBoundaries), [propsBoundaries]);
 
-        const bind = useDrag(({ last, direction: dirV, vxvy, movement: [movX, movY] }) => {
+        const bind = useDrag(({ last, direction: dirV, vxvy, movement: [movX, movY], cancel }) => {
             if (isDraggable || last) {
                 const direction = getDirection(vxvy, dirV);
 
@@ -37,8 +47,8 @@ export const Swipable = forwardRef<HTMLElement, SwipableProps>(
                     // Swipe distance or velocity was not reached, returning to previous position
                     if (!isValid) {
                         set({
-                            x: canMoveAxisX(axis) ? xDistance * pos.x : 0,
-                            y: canMoveAxisY(axis) ? yDistance * pos.y : 0,
+                            x: canMoveAxisX(axis) ? xDistance * currentPos.x : 0,
+                            y: canMoveAxisY(axis) ? yDistance * currentPos.y : 0,
                         });
                         return;
                     }
@@ -50,12 +60,12 @@ export const Swipable = forwardRef<HTMLElement, SwipableProps>(
                         x: canMoveAxisX(axis) ? xDistance * updatedPos.x : 0,
                         y: canMoveAxisY(axis) ? yDistance * updatedPos.y : 0,
                     });
-                    props.onSwipe?.(direction, { x: updatedPos.x * -1, y: updatedPos.y * -1 });
+                    props.onSwipe?.(direction, reversePos(updatedPos));
                 } else {
                     // Dragging
                     set({
-                        x: canMoveAxisX(axis) ? movX + xDistance * pos.x : 0,
-                        y: canMoveAxisY(axis) ? movY + yDistance * pos.y : 0,
+                        x: canMoveAxisX(axis) ? movX + xDistance * currentPos.x : 0,
+                        y: canMoveAxisY(axis) ? movY + yDistance * currentPos.y : 0,
                     });
                 }
             }
@@ -81,6 +91,7 @@ export type SwipableProps = BoxProps & {
     yDistance?: number;
     AnimatedComponent?: React.ForwardRefExoticComponent<React.PropsWithChildren<any>>;
     isDraggable?: boolean;
+    currentPos?: SwipePosition;
     boundaries?: SwipeBoundaries;
     onSwipe?: (direction: SwipeDirection, updatedPos: SwipePosition) => void;
 };
@@ -95,12 +106,13 @@ const isSwipeAxisX = (direction: SwipeDirection) => ["LEFT", "RIGHT"].includes(d
 const canMoveAxisX = (axis: SwipeAxis) => axis !== "Y";
 const canMoveAxisY = (axis: SwipeAxis) => axis !== "X";
 
-const reversePos = (pos: number) => pos * -1;
+const reverseValue = (value: number) => value * -1;
+const reversePos = (pos: SwipePosition) => ({ x: reverseValue(pos.x), y: reverseValue(pos.y) });
 const getBoundaries = (boundaries: SwipeBoundaries) =>
     boundaries &&
     ({
-        x: boundaries.x.map(reversePos),
-        y: boundaries.y.map(reversePos),
+        x: boundaries.x.map(reverseValue),
+        y: boundaries.y.map(reverseValue),
     } as SwipeBoundaries);
 
 const getDirection = ([vx, vy]: Vector2, [dirX, dirY]: Vector2) => {
