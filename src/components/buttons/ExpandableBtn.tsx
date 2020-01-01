@@ -1,7 +1,5 @@
-import {
-    Box, BoxProps, InputProps, PseudoBox, PseudoBoxProps, useColorMode
-} from "@chakra-ui/core";
-import { forwardRef, ForwardRefExoticComponent, PropsWithChildren, useRef } from "react";
+import { Box, BoxProps, InputProps, PseudoBox, useColorMode } from "@chakra-ui/core";
+import { forwardRef, MutableRefObject, useEffect, useRef } from "react";
 import { animated, config, useSpring } from "react-spring";
 
 import { COMMON_COLORS } from "@/config/theme";
@@ -35,6 +33,13 @@ export const ExpandableBtn = forwardRef<HTMLInputElement, ExpandableBtnProps>(
             config: { tension: 400, friction: 31, duration: 50 },
             x: isExpanded ? -vwToPixel(100) + 40 + 48 : 0,
         });
+
+        // Focus input on opening
+        useEffect(() => {
+            if (isExpanded) {
+                (ref as MutableRefObject<HTMLInputElement>)?.current?.focus();
+            }
+        }, [isExpanded]);
 
         const selfRef = useRef<HTMLElement>();
         useClickOutside(selfRef, close);
@@ -74,10 +79,7 @@ export const ExpandableBtn = forwardRef<HTMLInputElement, ExpandableBtnProps>(
     }
 );
 
-const AnimatedInput = animated(PseudoBox) as ForwardRefExoticComponent<
-    PropsWithChildren<PseudoBoxProps & { type?: string }>
->;
-
+const AnimatedInput = animated(PseudoBox);
 const AnimatedActionBtn = animated(ActionBtn);
 
 const positionByDirection = {
