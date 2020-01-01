@@ -8,7 +8,6 @@ import {
 import { BackBtn } from "@/components/buttons/BackBtn";
 import { Header, TabBar } from "@/components/layout";
 import { ColorToggle } from "@/components/layout/Color/ColorToggle";
-import { TagsAutocomplete } from "@/components/modules/tag/TagsAutocomplete";
 import { makeTranslate3d, useClientEffect } from "@/functions/utils";
 import { AuthContext } from "@/hooks/async/useAuth";
 import { useResponsive } from "@/hooks/dom/useResponsive";
@@ -45,7 +44,7 @@ export const PageLayout = ({ children, head }: PageLayoutProps) => {
     }, [height]);
 
     return (
-        <Box id="dankbank-app" display="flex" w="100vw" minH="100vh">
+        <Box id="dankbank-app" display="flex" w="100vw" minH="100vh" overflow="hidden">
             <PageHead {...head} />
             <Flex direction="column" justifyContent="space-between" width="100%">
                 {!isMobile && <Header links={shownLinks} />}
@@ -61,14 +60,14 @@ export const PageLayout = ({ children, head }: PageLayoutProps) => {
                 {isMobile && (
                     <Swipable axis={"X"} xDistance={30} pos="fixed" width="100%" bottom="0px" zIndex={1}>
                         <TabBar tabs={shownLinks} />
-                        <TagsAutocomplete
+                        {/* <TagsAutocomplete
                             boxProps={{
                                 pos: "absolute",
                                 top: 0,
                                 style: searchInputStyle.current || { visibility: "hidden" },
                             }}
                             setSelecteds={() => ({})}
-                        />
+                        /> */}
                     </Swipable>
                 )}
             </Flex>

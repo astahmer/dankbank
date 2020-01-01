@@ -3,6 +3,7 @@ import {
 } from "next/dist/next-server/lib/utils";
 import { Router } from "next/router";
 import { ReactElement, ReactNode } from "react";
+import { useSpring } from "react-spring";
 
 import { FormState, FormSubmitCallback, FormValues } from "@/hooks/form/useForm";
 
@@ -34,6 +35,9 @@ declare global {
     // https://stackoverflow.com/questions/52703321/make-some-properties-optional-in-a-typescript-type
     type OptionalExceptFor<T, TRequired extends keyof T> = Partial<T> & Pick<T, TRequired>;
 
+    type UseSpringReturn = ReturnType<typeof useSpring>;
+    type UseSpringSet = UseSpringReturn["1"];
+
     type ResponseContext = {
         operation: string;
         entity: string;
@@ -51,7 +55,7 @@ declare global {
     type PartialEntity<EntityType extends IAbstractEntity, Props> = Required<IAbstractEntity> & Pick<EntityType, Props>;
     type ElasticDocument<Source = any> = {
         text?: string;
-        _id: number;
+        _id: string;
         _index: string;
         _type: string;
         _score: string;

@@ -4,16 +4,17 @@ import * as Rematrix from "rematrix";
 // Original https://github.com/aholachek/mobile-first-animation
 
 // tiny FLIP technique handler that only does 1 animation at a time
-class Flipper {
+export class Flipper {
     private ref: MutableRefObject<HTMLElement>;
     private onFlip: FlipperOnFlip;
     private positions: any;
 
-    constructor({ ref, onFlip }: { ref: MutableRefObject<HTMLElement>; onFlip: FlipperOnFlip }) {
+    constructor({ ref, onFlip }: FlipperProps) {
         this.ref = ref;
         this.onFlip = onFlip;
         this.positions = {};
     }
+
     // mark FLIP-able elements with this data attribute
     getEl = (id: string) => this.ref.current.querySelector(`[data-flip-key=${id}]`) as HTMLElement;
 
@@ -28,6 +29,20 @@ class Flipper {
 
     flip(id: string, data?: any) {
         const el = this.getEl(id);
+
+        if (!el) {
+            console.warn("No element was found for data-flip-key=", id);
+            return;
+        }
+        if (!this.positions[id]) {
+            console.warn(
+                `You need to register the position of the element ( key: ${id}) using beforeFlip method.`,
+                el,
+                this.positions
+            );
+            return;
+        }
+
         // cache the current transform for interruptible animations
         const startTransform = Rematrix.fromString(el.style.transform);
         // we need to figure out what the "real" final state is without any residual transform from an interrupted animation
@@ -64,7 +79,10 @@ class Flipper {
     }
 }
 
-export default Flipper;
+export type FlipperProps = {
+    ref: MutableRefObject<HTMLElement>;
+    onFlip: FlipperOnFlip;
+};
 
 export type FlipperDiff = {
     x: number;

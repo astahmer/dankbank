@@ -1,6 +1,18 @@
 import { Heading } from "@chakra-ui/core";
+import { IoMdImages } from "react-icons/io";
 
-import { ExpandableMemesAutocomplete } from "@/components/modules/meme/ExpandableMemesAutocomplete";
+import { CustomIcon } from "@/components/common/CustomIcon";
+import { CustomImage } from "@/components/common/CustomImage";
+import {
+    ExpandableGridContainer
+} from "@/components/layout/ExpandableGrid/ExpandableGridContainer";
+import {
+    ExpandableMemesAutocomplete, MemeSearchResult
+} from "@/components/modules/meme/ExpandableMemesAutocomplete";
+import { ExpandableImageContainer } from "@/components/modules/meme/MemeResultsGrid";
+import { API_ROUTES } from "@/config/api";
+import { useAPI } from "@/hooks/async";
+import { AutocompleteResponse } from "@/hooks/form/useAutocomplete";
 import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { AuthAccess } from "@/services/AuthManager";
 
@@ -13,11 +25,63 @@ export default function Search() {
             <div ref={getRef}></div>
             <ExpandableMemesAutocomplete
                 options={{ resultListContainer: containerRef.current }}
-                setSelecteds={console.log}
+                render={{
+                    resultList: (args) => (
+                        <ExpandableGridContainer
+                            ref={args.resultListRef}
+                            items={args.items}
+                            getId={(item: MemeSearchResult) => item._id}
+                            render={(item: MemeSearchResult) => (
+                                <>
+                                    <CustomImage objectFit="cover" src={item._source.pictures[0].url} />
+                                    {item._source.pictures.length > 1 ? (
+                                        <CustomIcon
+                                            icon={IoMdImages}
+                                            color="white"
+                                            pos="absolute"
+                                            top="5px"
+                                            right="5px"
+                                            size="20px"
+                                        />
+                                    ) : null}
+                                </>
+                            )}
+                        />
+                    ),
+                }}
+                setSelecteds={() => {}}
             />
+            <ExpandableImageContainer identifier="yes" boxProps={{ ml: "auto", w: "100px", h: "100px" }}>
+                <CustomImage src="http://api.dankbank.lol/public/uploads/999jfgnf88h6qspe_1576527685351.jpg" />
+            </ExpandableImageContainer>
 
-            {/* <MemeGrid meme={{} as any} /> */}
+            <ExpandableGridTest />
         </div>
+    );
+}
+
+export function ExpandableGridTest() {
+    const [async] = useAPI<AutocompleteResponse<MemeSearchResult>>(
+        API_ROUTES.Search.memes,
+        { q: "a", size: 100 },
+        null,
+        null,
+        { onMount: true }
+    );
+
+    return (
+        <ExpandableGridContainer
+            items={async.data ? async.data.items : []}
+            getId={(item: MemeSearchResult) => item._id}
+            render={(item: MemeSearchResult) => (
+                <>
+                    <CustomImage objectFit="cover" src={item._source.pictures[0].url} />
+                    {item._source.pictures.length > 1 ? (
+                        <CustomIcon icon={IoMdImages} color="white" pos="absolute" top="5px" right="5px" size="20px" />
+                    ) : null}
+                </>
+            )}
+        />
     );
 }
 

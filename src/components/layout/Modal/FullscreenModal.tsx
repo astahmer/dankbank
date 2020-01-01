@@ -1,8 +1,8 @@
 import {
-    Button, Flex, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader,
-    ModalOverlay, Text, useColorMode
+    Button, Flex, Modal, ModalBody, ModalCloseButton, ModalContent, ModalContentProps, ModalFooter,
+    ModalHeader, ModalOverlay, Text, useColorMode
 } from "@chakra-ui/core";
-import { ReactNode } from "react";
+import { ForwardRefExoticComponent, PropsWithChildren, ReactNode } from "react";
 import { animated, useTransition } from "react-spring";
 
 export function FullscreenModal({
@@ -72,5 +72,8 @@ type ModalProps = Optional<ChildrenProp> & {
     withCloseBtn?: boolean;
 };
 
-const AnimatedModalContent = animated(ModalContent);
+// Fix Chakra's typing mistake
+const AnimatedModalContent = animated(ModalContent) as ForwardRefExoticComponent<
+    PropsWithChildren<ModalContentProps & { noStyles?: boolean }>
+>;
 const AnimatedModalOverlay = animated(ModalOverlay);
