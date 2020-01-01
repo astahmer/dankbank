@@ -178,7 +178,7 @@ export const AutocompleteInput = forwardRef<HTMLInputElement, AutocompleteInputP
                 <Portal
                     children={
                         <>
-                            {hook.shouldDisplayList && (
+                            {hook.shouldDisplayList && hook.isOpen && (
                                 <Box
                                     bg={colorMode === "dark" ? "gray.600" : "gray.300"}
                                     color={colorMode === "dark" ? "gray.50" : "gray.600"}
@@ -189,7 +189,7 @@ export const AutocompleteInput = forwardRef<HTMLInputElement, AutocompleteInputP
                                     style={popoverStyle}
                                 >
                                     <List ref={getResultListRef} spacing={2} maxH="33vh" overflowY="auto">
-                                        {data.items.length && hook.isOpen ? displayResultItems : displayNoResults}
+                                        {data.items.length ? displayResultItems : displayNoResults}
                                     </List>
                                 </Box>
                             )}
