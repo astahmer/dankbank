@@ -9,10 +9,10 @@ import { COMMON_COLORS } from "@/config/theme";
 import { useEnhancedEffect } from "@/functions/utils";
 import { useHorizontalNav, useSelection, useVerticalNav } from "@/hooks/array/";
 import { useDebounce } from "@/hooks/async/useDebounce";
-import { useClickOutside } from "@/hooks/dom/useClickOutside";
 
 import { SelectionActions } from "../array/useSelection";
 import { AsyncReset, AsyncRunReturn } from "../async/useAsync";
+import { useClickOutside } from "../dom";
 
 export function useAutocomplete<T = any>(
     { data, fn, response, inputProps = {}, options = defaultOptions }: UseAutocompleteProps<T>,
@@ -38,7 +38,7 @@ export function useAutocomplete<T = any>(
         xNav.reset();
         setIsFocused(true);
     }, [options.shouldShowResultsOnFocus]);
-    const handleBlur = useCallback(() => setIsFocused(false), []);
+    // console.log(document.activeElement === inputRef.current);
 
     // Is suggestions list open
     const [isOpen, setIsOpen] = useState(false);
@@ -139,7 +139,7 @@ export function useAutocomplete<T = any>(
         onKeyDownWithoutList: openListWithArrowKeys,
     });
 
-    const isMaxSelected = selecteds.length >= inputProps.max;
+    const isMaxSelected = useMemo(() => selecteds.length >= inputProps.max, [selecteds, inputProps.max]);
     useEffect(() => {
         if (isMaxSelected) {
             closeSuggestions();
@@ -169,16 +169,20 @@ export function useAutocomplete<T = any>(
     // Reset activeX & close suggestion if clicking outside
     const onClickOutside = useCallback(
         (event: MouseEvent) => {
-            if (resultListRef.current && !resultListRef.current.contains(event.target as Node)) {
-                // Also clicking outside of result list
-                closeSuggestions();
-            }
+            setIsFocused(false);
 
-            xNav.reset();
+            if (ownRef.current && !ownRef.current.contains(event.target as Node)) {
+                xNav.reset();
+                // Also clicking outside of autocomplete component
+                if (resultListRef.current && !resultListRef.current.contains(event.target as Node)) {
+                    // Also clicking outside of result list
+                    closeSuggestions();
+                }
+            }
         },
-        [resultListRef]
+        [isFocused, options.resultListContainer]
     );
-    useClickOutside(ownRef, onClickOutside);
+    useClickOutside(inputRef, onClickOutside);
 
     // Remove selected at x cursor (with Left/Right arrow keys) or last one using Backspace twice
     const removeSelectedAtCursor = useCallback(() => {
@@ -238,7 +242,6 @@ export function useAutocomplete<T = any>(
         value,
         onChange: handleChange,
         onFocus: handleFocus,
-        onBlur: handleBlur,
         isDisabled: inputProps.isDisabled || isMaxSelected,
     };
 
@@ -275,27 +278,57 @@ export function useAutocomplete<T = any>(
     );
 
     // Computeds
-    const shouldDisplayList = !response.isLoading && (value.length > 0 || data.items.length > 0);
-    const shouldHideLeftEl = options.shouldHideLeftElementOnFocus && (isFocused || value || selecteds.length);
+    const shouldDisplayList = useMemo(() => !response.isLoading && (value.length > 0 || data.items.length > 0), [
+        response.isLoading,
+        value.length,
+        data.items.length,
+    ]);
+    const shouldHideLeftEl = useMemo(
+        () => options.shouldHideLeftElementOnFocus && (isFocused || value || selecteds.length),
+        [options.shouldHideLeftElementOnFocus, isFocused, value, selecteds.length]
+    );
 
     // Ghost will only be visible if there are results
-    const shouldDisplayGhost = !!(options.withGhostSuggestion && data.items.length && value && data.items[ghostIndex]);
+    const shouldDisplayGhost = useMemo(
+        () => !!(options.withGhostSuggestion && data.items.length && value && data.items[ghostIndex]),
+        [options.withGhostSuggestion, data.items.length, value, ghostIndex]
+    );
 
-    const returnValues = {
-        value,
-        selecteds,
-        selection,
-        activeX,
-        activeY,
-        ghostIndex,
-        timer,
-        isOpen,
-        closeSuggestions,
-        shouldDisplayList,
-        shouldHideLeftEl,
-        shouldDisplayGhost,
-    };
-    const refs = { self: bindSelf, input: bindInput, resultItem: bindResultItem, selectedItem: bindSelectedItem };
+    const returnValues = useMemo(
+        () => ({
+            value,
+            selecteds,
+            selection,
+            activeX,
+            activeY,
+            ghostIndex,
+            timer,
+            isOpen,
+            closeSuggestions,
+            shouldDisplayList,
+            shouldHideLeftEl,
+            shouldDisplayGhost,
+        }),
+        [
+            value,
+            selecteds,
+            selection,
+            activeX,
+            activeY,
+            ghostIndex,
+            timer,
+            isOpen,
+            closeSuggestions,
+            shouldDisplayList,
+            shouldHideLeftEl,
+            shouldDisplayGhost,
+        ]
+    );
+    const refs = useMemo(
+        () => ({ self: bindSelf, input: bindInput, resultItem: bindResultItem, selectedItem: bindSelectedItem }),
+        [bindSelf, bindInput, bindResultItem, bindSelectedItem]
+    );
+
     return [returnValues, refs];
 }
 
@@ -367,7 +400,6 @@ export type UseAutocompleteReturnRefs<T = any> = {
         value: string;
         onChange: (event: ChangeEvent<HTMLInputElement>) => void;
         onFocus: () => void;
-        onBlur: () => void;
         isDisabled: boolean;
     };
     resultItem: (
@@ -460,7 +492,7 @@ export type AutocompleteWithPortal = { usePortal?: true; resultListContainer: Po
 export type AutocompleteWithoutPortal = { usePortal?: false };
 export type AutocompletePortalProps = AutocompleteWithPortal | AutocompleteWithoutPortal;
 
-export type AutocompleteResponse<T> = { items: T[]; total?: number };
+export type AutocompleteResponse<T> = { items: T[]; total: number };
 
 export type AutocompleteWrapperProps<T = any> = {
     setSelecteds: (selecteds: T[]) => void;
