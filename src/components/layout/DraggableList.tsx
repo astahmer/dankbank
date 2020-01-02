@@ -1,11 +1,21 @@
 import { Box, BoxProps } from "@chakra-ui/core";
-import { Children, MouseEvent, ReactElement, useEffect, useMemo, useRef, useState } from "react";
+import { disableBodyScroll, enableBodyScroll } from "body-scroll-lock";
+import {
+    Children, ReactElement, useEffect, useLayoutEffect, useMemo, useRef, useState
+} from "react";
+import { IoMdImages } from "react-icons/io";
 import { animated, interpolate, useSprings } from "react-spring";
 import { useDrag } from "react-use-gesture";
 
+import { API_ROUTES } from "@/config/api";
 import { move } from "@/functions/utils";
-import { useLongPress } from "@/hooks/dom/useLongPress";
+import { useAPI } from "@/hooks/async";
 import { useMutationObserver } from "@/hooks/dom/useMutationObserver";
+import { AutocompleteResponse } from "@/hooks/form/useAutocomplete";
+
+import { CustomIcon } from "../common/CustomIcon";
+import { CustomImage } from "../common/CustomImage";
+import { MemeSearchResult } from "../modules/meme/ExpandableMemesAutocomplete";
 
 // Original: https://github.com/chenglou/react-motion/tree/master/demos/demo8-draggable-list
 
@@ -23,8 +33,10 @@ export function DraggableList({ children, getId, onOrderChange, dragDelay = 180,
 
     const items = useRef<DraggableItem[]>([]);
     const [springs, setSprings] = useSprings(list.length, makeSprings([], []));
+    const [isDragging, setDragging] = useState(false);
 
     const entries = useMutationObserver(containerRef, { childList: true, subtree: true });
+    // TODO use data-key to retrieve originalIndex rather than mutationObserver ?
     useEffect(() => {
         if (!entries || !entries.length) {
             return;
@@ -75,46 +87,43 @@ export function DraggableList({ children, getId, onOrderChange, dragDelay = 180,
         setSprings(makeSprings(heights, getIndexes(items.current), { immediate: true }) as any);
     }, [entries]);
 
-    // TODO: Find a way to allow page scrolling even on draggable items
-    const canReorder = useRef(false);
-    const bindLongPress = useLongPress((event: MouseEvent) => {
-        const originalIndex = Array.from(containerRef.current.children).findIndex((item) =>
-            item.contains(event.target as Node)
-        );
+    useLayoutEffect(() => {
+        if (isDragging) {
+            disableBodyScroll(window.document.documentElement);
+        } else {
+            enableBodyScroll(window.document.documentElement);
+        }
+    }, [isDragging]);
+
+    const bind = useDrag(({ args: [originalIndex], down, movement: [x, y], memo, initial, xy }) => {
+        if (!memo) {
+            const isIntentionalGesture = Math.abs(x) > threshold;
+            if (!isIntentionalGesture) return;
+            memo = { startTime: Date.now(), canDrag: false };
+        }
+
+        if (!isDragging) {
+            setDragging(true);
+        }
+
         const orderedIndexes = getIndexes(items.current);
         const draggedIndex = orderedIndexes.indexOf(originalIndex);
-        const updated = makeSprings(getHeights(items.current), orderedIndexes, {
-            down: true,
-            originalIndex,
-            draggedIndex,
-            y: 0,
-        });
+        const currentRow = getCurrentRow(getHeights(items.current), draggedIndex, y);
+        const newItemsOrder = move(items.current, draggedIndex, currentRow);
+        const newOrder = getIndexes(newItemsOrder);
+
+        const updated = makeSprings(getHeights(newItemsOrder), newOrder, { down, originalIndex, draggedIndex, y });
         setSprings(updated as any);
-        canReorder.current = true;
-    }, dragDelay);
+        if (!down) {
+            setDragging(false);
+            items.current = newItemsOrder;
+            onOrderChange && onOrderChange(newOrder);
+        }
 
-    const bind = useDrag(
-        ({ args: [originalIndex], down, movement: [x, y] }) => {
-            if (!canReorder.current) {
-                return;
-            }
+        return memo;
+    });
 
-            const orderedIndexes = getIndexes(items.current);
-            const draggedIndex = orderedIndexes.indexOf(originalIndex);
-            const currentRow = getCurrentRow(getHeights(items.current), draggedIndex, y);
-            const newItemsOrder = move(items.current, draggedIndex, currentRow);
-            const newOrder = getIndexes(newItemsOrder);
-
-            const updated = makeSprings(getHeights(newItemsOrder), newOrder, { down, originalIndex, draggedIndex, y });
-            setSprings(updated as any);
-            if (!down) {
-                canReorder.current = false;
-                items.current = newItemsOrder;
-                onOrderChange && onOrderChange(newOrder);
-            }
-        },
-        { dragDelay: false }
-    );
+    console.log(isDragging);
 
     return (
         <Box
@@ -122,24 +131,24 @@ export function DraggableList({ children, getId, onOrderChange, dragDelay = 180,
             ref={containerRef}
             position="relative"
             height={totalHeight}
-            overflow="hidden"
+            // overflow="hidden"
+            // overflowY="auto"
             maxH={totalHeight}
-            {...bindLongPress}
-            style={{ userSelect: "none" }}
+            // {...bindLongPress}
+            // userSelect="none"
         >
             {springs.map(({ y, scale, shadow, zIndex }, i) => (
                 <AnimatedBox
                     {...bind(i)}
                     key={i}
                     position="absolute"
-                    userSelect="none"
+                    css={{ touchAction: isDragging ? "none" : "pan-y" }}
                     style={{
                         zIndex,
                         transform: interpolate([y, scale], (y, scale) => `translate3d(0,${y}px,0) scale(${scale})`),
                         boxShadow: interpolate([zIndex, shadow], (zIndex, s) =>
                             zIndex ? `rgba(0, 0, 0, 0.15) 0px ${s}px ${2 * s}px 0px` : "none"
                         ),
-                        touchAction: "none",
                     }}
                     children={list[i]}
                 />
@@ -149,6 +158,8 @@ export function DraggableList({ children, getId, onOrderChange, dragDelay = 180,
 }
 
 const AnimatedBox = animated(Box);
+
+const threshold = 15;
 
 const getSum = (values: number[], until?: number) => values.slice(0, until).reduce((acc, val) => acc + val, 0);
 const getHeights = (items: DraggableItem[]) => items.map((item) => item.element.clientHeight);
@@ -205,3 +216,30 @@ const getCurrentRow = (heights: number[], draggedIndex: number, y: number) => {
         }
     }
 };
+
+export function DraggableListTest() {
+    const [async] = useAPI<AutocompleteResponse<MemeSearchResult>>(
+        API_ROUTES.Search.memes,
+        { q: "a", size: 100 },
+        null,
+        null,
+        { initialData: { items: [], total: undefined }, onMount: true }
+    );
+
+    return (
+        <DraggableList
+            getId={(props) => (console.log(props) as any) || props["data-identifier"]}
+            onOrderChange={() => {}}
+            width="100%"
+        >
+            {(async.data.items || []).map((item, index) => (
+                <div key={index} data-identifier={item._id}>
+                    <CustomImage objectFit="cover" src={item._source.pictures[0].url} />
+                    {item._source.pictures.length > 1 ? (
+                        <CustomIcon icon={IoMdImages} color="white" pos="absolute" top="5px" right="5px" size="20px" />
+                    ) : null}
+                </div>
+            ))}
+        </DraggableList>
+    );
+}
