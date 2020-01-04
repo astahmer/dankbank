@@ -1,8 +1,9 @@
-import { Box, usePrevious } from "@chakra-ui/core";
+import { Box, useColorMode, usePrevious } from "@chakra-ui/core";
 import { disableBodyScroll, enableBodyScroll } from "body-scroll-lock";
 import { forwardRef, ReactElement, useCallback, useRef, useState } from "react";
 import { animated, useSpring } from "react-spring";
 
+import { COMMON_COLORS } from "@/config/theme";
 import { useEnhancedEffect } from "@/functions/utils";
 import { useCombinedRefs } from "@/hooks/useCombinedRefs";
 import { Flipper } from "@/services/Flipper";
@@ -86,6 +87,7 @@ export const ExpandableGridContainer = forwardRef<HTMLElement, ExpandableGridCon
         }, []);
 
         const gridProps = { items, getFlipId, render, selected, unselect, storeSpringSet, setBackgroundSpring };
+        const { colorMode } = useColorMode();
 
         return (
             <Box ref={containerRef} pos="relative">
@@ -98,7 +100,7 @@ export const ExpandableGridContainer = forwardRef<HTMLElement, ExpandableGridCon
                     right="0"
                     bottom="0"
                     pointerEvents={!selected ? "none" : "all"}
-                    backgroundColor="white"
+                    backgroundColor={COMMON_COLORS.bgColor[colorMode]}
                     zIndex={3}
                     willChange="opacity"
                     style={backgroundSpring}
@@ -111,7 +113,7 @@ export const ExpandableGridContainer = forwardRef<HTMLElement, ExpandableGridCon
 export type ExpandableGridContainerProps<T extends object = object> = {
     items: T[];
     getId: (item: T) => string | number;
-    render: (item: T) => ReactElement;
+    render: (item: T, isSelected: boolean) => ReactElement;
 };
 
 const AnimatedBox = animated(Box);

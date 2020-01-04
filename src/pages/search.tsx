@@ -3,6 +3,7 @@ import { IoMdImages } from "react-icons/io";
 
 import { CustomIcon } from "@/components/common/CustomIcon";
 import { CustomImage } from "@/components/common/CustomImage";
+import { ExpandableBoxContainer } from "@/components/layout/ExpandableBox/ExpandableBoxContainer";
 import {
     ExpandableGridContainer
 } from "@/components/layout/ExpandableGrid/ExpandableGridContainer";
@@ -31,10 +32,11 @@ export default function Search() {
                             ref={args.resultListRef}
                             items={args.items}
                             getId={(item: MemeSearchResult) => item._id}
-                            render={(item: MemeSearchResult) => (
+                            render={(item: MemeSearchResult, isSelected) => (
                                 <>
                                     <CustomImage objectFit="cover" src={item._source.pictures[0].url} />
                                     {item._source.pictures.length > 1 ? (
+                                    {item._source.pictures.length > 1 && !isSelected ? (
                                         <CustomIcon
                                             icon={IoMdImages}
                                             color="white"
@@ -51,11 +53,12 @@ export default function Search() {
                 }}
                 setSelecteds={() => {}}
             />
-            <ExpandableImageContainer identifier="yes" boxProps={{ ml: "auto", w: "100px", h: "100px" }}>
-                <CustomImage src="http://api.dankbank.lol/public/uploads/999jfgnf88h6qspe_1576527685351.jpg" />
-            </ExpandableImageContainer>
-
-            <ExpandableGridTest />
+            <ExpandableBoxContainer identifier="yes" boxProps={{ ml: "auto", w: "100px", h: "100px" }}>
+                <CustomImage
+                    objectFit="cover"
+                    src="http://api.dankbank.lol/public/uploads/999jfgnf88h6qspe_1576527685351.jpg"
+                />
+            </ExpandableBoxContainer>
         </div>
     );
 }

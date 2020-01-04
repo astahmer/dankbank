@@ -1,8 +1,8 @@
 import { Grid } from "@chakra-ui/core";
-import { ReactElement } from "react";
 
 import { useWindowSize } from "@/hooks/dom";
 
+import { ExpandableGridContainerProps } from "./ExpandableGridContainer";
 import { ExpandableGridItem } from "./ExpandableGridItem";
 
 export function ExpandableGrid({ items, getFlipId, selected, ...props }: ExpandableGridProps) {
@@ -27,7 +27,7 @@ export function ExpandableGrid({ items, getFlipId, selected, ...props }: Expanda
 export type ExpandableGridProps<T extends object = object> = {
     items: T[];
     getFlipId: (item: T) => string;
-    render: (item: T) => ReactElement;
+    render: ExpandableGridContainerProps["render"];
     selected: T;
     zIndexQueue: string[];
     setSelected: (result: T) => void;

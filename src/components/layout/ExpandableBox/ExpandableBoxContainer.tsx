@@ -1,8 +1,9 @@
-import { Box, BoxProps } from "@chakra-ui/core";
+import { Box, BoxProps, useColorMode } from "@chakra-ui/core";
 import { disableBodyScroll, enableBodyScroll } from "body-scroll-lock";
 import { forwardRef, useCallback, useRef, useState } from "react";
 import { animated, useSpring } from "react-spring";
 
+import { COMMON_COLORS } from "@/config/theme";
 import { useClientEffect } from "@/functions/utils";
 import { useWindowSize } from "@/hooks/dom";
 import { useCombinedRefs } from "@/hooks/useCombinedRefs";
@@ -79,6 +80,7 @@ export const ExpandableBoxContainer = forwardRef<HTMLElement, ExpandableBoxConta
 
         const { width, height } = useWindowSize();
         const itemProps = { identifier, isExpanded, unselect, storeSpringSet, setBackgroundSpring, width, height };
+        const { colorMode } = useColorMode();
 
         return (
             <Box pos="relative" {...boxProps} ref={containerRef}>
@@ -93,7 +95,7 @@ export const ExpandableBoxContainer = forwardRef<HTMLElement, ExpandableBoxConta
                     right="0"
                     bottom="0"
                     pointerEvents={!isExpanded ? "none" : "all"}
-                    backgroundColor="white"
+                    backgroundColor={COMMON_COLORS.bgColor[colorMode]}
                     zIndex={3}
                     willChange="opacity"
                     style={backgroundSpring}

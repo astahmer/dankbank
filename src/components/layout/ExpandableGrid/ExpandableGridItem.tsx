@@ -75,7 +75,7 @@ export const ExpandableGridItem = memo(function({
                     }),
                 }}
             >
-                {render(item)}
+                {render(item, isSelected)}
             </Box>
         </Box>
     );
