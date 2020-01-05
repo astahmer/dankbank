@@ -4,9 +4,9 @@ import getConfig from "next/config";
 const { serverRuntimeConfig, publicRuntimeConfig } = getConfig();
 
 export const clientApiUrl = publicRuntimeConfig.API_URL;
-// export const baseURL = process.browser ? publicRuntimeConfig.API_URL : serverRuntimeConfig.API_URL;
+export const baseURL = process.browser ? publicRuntimeConfig.API_URL : serverRuntimeConfig.API_URL;
 // export const baseURL = "http://192.168.1.22:3000";
-export const baseURL = "http://192.168.1.111:3000";
+// export const baseURL = "http://192.168.1.111:3000";
 export const axiosInstance = axios.create({ baseURL, timeout: 10000 });
 export const CancelToken = axios.CancelToken;
 
