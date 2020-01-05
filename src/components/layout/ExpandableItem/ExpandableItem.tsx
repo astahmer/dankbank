@@ -1,5 +1,5 @@
 import { Box, useColorMode } from "@chakra-ui/core";
-import { memo, useEffect } from "react";
+import { memo, useEffect, useState } from "react";
 import { animated, interpolate, useSpring } from "react-spring";
 import { useDrag } from "react-use-gesture";
 
@@ -9,9 +9,9 @@ import { getSelectedCss } from "./config";
 import { dragSelected, dragUnselected } from "./drag";
 import { ExpandableGridProps } from "./ExpandableGrid";
 
-export const ExpandableGridItem = memo(function({
+export const ExpandableItem = memo(function({
     item,
-    render,
+    renderItem,
     flipId,
     isSelected,
     setSelected,
@@ -23,6 +23,7 @@ export const ExpandableGridItem = memo(function({
     setBackgroundSpring,
 }: ExpandableGridItem) {
     const { colorMode } = useColorMode();
+
     const [{ y }, setY] = useVelocityTrackedSpring(() => ({ y: 0 }));
     const [{ x }, setX] = useSpring(() => ({ x: 0 }));
     const [{ scaleX, scaleY }, setScale] = useSpring(() => ({ scaleX: 1, scaleY: 1 }));
@@ -39,16 +40,39 @@ export const ExpandableGridItem = memo(function({
 
     const dragCallback = isSelected
         ? dragSelected({
-              onImageDismiss: () => unselect(item),
+              onImageDismiss: () => {
+                  unselect(item);
+              },
+              onDragReset: () => {
+                  setValid(false);
+              },
               x,
               y,
               set,
               setBackgroundSpring,
               width,
           })
-        : dragUnselected({ doSelect: () => setSelected(item) });
+        : dragUnselected({
+              doSelect: () => {
+                  setSelected(item);
+              },
+          });
 
-    const bind = useDrag(dragCallback as any);
+    const [isValid, setValid] = useState(false);
+    const bind = useDrag((dragProps) => {
+        if (isSelected && !dragProps.memo?.isValid) {
+            const isIntentionalGesture = Math.abs(dragProps.movement[1]) > 30;
+            setValid(isIntentionalGesture);
+            if (!isIntentionalGesture) return;
+
+            if (!dragProps.memo) {
+                dragProps.memo = {};
+            }
+            dragProps.memo.isValid = true;
+        }
+
+        return dragCallback(dragProps);
+    });
 
     return (
         <Box pos="relative">
@@ -75,7 +99,7 @@ export const ExpandableGridItem = memo(function({
                     }),
                 }}
             >
-                {render(item, isSelected)}
+                {renderItem({ item, isSelected, isDragging: isValid })}
             </Box>
         </Box>
     );
@@ -89,5 +113,5 @@ type ExpandableGridItem<T extends object = object> = {
     height: number;
 } & Pick<
     ExpandableGridProps<T>,
-    "render" | "setSelected" | "unselect" | "storeSpringSet" | "zIndexQueue" | "setBackgroundSpring"
+    "renderItem" | "setSelected" | "unselect" | "storeSpringSet" | "zIndexQueue" | "setBackgroundSpring"
 >;

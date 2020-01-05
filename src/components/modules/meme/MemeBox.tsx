@@ -1,21 +1,23 @@
 import { Box, Flex, Grid } from "@chakra-ui/core";
 
 import { CustomImage } from "@/components/common/CustomImage";
-import { Slider } from "@/components/layout/Slider";
+import { Picture } from "@/components/common/Picture";
+import { Slider, SliderProps } from "@/components/layout/Slider";
 import { chunk } from "@/functions/utils";
 import { IMeme } from "@/types/entities/Meme";
 
 export function MemeBox({ meme, layout }: MemeBoxProps) {
-    return <>{layout === "grid" ? <MemeGrid meme={meme} /> : <MemeSlider meme={meme} />}</>;
+    return <>{layout === "grid" ? <MemeGrid meme={meme} /> : <MemeSlider width={200} meme={meme} />}</>;
 }
 
 export type MemeBoxProps = { meme: IMeme; layout: "grid" | "slider" };
 
-export function MemeSlider({ meme }: MemeGridProps) {
+export type MemeSliderProps = Omit<SliderProps, "children"> & { meme: IMeme };
+export function MemeSlider({ meme, ...props }: MemeSliderProps) {
     return (
-        <Slider>
+        <Slider {...props}>
             {meme.pictures.map((picture) => (
-                <CustomImage key={picture.id} src={picture.url} objectFit="contain" w="100%" h="100%" />
+                <Picture item={picture} key={picture.id} useResponsive={false} w="100%" h="100%" />
             ))}
         </Slider>
     );

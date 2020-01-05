@@ -97,6 +97,11 @@ export function debounce(fn: Function, wait: number) {
     };
 }
 
+export const buildIntersectionThresholdList = (stepCount: number) =>
+    Array(stepCount)
+        .fill(null)
+        .map((item, i) => i / stepCount);
+
 // https://github.com/granteagon/move/
 export function move<T = any>(arr: T[], fromIndex: number, toIndex: number): T[] {
     const item = arr[fromIndex];

@@ -2,8 +2,8 @@ import { Grid } from "@chakra-ui/core";
 
 import { useWindowSize } from "@/hooks/dom";
 
-import { ExpandableGridContainerProps } from "./ExpandableGridContainer";
-import { ExpandableGridItem } from "./ExpandableGridItem";
+import { ExpandableItem } from "./ExpandableItem";
+import { ExpandableListProps } from "./ExpandableList";
 
 export function ExpandableGrid({ items, getFlipId, selected, ...props }: ExpandableGridProps) {
     const { width, height } = useWindowSize();
@@ -12,7 +12,7 @@ export function ExpandableGrid({ items, getFlipId, selected, ...props }: Expanda
     return (
         <Grid gridTemplateColumns="repeat(3, 1fr)" autoRows="100px" gap={1}>
             {items.map((item, i) => (
-                <ExpandableGridItem
+                <ExpandableItem
                     key={i}
                     item={item}
                     flipId={getFlipId(item)}
@@ -27,7 +27,7 @@ export function ExpandableGrid({ items, getFlipId, selected, ...props }: Expanda
 export type ExpandableGridProps<T extends object = object> = {
     items: T[];
     getFlipId: (item: T) => string;
-    render: ExpandableGridContainerProps["render"];
+    renderItem: ExpandableListProps["renderItem"];
     selected: T;
     zIndexQueue: string[];
     setSelected: (result: T) => void;

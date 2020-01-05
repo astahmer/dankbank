@@ -5,7 +5,7 @@ import { useEnhancedEffect } from "@/functions/utils";
 export function useDimensions(): [MutableRefObject<HTMLElement>, Dimensions] {
     const hasUnmounted = useRef(null);
     const ref = useRef<HTMLElement>();
-    const [dimensions, setDimensions] = useState(initialDimensions);
+    const [dimensions, setDimensions] = useState<Dimensions>(initialDimensions);
     useEnhancedEffect(() => {
         if (ref.current) {
             const measure = () =>

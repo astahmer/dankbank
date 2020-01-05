@@ -1,5 +1,5 @@
 import { Portal, Spinner } from "@chakra-ui/core";
-import { useRef } from "react";
+import { useCallback, useRef } from "react";
 
 import { useAutocomplete } from "@/hooks/form";
 import { AutocompleteProps, AutocompleteWrapperProps } from "@/hooks/form/useAutocomplete";
@@ -31,15 +31,18 @@ export function ExpandableAutocompleteBtn(props: ExpandableAutocompleteBtnProps)
             {...expandableProps}
         />
     );
-    const ResultList = () =>
-        hook.shouldDisplayList && render.resultList
-            ? (render.resultList({
-                  ...hook,
-                  items: data.items,
-                  bind: bindings.resultItem,
-                  resultListRef,
-              }) as JSX.Element)
-            : null;
+    const ResultList = useCallback(
+        () =>
+            hook.shouldDisplayList && render.resultList
+                ? (render.resultList({
+                      ...hook,
+                      items: data.items,
+                      bind: bindings.resultItem,
+                      resultListRef,
+                  }) as JSX.Element)
+                : null,
+        [hook.shouldDisplayList, render.resultList]
+    );
 
     return (
         <div {...bindings.self}>

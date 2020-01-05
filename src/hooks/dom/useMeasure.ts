@@ -1,16 +1,14 @@
-import { MutableRefObject, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import ResizeObserver from "resize-observer-polyfill";
 
 import { useEnhancedEffect } from "@/functions/utils";
 
-import { Dimensions } from "./useDimensions";
+import { Dimensions, initialDimensions } from "./useDimensions";
 
-export function useMeasure<T extends HTMLElement>(propRef?: MutableRefObject<T>, withPos = true) {
-    const ref = useRef(propRef && propRef.current);
-    const [bounds, set] = useState<Dimensions | ClientRect>();
-    const [ro] = useState(
-        () => new ResizeObserver(([entry]) => set(!withPos ? entry.contentRect : entry.target.getBoundingClientRect()))
-    );
+export function useMeasure() {
+    const ref = useRef();
+    const [bounds, set] = useState<Dimensions | ClientRect>(initialDimensions);
+    const [ro] = useState(() => new ResizeObserver(([entry]) => set(entry.contentRect)));
 
     useEnhancedEffect(() => {
         if (ref.current) {

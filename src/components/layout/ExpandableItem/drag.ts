@@ -7,6 +7,7 @@ import {
 
 export const dragSelected = ({
     onImageDismiss,
+    onDragReset,
     x,
     y,
     set,
@@ -14,6 +15,7 @@ export const dragSelected = ({
     width,
 }: {
     onImageDismiss: Function;
+    onDragReset?: Function;
     x: VelocityTrackedAnimatedValue;
     y: VelocityTrackedAnimatedValue;
     set: (args: any) => void;
@@ -25,7 +27,7 @@ export const dragSelected = ({
     last,
     memo,
 }: Pick<Coordinates, "vxvy"> & Pick<CommonGestureState, "movement" | "last" | "memo">) => {
-    if (!memo) {
+    if (!memo?.y) {
         const isIntentionalGesture = Math.abs(movementY) > threshold;
         if (!isIntentionalGesture) return;
         memo = { y: y.value - movementY, x: x.value - movementX };
@@ -35,6 +37,8 @@ export const dragSelected = ({
         const projectedEndpoint = y.value + projection(velocityY, "fast");
         const point = findNearestNumberInArray(projectedEndpoint, yStops);
 
+        // TODO Allow both side to dimiss : if (projectedEndpoint < yStops[0] * 1.2 || point === yStops[1]) {
+        // If projection end point is closer to Y minimum position, dismiss image
         if (point === yStops[1]) {
             return set({
                 immediate: false,
@@ -47,6 +51,8 @@ export const dragSelected = ({
                 },
             });
         } else {
+            // Reset back to initial position
+            onDragReset?.();
             setBackgroundSpring({ opacity: 1 });
             return set({
                 immediate: false,
@@ -75,7 +81,7 @@ export const dragSelected = ({
         immediate: memo.immediate,
     });
 
-    setBackgroundSpring({ opacity: rangeMap(yStops, [1.5, 0.5], newY) });
+    setBackgroundSpring({ opacity: rangeMap(yStops, opacityTuple, newY) });
 
     return memo;
 };
@@ -92,6 +98,11 @@ export const dragUnselected = ({ doSelect }: { doSelect: () => void }) => ({
 type VelocityTrackedAnimatedValue<T = number> = OpaqueInterpolation<T> & { value?: T; lastVelocity?: number };
 
 const threshold = 10;
-const yStops: Vector2 = [0, 150];
+const yStops: Vector2 = [-50, 150];
 const xStops: Vector2 = [-20, 20];
 const scaleStops: Vector2 = [1, 0.75];
+const opacityTuple: Vector2 = [1.5, 0.5];
+
+// const yClosestPoint = findNearestNumberInArray(newY, yStops);
+// const isGoingDown = yClosestPoint === yStops[1];
+// const getStop = (tuple: Vector2, isGoingDown: boolean) => (isGoingDown ? tuple : (tuple.reverse() as Vector2));

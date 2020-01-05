@@ -17,64 +17,86 @@ export const Swipable = forwardRef<HTMLElement, SwipableProps>(
             AnimatedComponent = AnimatedBox,
             isDraggable = true,
             currentPos: currentPosProp,
+            isDisabled,
             ...props
         },
         ref
     ) => {
-        const [pos, setPos] = useState<SwipePosition>({ x: 0, y: 0 });
-        const currentPos = currentPosProp ? reversePos(currentPosProp) : pos;
-        const [{ x, y }, set] = useSpring(() => currentPos);
+        const [localPos, setPos] = useState<SwipePosition>({ x: 0, y: 0 });
+        const currentPos = currentPosProp ? reversePos(currentPosProp) : localPos;
+        const [{ x, y }, setXY] = useSpring(() => ({ x: xDistance * currentPos.x, y: yDistance * currentPos.y }));
 
         // On controlled currentPos change, set spring
         useEffect(() => {
             if (currentPosProp) {
                 const reversed = reversePos(currentPosProp);
-                set({ x: xDistance * reversed.x, y: yDistance * reversed.y });
+                setXY({ x: xDistance * reversed.x, y: yDistance * reversed.y });
             }
         }, [currentPosProp]);
 
         const { boundaries: propsBoundaries, onSwipe, ...rest } = props;
         const boundaries = useMemo(() => getBoundaries(propsBoundaries), [propsBoundaries]);
 
-        const bind = useDrag(({ last, direction: dirV, vxvy, movement: [movX, movY], cancel }) => {
-            if (isDraggable || last) {
-                const direction = getDirection(vxvy, dirV);
-
-                // Swipe is done
-                if (last) {
-                    const isValid = isSwipeValid(direction, [movX, movY], swipeDistance, vxvy, swipeVelocity);
-
-                    // Swipe distance or velocity was not reached, returning to previous position
-                    if (!isValid) {
-                        set({
-                            x: canMoveAxisX(axis) ? xDistance * currentPos.x : 0,
-                            y: canMoveAxisY(axis) ? yDistance * currentPos.y : 0,
-                        });
-                        return;
-                    }
-
-                    // Swipe valid, updating position & calling props callback
-                    const updatedPos = getUpdatedPosition(pos, direction, boundaries);
-                    setPos(updatedPos);
-                    set({
-                        x: canMoveAxisX(axis) ? xDistance * updatedPos.x : 0,
-                        y: canMoveAxisY(axis) ? yDistance * updatedPos.y : 0,
+        const bind = useDrag(
+            ({ last, direction: dirV, vxvy, movement: [movX, movY] }) => {
+                if (isDisabled) {
+                    setXY({
+                        x: canMoveAxisX(axis) ? xDistance * currentPos.x : 0,
+                        y: canMoveAxisY(axis) ? yDistance * currentPos.y : 0,
                     });
-                    props.onSwipe?.(direction, reversePos(updatedPos));
-                } else {
-                    // Dragging
-                    set({
-                        x: canMoveAxisX(axis) ? movX + xDistance * currentPos.x : 0,
-                        y: canMoveAxisY(axis) ? movY + yDistance * currentPos.y : 0,
-                    });
+                    return;
                 }
+
+                if (isDraggable || last) {
+                    const direction = getDirection(vxvy, dirV);
+
+                    // Swipe is done
+                    if (last) {
+                        const isValid = isSwipeValid(direction, [movX, movY], swipeDistance, vxvy, swipeVelocity);
+
+                        // Swipe distance or velocity was not reached, returning to previous position
+                        if (!isValid) {
+                            setXY({
+                                x: canMoveAxisX(axis) ? xDistance * currentPos.x : 0,
+                                y: canMoveAxisY(axis) ? yDistance * currentPos.y : 0,
+                            });
+                            return;
+                        }
+
+                        // Swipe valid, updating position & calling props callback
+                        const updatedPos = getUpdatedPosition(currentPos, direction, boundaries);
+
+                        // If swipe is uncontrolled, update local state
+                        if (!currentPosProp) {
+                            setPos(updatedPos);
+                        }
+
+                        setXY({
+                            x: canMoveAxisX(axis) ? xDistance * updatedPos.x : 0,
+                            y: canMoveAxisY(axis) ? yDistance * updatedPos.y : 0,
+                        });
+                        props.onSwipe?.(direction, reversePos(updatedPos));
+                    } else {
+                        // Dragging
+                        setXY({
+                            x: canMoveAxisX(axis) ? movX + xDistance * currentPos.x : 0,
+                            y: canMoveAxisY(axis) ? movY + yDistance * currentPos.y : 0,
+                        });
+                    }
+                }
+            },
+            {
+                axis: axis !== "BOTH" ? (axis.toLowerCase() as "x" | "y") : undefined,
+                threshold: 15,
+                lockDirection: true,
             }
-        });
+        );
 
         return (
             <AnimatedComponent
                 {...rest}
                 {...bind()}
+                pointerEvents={isDisabled && "none"}
                 style={{ transform: interpolate([x, y], (x, y) => `translate3d(${x}px,${y}px,0)`) }}
                 ref={ref}
             />
@@ -93,6 +115,7 @@ export type SwipableProps = BoxProps & {
     isDraggable?: boolean;
     currentPos?: SwipePosition;
     boundaries?: SwipeBoundaries;
+    isDisabled?: boolean;
     onSwipe?: (direction: SwipeDirection, updatedPos: SwipePosition) => void;
 };
 

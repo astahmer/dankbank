@@ -1,4 +1,4 @@
-import { Box, BoxProps, useColorMode } from "@chakra-ui/core";
+import { Box, useColorMode } from "@chakra-ui/core";
 import { disableBodyScroll, enableBodyScroll } from "body-scroll-lock";
 import { forwardRef, useCallback, useRef, useState } from "react";
 import { animated, useSpring } from "react-spring";
@@ -9,16 +9,17 @@ import { useWindowSize } from "@/hooks/dom";
 import { useCombinedRefs } from "@/hooks/useCombinedRefs";
 import { Flipper } from "@/services/Flipper";
 
-import { bounceConfig, defaultSpringSettings } from "../ExpandableGrid/config";
-import { ExpandableBox } from "./ExpandableBox";
+import { bounceConfig, defaultSpringSettings } from "./config";
+import { ExpandableItem } from "./ExpandableItem";
+import { ExpandableListProps } from "./ExpandableList";
 
-export const ExpandableBoxContainer = forwardRef<HTMLElement, ExpandableBoxContainerProps>(
-    ({ identifier, children, boxProps }, ref) => {
-        const [isExpanded, setExpanded] = useState(null);
+export const ExpandableBox = forwardRef<HTMLElement, ExpandableBoxProps>(
+    ({ identifier, renderItem, boxProps }, ref) => {
+        const [isSelected, setSelected] = useState(null);
 
-        const springSetRef = useRef<UseSpringSet>(null);
-        const storeSpringSet = useCallback((set: UseSpringSet) => {
-            springSetRef.current = set;
+        const springsRef = useRef<Record<string, UseSpringSet>>({});
+        const storeSpringSet = useCallback((id: string, set: UseSpringSet) => {
+            springsRef.current[id] = set;
         }, []);
         const [backgroundSpring, setBackgroundSpring] = useSpring(() => ({ opacity: 0 }));
 
@@ -27,7 +28,7 @@ export const ExpandableBoxContainer = forwardRef<HTMLElement, ExpandableBoxConta
             new Flipper({
                 ref: containerRef,
                 onFlip(id, vals, data = {}) {
-                    const set = springSetRef.current;
+                    const set = springsRef.current[id];
                     const el = this.getEl(id);
                     el.style.zIndex = 5;
                     set({
@@ -51,9 +52,9 @@ export const ExpandableBoxContainer = forwardRef<HTMLElement, ExpandableBoxConta
         );
 
         useClientEffect(() => {
-            if (isExpanded === null) return;
+            if (isSelected === null) return;
 
-            if (isExpanded) {
+            if (isSelected) {
                 flipRef.current.flip(identifier);
                 requestAnimationFrame(() => {
                     disableBodyScroll(window.document.documentElement);
@@ -64,37 +65,45 @@ export const ExpandableBoxContainer = forwardRef<HTMLElement, ExpandableBoxConta
                 });
                 flipRef.current.flip(identifier, { isLeaving: true });
             }
-        }, [isExpanded]);
+        }, [isSelected]);
 
         const select = useCallback(() => {
             flipRef.current.beforeFlip(identifier);
             disableBodyScroll(window.document.documentElement);
-            setExpanded(true);
-        }, [isExpanded]);
+            setSelected(true);
+        }, [isSelected]);
 
         const unselect = useCallback(() => {
             flipRef.current.beforeFlip(identifier);
             enableBodyScroll(window.document.documentElement);
-            setExpanded(false);
+            setSelected(false);
         }, []);
 
         const { width, height } = useWindowSize();
-        const itemProps = { identifier, isExpanded, unselect, storeSpringSet, setBackgroundSpring, width, height };
+        const itemProps = {
+            flipId: identifier,
+            isSelected,
+            unselect,
+            storeSpringSet,
+            setBackgroundSpring,
+            width,
+            height,
+            item: {},
+            zIndexQueue: [] as any,
+        };
         const { colorMode } = useColorMode();
 
         return (
             <Box pos="relative" {...boxProps} ref={containerRef}>
-                selected: {isExpanded ? "oui" : "non"}
-                <ExpandableBox setSelected={select} {...itemProps}>
-                    {children}
-                </ExpandableBox>
+                selected: {isSelected ? "oui" : "non"}
+                <ExpandableItem renderItem={renderItem} setSelected={select} {...itemProps} />
                 <AnimatedBox
                     pos="fixed"
                     top="0"
                     left="0"
                     right="0"
                     bottom="0"
-                    pointerEvents={!isExpanded ? "none" : "all"}
+                    pointerEvents={!isSelected ? "none" : "all"}
                     backgroundColor={COMMON_COLORS.bgColor[colorMode]}
                     zIndex={3}
                     willChange="opacity"
@@ -105,6 +114,8 @@ export const ExpandableBoxContainer = forwardRef<HTMLElement, ExpandableBoxConta
     }
 );
 
-export type ExpandableBoxContainerProps = { identifier: string; boxProps?: BoxProps } & ChildrenProp;
+export type ExpandableBoxProps = Pick<ExpandableListProps, "renderItem" | "boxProps"> & {
+    identifier: string;
+};
 
 const AnimatedBox = animated(Box);

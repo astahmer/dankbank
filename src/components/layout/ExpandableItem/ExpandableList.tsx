@@ -1,6 +1,6 @@
-import { Box, useColorMode, usePrevious } from "@chakra-ui/core";
+import { Box, BoxProps, useColorMode, usePrevious } from "@chakra-ui/core";
 import { disableBodyScroll, enableBodyScroll } from "body-scroll-lock";
-import { forwardRef, ReactElement, useCallback, useRef, useState } from "react";
+import { forwardRef, ReactElement, useCallback, useEffect, useRef, useState } from "react";
 import { animated, useSpring } from "react-spring";
 
 import { COMMON_COLORS } from "@/config/theme";
@@ -9,10 +9,10 @@ import { useCombinedRefs } from "@/hooks/useCombinedRefs";
 import { Flipper } from "@/services/Flipper";
 
 import { bounceConfig, defaultSpringSettings } from "./config";
-import { ExpandableGrid } from "./ExpandableGrid";
+import { ExpandableGridProps as ExpandableRenderListProps } from "./ExpandableGrid";
 
-export const ExpandableGridContainer = forwardRef<HTMLElement, ExpandableGridContainerProps>(
-    ({ items, getId, render }, ref) => {
+export const ExpandableList = forwardRef<HTMLElement, ExpandableListProps>(
+    ({ items, getId, renderList, renderItem, onSelected, boxProps }, ref) => {
         const [selected, setSelected] = useState<any>(null);
         const getFlipId = useCallback((item: object) => "img-" + getId(item), [getId]);
         const isSame = useCallback((a: object, b: object) => a && b && getFlipId(a) === getFlipId(b), [getFlipId]);
@@ -72,7 +72,6 @@ export const ExpandableGridContainer = forwardRef<HTMLElement, ExpandableGridCon
 
         const select = useCallback(
             (item: object) => {
-                console.log(item);
                 flipRef.current.beforeFlip(getFlipId(item));
                 disableBodyScroll(window.document.documentElement);
                 setSelected(item);
@@ -86,13 +85,27 @@ export const ExpandableGridContainer = forwardRef<HTMLElement, ExpandableGridCon
             setSelected(null);
         }, []);
 
-        const gridProps = { items, getFlipId, render, selected, unselect, storeSpringSet, setBackgroundSpring };
+        useEffect(() => {
+            onSelected?.(selected);
+        }, [selected]);
+
+        const listProps: ExpandableRenderListProps = {
+            items,
+            getFlipId,
+            renderItem,
+            selected,
+            setSelected: select,
+            unselect,
+            storeSpringSet,
+            setBackgroundSpring,
+            zIndexQueue: zIndexQueue.current,
+        };
         const { colorMode } = useColorMode();
 
         return (
-            <Box ref={containerRef} pos="relative">
+            <Box pos="relative" {...boxProps} ref={containerRef}>
                 selected: {selected?._id}
-                <ExpandableGrid setSelected={select} zIndexQueue={zIndexQueue.current} {...gridProps} />
+                {renderList(listProps)}
                 <AnimatedBox
                     pos="fixed"
                     top="0"
@@ -110,10 +123,21 @@ export const ExpandableGridContainer = forwardRef<HTMLElement, ExpandableGridCon
     }
 );
 
-export type ExpandableGridContainerProps<T extends object = object> = {
+export type ExpandableListProps<T extends object = object> = {
     items: T[];
     getId: (item: T) => string | number;
-    render: (item: T, isSelected: boolean) => ReactElement;
+    renderList: (props: ExpandableRenderListProps) => ReactElement;
+    renderItem: ({
+        item,
+        isSelected,
+        isDragging,
+    }: {
+        item: T;
+        isSelected: boolean;
+        isDragging: boolean;
+    }) => ReactElement;
+    onSelected?: (item: T) => void;
+    boxProps?: BoxProps;
 };
 
 const AnimatedBox = animated(Box);

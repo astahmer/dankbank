@@ -10,5 +10,5 @@ export type CustomImageProps = ImageProps & { srcSet?: string; sizes?: string };
 
 export const CustomImage = forwardRef(({ src, fallbackSrc, onError, onLoad, ...props }: CustomImageProps, ref) => {
     const imageProps = { src, onLoad, onError };
-    return <Box as={NativeImage} ref={ref} {...imageProps} {...props} />;
+    return <Box as={NativeImage} {...imageProps} {...props} ref={ref} />;
 });
