@@ -7,7 +7,7 @@ import { useVelocityTrackedSpring } from "@/hooks/dom/useVelocityTrackedSpring";
 
 import { getSelectedCss } from "./config";
 import { dragSelected, dragUnselected } from "./drag";
-import { ExpandableGridProps } from "./ExpandableGrid";
+import { ExpandableRenderListProps } from "./ExpandableGrid";
 
 export const ExpandableItem = memo(function({
     item,
@@ -42,6 +42,7 @@ export const ExpandableItem = memo(function({
         ? dragSelected({
               onImageDismiss: () => {
                   unselect(item);
+                  setValid(false);
               },
               onDragReset: () => {
                   setValid(false);
@@ -105,13 +106,13 @@ export const ExpandableItem = memo(function({
     );
 });
 
-type ExpandableGridItem<T extends object = object> = {
+export type ExpandableGridItem<T extends object = object> = {
     item: T;
     flipId: string;
     isSelected: boolean;
     width: number;
     height: number;
 } & Pick<
-    ExpandableGridProps<T>,
+    ExpandableRenderListProps<T>,
     "renderItem" | "setSelected" | "unselect" | "storeSpringSet" | "zIndexQueue" | "setBackgroundSpring"
 >;

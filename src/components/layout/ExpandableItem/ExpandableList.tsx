@@ -9,7 +9,7 @@ import { useCombinedRefs } from "@/hooks/useCombinedRefs";
 import { Flipper } from "@/services/Flipper";
 
 import { bounceConfig, defaultSpringSettings } from "./config";
-import { ExpandableGridProps as ExpandableRenderListProps } from "./ExpandableGrid";
+import { ExpandableRenderListProps } from "./ExpandableGrid";
 
 export const ExpandableList = forwardRef<HTMLElement, ExpandableListProps>(
     ({ items, getId, renderList, renderItem, onSelected, boxProps }, ref) => {

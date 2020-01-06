@@ -5,7 +5,7 @@ import { useWindowSize } from "@/hooks/dom";
 import { ExpandableItem } from "./ExpandableItem";
 import { ExpandableListProps } from "./ExpandableList";
 
-export function ExpandableGrid({ items, getFlipId, selected, ...props }: ExpandableGridProps) {
+export function ExpandableGrid({ items, getFlipId, selected, ...props }: ExpandableRenderListProps) {
     const { width, height } = useWindowSize();
     const gridItemProps = { width, height, ...props };
 
@@ -24,7 +24,7 @@ export function ExpandableGrid({ items, getFlipId, selected, ...props }: Expanda
     );
 }
 
-export type ExpandableGridProps<T extends object = object> = {
+export type ExpandableRenderListProps<T extends object = object> = {
     items: T[];
     getFlipId: (item: T) => string;
     renderItem: ExpandableListProps["renderItem"];
