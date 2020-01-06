@@ -1,8 +1,9 @@
 import { Box } from "@chakra-ui/core";
 import {
-    ForwardRefExoticComponent, memo, RefAttributes, useCallback, useEffect, useState
+    ForwardRefExoticComponent, memo, RefAttributes, useCallback, useMemo, useState
 } from "react";
 import { IoMdImages } from "react-icons/io";
+import { useInView } from "react-intersection-observer";
 
 import { CustomIcon } from "@/components/common/CustomIcon";
 import { Picture } from "@/components/common/Picture";
@@ -22,7 +23,7 @@ export function MemeSearch() {
     const [containerRef, getRef] = useCallbackRef();
     // console.log("meme search render");
     const setSelecteds = useCallback((selecteds) => {
-        console.log(selecteds);
+        selecteds.length && console.log(selecteds);
     }, []);
 
     // TODO render only visible elements + margin top/bottom: 200px
@@ -69,47 +70,59 @@ type MemeResultProps = {
 };
 export const MemeResult = memo(
     function({ item, isSelected, isDragging, storeSliderPos, currentPos = { x: 0, y: 0 } }: MemeResultProps) {
-        useEffect(() => {
-            storeSliderPos(item._id, currentPos);
-        }, []);
+        // TODO FIx bug on currentPos change & image dismiss
+        // useEffect(() => {
+        //     storeSliderPos(item._id, currentPos);
+        // }, []);
 
         const onSwipe = (direction: SwipeDirection, pos: SwipePosition) => {
             storeSliderPos(item._id, pos);
         };
 
         const { width } = useWindowSize();
+        const [ref, inView] = useInView({ rootMargin: "200px 0px", triggerOnce: true });
 
-        return (
+        const isMultipartMeme = useMemo(() => item._source.pictures.length > 1, [item]);
+
+        const component = (
             <>
                 <Picture
                     useResponsive={false}
                     item={item._source.pictures[currentPos.x]}
                     w="100%"
-                    css={{ visibility: isSelected && !isDragging ? "hidden" : undefined }}
+                    css={{ visibility: isMultipartMeme && isSelected && !isDragging ? "hidden" : undefined }}
                 />
-                <MemeSlider
-                    meme={item._source}
-                    flexProps={{
-                        pos: "absolute",
-                        left: 0,
-                        top: 0,
-                        w: "100%",
-                        h: "100%",
-                        display: !(isSelected && !isDragging) ? "none" : undefined,
-                    }}
-                    width={width}
-                    isFullHeight
-                    onSwipe={onSwipe}
-                    currentPos={currentPos}
-                    isDisabled={isDragging}
-                />
-                {item._source.pictures.length > 1 && !isSelected ? (
+                {isMultipartMeme ? (
+                    <MemeSlider
+                        meme={item._source}
+                        flexProps={{
+                            pos: "absolute",
+                            left: 0,
+                            top: 0,
+                            w: "100%",
+                            h: "100%",
+                            display: !(isSelected && !isDragging) ? "none" : undefined,
+                        }}
+                        width={width}
+                        isFullHeight
+                        onSwipe={onSwipe}
+                        currentPos={currentPos}
+                        isDisabled={isDragging}
+                    />
+                ) : null}
+                {isMultipartMeme && !isSelected ? (
                     <CustomIcon icon={IoMdImages} color="white" pos="absolute" top="5px" right="5px" size="20px" />
                 ) : null}
                 <Box pos="absolute" bottom="0">
                     {isDragging ? "oui" : "non"}
                 </Box>
             </>
+        );
+
+        return (
+            <div css={{ display: "flex" }} ref={ref}>
+                {inView && component}
+            </div>
         );
     },
     (prevProps, nextProps) => {
