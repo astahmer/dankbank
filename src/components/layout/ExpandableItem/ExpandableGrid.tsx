@@ -16,7 +16,7 @@ export function ExpandableGrid({ items, getFlipId, selected, ...props }: Expanda
                     key={i}
                     item={item}
                     flipId={getFlipId(item)}
-                    isSelected={selected && getFlipId(selected) === getFlipId(item)}
+                    isSelected={selected ? getFlipId(selected) === getFlipId(item) : false}
                     {...gridItemProps}
                 />
             ))}

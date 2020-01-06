@@ -102,6 +102,14 @@ export const buildIntersectionThresholdList = (stepCount: number) =>
         .fill(null)
         .map((item, i) => i / stepCount);
 
+export const areArrayEqual = (arr1: any[], arr2: any[]) => {
+    let i = arr1.length;
+    while (i--) {
+        if (arr1[i] !== arr2[i]) return false;
+    }
+    return true;
+};
+
 // https://github.com/granteagon/move/
 export function move<T = any>(arr: T[], fromIndex: number, toIndex: number): T[] {
     const item = arr[fromIndex];

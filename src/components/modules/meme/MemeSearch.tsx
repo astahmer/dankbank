@@ -1,5 +1,7 @@
 import { Box } from "@chakra-ui/core";
-import { ForwardRefExoticComponent, memo, RefAttributes, useEffect, useState } from "react";
+import {
+    ForwardRefExoticComponent, memo, RefAttributes, useCallback, useEffect, useState
+} from "react";
 import { IoMdImages } from "react-icons/io";
 
 import { CustomIcon } from "@/components/common/CustomIcon";
@@ -19,6 +21,11 @@ import { MemeSlider } from "./MemeBox";
 export function MemeSearch() {
     const [containerRef, getRef] = useCallbackRef();
     // console.log("meme search render");
+    const setSelecteds = useCallback((selecteds) => {
+        console.log(selecteds);
+    }, []);
+
+    // TODO render only visible elements + margin top/bottom: 200px
 
     return (
         <>
@@ -28,7 +35,7 @@ export function MemeSearch() {
                 render={{
                     resultList: (args) => <MemeResultList items={args.items} resultListRef={args.resultListRef} />,
                 }}
-                setSelecteds={() => {}}
+                setSelecteds={setSelecteds}
             />
         </>
     );
@@ -39,8 +46,6 @@ export const MemeResultList = memo(function(
 ) {
     const [sliderPos, setSliderPos] = useState<Record<string, SwipePosition>>({});
     const storeSliderPos = (id: string, pos: SwipePosition) => setSliderPos((prevPos) => ({ ...prevPos, [id]: pos }));
-    // console.log(args, JSON.stringify(args));
-    // console.log(sliderPos);
 
     return (
         <ExpandableList
@@ -62,56 +67,62 @@ type MemeResultProps = {
     storeSliderPos: (id: string, pos: SwipePosition) => void;
     currentPos?: SwipableProps["currentPos"];
 };
-export function MemeResult({
-    item,
-    isSelected,
-    isDragging,
-    storeSliderPos,
-    currentPos = { x: 0, y: 0 },
-}: MemeResultProps) {
-    useEffect(() => {
-        storeSliderPos(item._id, currentPos);
-    }, []);
+export const MemeResult = memo(
+    function({ item, isSelected, isDragging, storeSliderPos, currentPos = { x: 0, y: 0 } }: MemeResultProps) {
+        useEffect(() => {
+            storeSliderPos(item._id, currentPos);
+        }, []);
 
-    const onSwipe = (direction: SwipeDirection, pos: SwipePosition) => {
-        storeSliderPos(item._id, pos);
-    };
+        const onSwipe = (direction: SwipeDirection, pos: SwipePosition) => {
+            storeSliderPos(item._id, pos);
+        };
 
-    const { width } = useWindowSize();
+        const { width } = useWindowSize();
 
-    return (
-        <>
-            <Picture
-                useResponsive={false}
-                item={item._source.pictures[currentPos.x]}
-                w="100%"
-                css={{ visibility: isSelected && !isDragging ? "hidden" : undefined }}
-            />
-            <MemeSlider
-                meme={item._source}
-                flexProps={{
-                    pos: "absolute",
-                    left: 0,
-                    top: 0,
-                    w: "100%",
-                    h: "100%",
-                    display: !(isSelected && !isDragging) ? "none" : undefined,
-                }}
-                width={width}
-                isFullHeight
-                onSwipe={onSwipe}
-                currentPos={currentPos}
-                isDisabled={isDragging}
-            />
-            {item._source.pictures.length > 1 && !isSelected ? (
-                <CustomIcon icon={IoMdImages} color="white" pos="absolute" top="5px" right="5px" size="20px" />
-            ) : null}
-            <Box pos="absolute" bottom="0">
-                {isDragging ? "oui" : "non"}
-            </Box>
-        </>
-    );
-}
+        return (
+            <>
+                <Picture
+                    useResponsive={false}
+                    item={item._source.pictures[currentPos.x]}
+                    w="100%"
+                    css={{ visibility: isSelected && !isDragging ? "hidden" : undefined }}
+                />
+                <MemeSlider
+                    meme={item._source}
+                    flexProps={{
+                        pos: "absolute",
+                        left: 0,
+                        top: 0,
+                        w: "100%",
+                        h: "100%",
+                        display: !(isSelected && !isDragging) ? "none" : undefined,
+                    }}
+                    width={width}
+                    isFullHeight
+                    onSwipe={onSwipe}
+                    currentPos={currentPos}
+                    isDisabled={isDragging}
+                />
+                {item._source.pictures.length > 1 && !isSelected ? (
+                    <CustomIcon icon={IoMdImages} color="white" pos="absolute" top="5px" right="5px" size="20px" />
+                ) : null}
+                <Box pos="absolute" bottom="0">
+                    {isDragging ? "oui" : "non"}
+                </Box>
+            </>
+        );
+    },
+    (prevProps, nextProps) => {
+        const areEqual =
+            prevProps.item._id === nextProps.item._id &&
+            prevProps.isSelected === nextProps.isSelected &&
+            prevProps.isDragging === nextProps.isDragging &&
+            ((prevProps.currentPos === undefined && nextProps.currentPos === undefined) ||
+                (prevProps.currentPos?.x === nextProps.currentPos?.x &&
+                    prevProps.currentPos?.y === nextProps.currentPos?.y));
+        return areEqual;
+    }
+);
 
 // Typing forwardRef component with generic args
 const ExpandableList = ExpList as ForwardRefExoticComponent<
