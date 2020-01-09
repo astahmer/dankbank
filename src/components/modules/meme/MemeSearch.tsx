@@ -26,18 +26,17 @@ export function MemeSearch() {
         selecteds.length && console.log(selecteds);
     }, []);
 
-    // TODO render only visible elements + margin top/bottom: 200px
-
     return (
         <>
-            <div ref={getRef}></div>
-            <ExpandableMemesAutocomplete
-                options={{ resultListContainer: containerRef.current }}
-                render={{
-                    resultList: (args) => <MemeResultList items={args.items} resultListRef={args.resultListRef} />,
-                }}
-                setSelecteds={setSelecteds}
-            />
+            <div ref={getRef}>
+                <ExpandableMemesAutocomplete
+                    options={{ resultListContainer: containerRef.current }}
+                    render={{
+                        resultList: (args) => <MemeResultList items={args.items} resultListRef={args.resultListRef} />,
+                    }}
+                    setSelecteds={setSelecteds}
+                />
+            </div>
         </>
     );
 }
@@ -70,11 +69,6 @@ type MemeResultProps = {
 };
 export const MemeResult = memo(
     function({ item, isSelected, isDragging, storeSliderPos, currentPos = { x: 0, y: 0 } }: MemeResultProps) {
-        // TODO FIx bug on currentPos change & image dismiss
-        // useEffect(() => {
-        //     storeSliderPos(item._id, currentPos);
-        // }, []);
-
         const onSwipe = (direction: SwipeDirection, pos: SwipePosition) => {
             storeSliderPos(item._id, pos);
         };
@@ -120,7 +114,7 @@ export const MemeResult = memo(
         );
 
         return (
-            <div css={{ display: "flex" }} ref={ref}>
+            <div css={{ display: "flex", width: "100%" }} ref={ref}>
                 {inView && component}
             </div>
         );

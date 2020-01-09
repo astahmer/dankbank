@@ -26,7 +26,11 @@ export function ExpandableAutocompleteBtn(props: ExpandableAutocompleteBtnProps)
     const Button = (
         <ExpandableBtn
             ref={inputRef}
-            btnProps={{ type: "search" as any, ...btnProps }}
+            btnProps={{
+                type: "search" as any,
+                boxShadow: data.items.length ? "0 0 1px 2px white" : undefined,
+                ...btnProps,
+            }}
             inputProps={{ ...inputProps, ...bindings.input }}
             {...expandableProps}
         />
@@ -46,7 +50,6 @@ export function ExpandableAutocompleteBtn(props: ExpandableAutocompleteBtnProps)
 
     return (
         <div {...bindings.self}>
-            {expandableProps.isFloating ? <FloatingBtn button={Button} /> : Button}
             {/* TODO displayEmptyResult renderProp ? */}
             {
                 <Portal
@@ -55,6 +58,7 @@ export function ExpandableAutocompleteBtn(props: ExpandableAutocompleteBtnProps)
                     children={response.isLoading ? <Spinner size="lg" /> : <ResultList />}
                 />
             }
+            {expandableProps.isFloating ? <FloatingBtn button={Button} /> : Button}
         </div>
     );
 }
