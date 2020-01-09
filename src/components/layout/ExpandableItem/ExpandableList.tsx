@@ -12,7 +12,7 @@ import { bounceConfig, defaultSpringSettings } from "./config";
 import { ExpandableRenderListProps } from "./ExpandableGrid";
 
 export const ExpandableList = forwardRef<HTMLElement, ExpandableListProps>(
-    ({ items, getId, renderList, renderItem, onSelected, boxProps }, ref) => {
+    ({ items, getId, renderBox, renderList, renderItem, onSelected, boxProps }, ref) => {
         const [selected, setSelected] = useState<any>(null);
         const getFlipId = useCallback((item: object) => "img-" + getId(item), [getId]);
         const isSame = useCallback((a: object, b: object) => a && b && getFlipId(a) === getFlipId(b), [getFlipId]);
@@ -117,7 +117,9 @@ export const ExpandableList = forwardRef<HTMLElement, ExpandableListProps>(
                     zIndex={3}
                     willChange="opacity"
                     style={backgroundSpring}
-                />
+                >
+                    {renderBox?.({ selected, unselect: () => unselect(selected) })}
+                </AnimatedBox>
             </Box>
         );
     }
@@ -126,18 +128,18 @@ export const ExpandableList = forwardRef<HTMLElement, ExpandableListProps>(
 export type ExpandableListProps<T extends object = object> = {
     items: T[];
     getId: (item: T) => string | number;
+    renderBox?: ({ selected }: ExpandableListRenderBoxArgs) => ReactElement;
     renderList: (props: ExpandableRenderListProps) => ReactElement;
-    renderItem: ({
-        item,
-        isSelected,
-        isDragging,
-    }: {
-        item: T;
-        isSelected: boolean;
-        isDragging: boolean;
-    }) => ReactElement;
+    renderItem: ({ item, isSelected, isDragging }: ExpandableListRenderItemArgs<T>) => ReactElement;
     onSelected?: (item: T) => void;
     boxProps?: BoxProps;
+};
+
+export type ExpandableListRenderBoxArgs = Pick<ExpandableRenderListProps, "selected"> & { unselect: () => void };
+export type ExpandableListRenderItemArgs<T extends object = object> = {
+    item: T;
+    isSelected: boolean;
+    isDragging: boolean;
 };
 
 const AnimatedBox = animated(Box);
