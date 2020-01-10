@@ -3,7 +3,6 @@ import {
     ForwardRefExoticComponent, memo, RefAttributes, useCallback, useMemo, useState
 } from "react";
 import { IoMdImages, IoMdMore } from "react-icons/io";
-import { useInView } from "react-intersection-observer";
 
 import { ActionBtn } from "@/components/buttons";
 import { CustomIcon } from "@/components/common/CustomIcon";
@@ -14,6 +13,7 @@ import {
 } from "@/components/layout/ExpandableItem/ExpandableList";
 import { SwipableProps, SwipeDirection, SwipePosition } from "@/components/layout/Swipable";
 import { useWindowSize } from "@/hooks/dom";
+import { useLazyScroll } from "@/hooks/dom/useLazyScroll";
 import { AutocompleteResultListRenderPropArg } from "@/hooks/form/useAutocomplete";
 import { useCallbackRef } from "@/hooks/useCallbackRef";
 
@@ -107,7 +107,7 @@ export const MemeResult = memo(
         };
 
         const { width } = useWindowSize();
-        const [ref, inView] = useInView({ rootMargin: "200px 0px", triggerOnce: true });
+        const [ref, isVisible] = useLazyScroll();
 
         const isMultipartMeme = useMemo(() => item._source.pictures.length > 1, [item]);
 
@@ -148,7 +148,7 @@ export const MemeResult = memo(
 
         return (
             <div css={{ display: "flex", width: "100%" }} ref={ref}>
-                {inView && component}
+                {isVisible && component}
             </div>
         );
     },
