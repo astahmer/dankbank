@@ -1,6 +1,6 @@
 import { Box, Flex } from "@chakra-ui/core";
 import { useRouter } from "next/router";
-import { ReactNode, useContext, useMemo, useRef } from "react";
+import { ReactNode, useContext, useMemo } from "react";
 import {
     IoMdAddCircle, IoMdContact, IoMdHeart, IoMdHome, IoMdLogIn, IoMdSearch
 } from "react-icons/io";
@@ -8,19 +8,18 @@ import {
 import { BackBtn } from "@/components/buttons/BackBtn";
 import { Header, TabBar } from "@/components/layout";
 import { ColorToggle } from "@/components/layout/Color/ColorToggle";
-import { makeTranslate3d, useClientEffect } from "@/functions/utils";
+import { useClientEffect } from "@/functions/utils";
 import { AuthContext } from "@/hooks/async/useAuth";
 import { useResponsive } from "@/hooks/dom/useResponsive";
 import { AuthAccess } from "@/services/AuthManager";
 
-import { Swipable } from "../Swipable";
 import { PageHead, PageHeadProps } from "./PageHead";
 
 export type PageProps = { head: PageHeadProps };
 export type PageLayoutProps = { children: ReactNode } & PageProps;
 
 export const PageLayout = ({ children, head }: PageLayoutProps) => {
-    const { isMobile, width, height } = useResponsive();
+    const { isMobile, height } = useResponsive();
     const { isTokenValid } = useContext(AuthContext);
     const router = useRouter();
 
@@ -29,12 +28,6 @@ export const PageLayout = ({ children, head }: PageLayoutProps) => {
         router.route,
         isTokenValid,
     ]);
-
-    const searchInputStyle = useRef<any>();
-    // TODO
-    useClientEffect(() => {
-        searchInputStyle.current = { transform: makeTranslate3d(-width + 40) };
-    }, []);
 
     // Scroll back on active input when focusing it on mobile (and thefore resizing window through keyboard showing)
     useClientEffect(() => {
@@ -57,19 +50,7 @@ export const PageLayout = ({ children, head }: PageLayoutProps) => {
                         {children}
                     </Flex>
                 </Flex>
-                {isMobile && (
-                    <Swipable axis={"X"} xDistance={30} pos="fixed" width="100%" bottom="0px" zIndex={1}>
-                        <TabBar tabs={shownLinks} />
-                        {/* <TagsAutocomplete
-                            boxProps={{
-                                pos: "absolute",
-                                top: 0,
-                                style: searchInputStyle.current || { visibility: "hidden" },
-                            }}
-                            setSelecteds={() => ({})}
-                        /> */}
-                    </Swipable>
-                )}
+                <TabBar tabs={shownLinks} />
             </Flex>
         </Box>
     );
