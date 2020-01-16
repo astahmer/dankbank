@@ -15,6 +15,7 @@ export default class BaseDocument extends Document {
                     <NoFlashScript />
                     <Main />
                     <NextScript />
+                    <div id="full-portals"></div>
                 </body>
             </html>
         );

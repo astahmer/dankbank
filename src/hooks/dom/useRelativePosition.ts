@@ -8,13 +8,17 @@ export function useRelativePosition(
     elementRef: MutableRefObject<HTMLElement>,
     options?: UseRelativePositionOptions
 ): UseRelativePositionReturn {
-    const { placement, offset, isFullWidth, onChange, events = defaultEvents } = options || {};
+    const { placement, offset, isFullWidth, onChange, trigger, events = defaultEvents, usePageOffset = true } =
+        options || {};
 
     const wrapperRef = useRef<HTMLElement>();
-    const getWrapperRef = useCallback((element: HTMLElement) => {
-        setRef(wrapperRef, element);
-        handleScroll();
-    }, []);
+    const getWrapperRef = useCallback(
+        (element: HTMLElement) => {
+            setRef(wrapperRef, element);
+            handleScroll();
+        },
+        [trigger]
+    );
     const posRef = useRef<Offset>({ left: 0, top: 0, right: 0 });
 
     const handleScroll = useCallback(() => {
@@ -22,7 +26,7 @@ export function useRelativePosition(
             return;
         }
         const rect = elementRef.current.getBoundingClientRect();
-        const pageOffset = getPageOffset();
+        const pageOffset = usePageOffset ? getPageOffset() : { x: 0, y: 0 };
 
         const top = pageOffset.y + rect.top;
         const right = document.documentElement.clientWidth - rect.right - pageOffset.x;
@@ -39,7 +43,7 @@ export function useRelativePosition(
             const [anchorOffsetX, anchorOffsetY] = getAnchorOffsetByPlacement(placement, rect, wrapperRect);
 
             if (posRef.current.top !== undefined) {
-                wrapperRef.current.style.top = posRef.current.top + (anchorOffsetY || 0) + (offset?.top || 0) + "px";
+                wrapperRef.current.style.top = posRef.current.top - (anchorOffsetY || 0) + (offset?.top || 0) + "px";
             }
             if (posRef.current.left !== undefined) {
                 wrapperRef.current.style.left = posRef.current.left + (anchorOffsetX || 0) + (offset?.left || 0) + "px";
@@ -48,7 +52,7 @@ export function useRelativePosition(
                 wrapperRef.current.style.right = posRef.current.right + (offset?.right || 0) + "px";
             }
         }
-    }, [elementRef]);
+    }, []);
 
     useEffect(() => {
         const handler = throttle(handleScroll, 100);
@@ -78,6 +82,8 @@ export type UseRelativePositionOptions = {
     offset?: Offset;
     events?: string[];
     onChange?: (pos: Offset) => void;
+    usePageOffset?: boolean;
+    trigger?: any;
 };
 
 type Ref = MutableRefObject<HTMLElement>;
@@ -108,7 +114,6 @@ function getAnchorOffsetByPlacement(placement: Placement, elementRect: DOMRect, 
         offsetY = +elementRect.height;
     }
 
-    console.log(placement, [offsetX, offsetY], elementRect, wrapperRect);
     return [offsetX, offsetY];
 }
 
