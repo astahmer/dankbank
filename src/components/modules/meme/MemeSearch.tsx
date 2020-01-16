@@ -2,9 +2,10 @@ import { Box, ButtonGroup, Flex } from "@chakra-ui/core";
 import {
     ForwardRefExoticComponent, memo, RefAttributes, useCallback, useMemo, useState
 } from "react";
-import { IoMdImages, IoMdMore } from "react-icons/io";
+import { IoMdImages } from "react-icons/io";
 
 import { ActionBtn } from "@/components/buttons";
+import { ModalButton } from "@/components/buttons/ModalBtn";
 import { CustomIcon } from "@/components/common/CustomIcon";
 import { Picture } from "@/components/common/Picture";
 import { ExpandableGrid } from "@/components/layout/ExpandableItem/ExpandableGrid";
@@ -53,38 +54,33 @@ export const MemeResultList = memo(function(
             ref={args.resultListRef}
             items={args.items}
             getId={(item) => item._id}
-            renderBox={(props) => (
-                <>
-                    <Box pos="absolute" top="0" w="100%">
-                        top
-                        <Flex justifyContent="space-between">
-                            <ButtonGroup>
-                                <ActionBtn
-                                    variant="ghost"
-                                    size="md"
-                                    label="Back"
-                                    icon={"arrow-back"}
-                                    fontSize="2xl"
-                                    onClick={() => props.unselect()}
-                                />
-                            </ButtonGroup>
-                            <ButtonGroup>
-                                <ActionBtn
-                                    variant="ghost"
-                                    size="md"
-                                    label="Back"
-                                    icon={IoMdMore}
-                                    fontSize="2xl"
-                                    onClick={() => {}}
-                                />
-                            </ButtonGroup>
-                        </Flex>
-                    </Box>
-                    <Box pos="absolute" bottom="0" w="100%">
-                        bot
-                    </Box>
-                </>
-            )}
+            renderBox={(props) =>
+                props.selected && (
+                    <>
+                        <Box pos="absolute" top="0" w="100%">
+                            top
+                            <Flex justifyContent="space-between">
+                                <ButtonGroup>
+                                    <ActionBtn
+                                        variant="ghost"
+                                        size="md"
+                                        label="Back"
+                                        icon={"arrow-back"}
+                                        fontSize="2xl"
+                                        onClick={() => props.unselect()}
+                                    />
+                                </ButtonGroup>
+                                <ButtonGroup>
+                                    <ModalButton>Enregistrer</ModalButton>
+                                </ButtonGroup>
+                            </Flex>
+                        </Box>
+                        <Box pos="absolute" bottom="0" w="100%">
+                            bot
+                        </Box>
+                    </>
+                )
+            }
             renderList={(props) => <ExpandableGrid {...props} />}
             renderItem={(itemProps) => (
                 <MemeResult {...itemProps} storeSliderPos={storeSliderPos} currentPos={sliderPos[itemProps.item._id]} />
