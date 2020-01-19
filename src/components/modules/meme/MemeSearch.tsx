@@ -5,7 +5,7 @@ import {
 import { IoMdImages } from "react-icons/io";
 
 import { ActionBtn } from "@/components/buttons";
-import { ModalButton } from "@/components/buttons/ModalBtn";
+import { MenuModalBtn } from "@/components/buttons/MenuModalBtn";
 import { CustomIcon } from "@/components/common/CustomIcon";
 import { Picture } from "@/components/common/Picture";
 import { ExpandableGrid } from "@/components/layout/ExpandableItem/ExpandableGrid";
@@ -72,7 +72,17 @@ export const MemeResultList = memo(function(
                                     />
                                 </ButtonGroup>
                                 <ButtonGroup>
-                                    <ModalButton>Enregistrer</ModalButton>
+                                    <MenuModalBtn
+                                        items={[
+                                            { label: "Enregistrer", onClick: () => console.log("save") },
+                                            { label: "Ajouter aux favoris", onClick: () => console.log("add") },
+                                            { label: "Signaler", onClick: () => console.log("report") },
+                                        ]}
+                                        options={{
+                                            placement: ["right", "top"],
+                                            topModifier: ({ value, triggerRect }) => value - triggerRect.height - 5,
+                                        }}
+                                    />
                                 </ButtonGroup>
                             </Flex>
                         </Box>

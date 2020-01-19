@@ -6,18 +6,20 @@ import { animated, config, useTransition } from "react-spring";
 import { setRef } from "@/functions/utils";
 import { useClickOutside } from "@/hooks/dom";
 
-import { RelativePortal } from "../layout/RelativePortal";
+import { RelativePortal, RelativePortalProps } from "../layout/RelativePortal";
 import { ActionBtn } from "./";
 import { ActionBtnProps } from "./ActionBtn";
 
-export type ModalButtonProps = ActionBtnProps & ChildrenProp & { usePortal?: boolean };
+export type ModalBtnProps = ActionBtnProps & ChildrenProp & Pick<RelativePortalProps, "options">;
+export const PORTAL_ID = "full-portals";
 
-export function ModalButton({ children, usePortal, ...props }: ModalButtonProps) {
+export function ModalBtn({ children, options, ...props }: ModalBtnProps) {
     const [isOpen, setOpen] = useState(false);
 
     const innerRef = useRef<HTMLElement>();
     const setInnerRef = (element: HTMLElement) => setRef(innerRef, element);
 
+    const containerRef = useRef(document.getElementById(PORTAL_ID) || document.body);
     useClickOutside(innerRef, () => setOpen(false));
 
     const transitions = useTransition(isOpen, null, {
@@ -30,13 +32,11 @@ export function ModalButton({ children, usePortal, ...props }: ModalButtonProps)
     const { colorMode } = useColorMode();
     const bg = colorMode === "dark" ? "gray.800" : "gray.300";
 
-    const PORTAL_ID = "full-portals";
-
     return (
         <div ref={setInnerRef}>
             <RelativePortal
-                container={() => document.getElementById(PORTAL_ID)}
-                options={{ placement: ["right", "center"], trigger: isOpen, usePageOffset: false }}
+                container={() => containerRef.current}
+                options={{ placement: ["right", "center"], ...options, trigger: isOpen, usePageOffset: false }}
                 boxProps={{ transform: "translateX(-100%)", zIndex: 2 }}
                 element={
                     <ActionBtn
@@ -54,7 +54,16 @@ export function ModalButton({ children, usePortal, ...props }: ModalButtonProps)
                 {transitions.map(
                     ({ item, key, props: styles }) =>
                         item && (
-                            <AnimatedBox key={key} style={styles} bg={bg} px="10px" py="8px" w={180} fontSize={15}>
+                            <AnimatedBox
+                                key={key}
+                                style={styles}
+                                pointerEvents="all"
+                                bg={bg}
+                                px="10px"
+                                py="8px"
+                                w={180}
+                                fontSize={15}
+                            >
                                 {children}
                             </AnimatedBox>
                         )
