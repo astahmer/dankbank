@@ -23,7 +23,7 @@ export function RelativePortal({ element, children, boxProps, options, ...portal
     );
 }
 
-type RelativePortalProps = PortalProps & {
+export type RelativePortalProps = PortalProps & {
     element: ReactElement;
     boxProps?: BoxProps;
     options?: UseRelativePositionOptions;
