@@ -3,7 +3,7 @@ import { memo, useEffect, useState } from "react";
 import { animated, interpolate, useSpring } from "react-spring";
 import { useDrag } from "react-use-gesture";
 
-import { areArrayEqual } from "@/functions/utils";
+import { areArrayEqual, shallowDiffers } from "@/functions/utils";
 import { useVelocityTrackedSpring } from "@/hooks/dom/useVelocityTrackedSpring";
 
 import { getSelectedCss } from "./config";
@@ -13,6 +13,7 @@ import { ExpandableRenderListProps } from "./ExpandableGrid";
 export const ExpandableItem = memo(
     function({
         item,
+        index,
         renderItem,
         flipId,
         isSelected,
@@ -23,6 +24,7 @@ export const ExpandableItem = memo(
         height,
         zIndexQueue,
         setBackgroundSpring,
+        memoData,
     }: ExpandableGridItem) {
         const { colorMode } = useColorMode();
 
@@ -102,28 +104,36 @@ export const ExpandableItem = memo(
                         }),
                     }}
                 >
-                    {renderItem({ item, isSelected, isDragging: isValid })}
+                    {renderItem({ item, index, flipId, memoData, isSelected, isDragging: isValid })}
                 </Box>
             </Box>
         );
     },
     (prevProps, nextProps) => {
+        const areMemoEqual =
+            prevProps.memoData || nextProps.memoData
+                ? prevProps.memoData && nextProps.memoData && !shallowDiffers(prevProps.memoData, nextProps.memoData)
+                : true;
         const areEqual =
             prevProps.flipId === nextProps.flipId &&
             prevProps.isSelected === nextProps.isSelected &&
             prevProps.width === nextProps.width &&
             prevProps.height === nextProps.height &&
-            areArrayEqual(prevProps.zIndexQueue, nextProps.zIndexQueue);
+            areArrayEqual(prevProps.zIndexQueue, nextProps.zIndexQueue) &&
+            areMemoEqual;
+
         return areEqual;
     }
 );
 
 export type ExpandableGridItem<T extends object = object> = {
+    index: number;
     item: T;
     flipId: string;
     isSelected: boolean;
     width: number;
     height: number;
+    memoData?: any;
 } & Pick<
     ExpandableRenderListProps<T>,
     "renderItem" | "setSelected" | "unselect" | "storeSpringSet" | "zIndexQueue" | "setBackgroundSpring"

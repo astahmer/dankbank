@@ -18,7 +18,7 @@ export const ExpandableBox = forwardRef<HTMLElement, ExpandableBoxProps>(({ iden
     );
 });
 
-export function ExpandableBoxItem({ items, getFlipId, selected, ...props }: ExpandableRenderListProps) {
+export function ExpandableBoxItem({ items, getFlipId, selected, memoData, ...props }: ExpandableRenderListProps) {
     const { width, height } = useWindowSize();
 
     const listItemProps = { width, height, ...props };
@@ -27,8 +27,10 @@ export function ExpandableBoxItem({ items, getFlipId, selected, ...props }: Expa
     return (
         <ExpandableItem
             item={item}
+            index={0}
             flipId={getFlipId(item)}
             isSelected={selected && getFlipId(selected) === getFlipId(item)}
+            memoData={memoData ? memoData[0] : undefined}
             {...listItemProps}
         />
     );

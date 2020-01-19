@@ -10,7 +10,7 @@ import { CustomIcon } from "@/components/common/CustomIcon";
 import { Picture } from "@/components/common/Picture";
 import { ExpandableGrid } from "@/components/layout/ExpandableItem/ExpandableGrid";
 import {
-    ExpandableList as ExpList, ExpandableListProps
+    ExpandableList as ExpList, ExpandableListProps, ExpandableListRenderItemArgs
 } from "@/components/layout/ExpandableItem/ExpandableList";
 import { SwipableProps, SwipeDirection, SwipePosition } from "@/components/layout/Swipable";
 import { useWindowSize } from "@/hooks/dom";
@@ -54,6 +54,7 @@ export const MemeResultList = memo(function(
             ref={args.resultListRef}
             items={args.items}
             getId={(item) => item._id}
+            memoData={sliderPos}
             renderBox={(props) =>
                 props.selected && (
                     <>
@@ -82,25 +83,24 @@ export const MemeResultList = memo(function(
                 )
             }
             renderList={(props) => <ExpandableGrid {...props} />}
-            renderItem={(itemProps) => (
-                <MemeResult {...itemProps} storeSliderPos={storeSliderPos} currentPos={sliderPos[itemProps.item._id]} />
-            )}
+            renderItem={(itemProps) => <MemeResult {...itemProps} storeSliderPos={storeSliderPos} />}
         />
     );
 });
 
-type MemeResultProps = {
-    item: MemeSearchResult;
-    isSelected: boolean;
-    isDragging: boolean;
-    storeSliderPos: (id: string, pos: SwipePosition) => void;
-    currentPos?: SwipableProps["currentPos"];
+type MemeResultProps = ExpandableListRenderItemArgs<MemeSearchResult, SwipableProps["currentPos"]> & {
+    storeSliderPos: (id: string | number, pos: SwipePosition) => void;
 };
 export const MemeResult = memo(
-    function({ item, isSelected, isDragging, storeSliderPos, currentPos = { x: 0, y: 0 } }: MemeResultProps) {
-        const onSwipe = (direction: SwipeDirection, pos: SwipePosition) => {
-            storeSliderPos(item._id, pos);
-        };
+    function({
+        item,
+        index,
+        isSelected,
+        isDragging,
+        storeSliderPos,
+        memoData: currentPos = { x: 0, y: 0 },
+    }: MemeResultProps) {
+        const onSwipe = (direction: SwipeDirection, pos: SwipePosition) => storeSliderPos(index, pos);
 
         const { width } = useWindowSize();
         const [ref, isVisible] = useLazyScroll();
@@ -137,6 +137,7 @@ export const MemeResult = memo(
                     <CustomIcon icon={IoMdImages} color="white" pos="absolute" top="5px" right="5px" size="20px" />
                 ) : null}
                 <Box pos="absolute" bottom="0">
+                    {currentPos.x}
                     {isDragging ? "oui" : "non"}
                 </Box>
             </>
@@ -153,9 +154,8 @@ export const MemeResult = memo(
             prevProps.item._id === nextProps.item._id &&
             prevProps.isSelected === nextProps.isSelected &&
             prevProps.isDragging === nextProps.isDragging &&
-            ((prevProps.currentPos === undefined && nextProps.currentPos === undefined) ||
-                (prevProps.currentPos?.x === nextProps.currentPos?.x &&
-                    prevProps.currentPos?.y === nextProps.currentPos?.y));
+            ((prevProps.memoData === undefined && nextProps.memoData === undefined) ||
+                (prevProps.memoData?.x === nextProps.memoData?.x && prevProps.memoData?.y === nextProps.memoData?.y));
         return areEqual;
     }
 );

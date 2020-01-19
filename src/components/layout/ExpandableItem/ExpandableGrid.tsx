@@ -5,7 +5,7 @@ import { useWindowSize } from "@/hooks/dom";
 import { ExpandableItem } from "./ExpandableItem";
 import { ExpandableListProps } from "./ExpandableList";
 
-export function ExpandableGrid({ items, getFlipId, selected, ...props }: ExpandableRenderListProps) {
+export function ExpandableGrid({ items, getFlipId, selected, memoData, ...props }: ExpandableRenderListProps) {
     const { width, height } = useWindowSize();
     const gridItemProps = { width, height, ...props };
 
@@ -14,9 +14,11 @@ export function ExpandableGrid({ items, getFlipId, selected, ...props }: Expanda
             {items.map((item, i) => (
                 <ExpandableItem
                     key={i}
+                    index={i}
                     item={item}
                     flipId={getFlipId(item)}
                     isSelected={selected ? getFlipId(selected) === getFlipId(item) : false}
+                    memoData={memoData ? memoData[i] : undefined}
                     {...gridItemProps}
                 />
             ))}
@@ -34,4 +36,5 @@ export type ExpandableRenderListProps<T extends object = object> = {
     unselect: (result: T) => void;
     storeSpringSet: (id: string, set: UseSpringSet) => void;
     setBackgroundSpring: UseSpringSet;
+    memoData?: ExpandableListProps["memoData"];
 };
