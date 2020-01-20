@@ -6,6 +6,7 @@ import { IImage, Quality } from "@/types/entities/Image";
 import { CustomImage } from "./CustomImage";
 
 type PictureProps = ImageProps & { item: IImage; useResponsive?: boolean; quality?: Quality };
+// TODO alt="picture.tags" ?
 
 export const Picture = forwardRef(
     ({ item, useResponsive = true, quality = Quality.MEDIUM, ...props }: PictureProps, ref) => {

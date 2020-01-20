@@ -129,15 +129,17 @@ export const ExpandableList = forwardRef<HTMLElement, ExpandableListProps>(
 export type ExpandableListProps<T extends object = object> = {
     items: T[];
     getId: (item: T) => string | number;
-    renderBox?: ({ selected }: ExpandableListRenderBoxArgs) => ReactElement;
-    renderList: (props: ExpandableRenderListProps) => ReactElement;
+    renderBox?: ({ selected }: ExpandableListRenderBoxArgs<T>) => ReactElement;
+    renderList: (props: ExpandableRenderListProps<T>) => ReactElement;
     renderItem: ({ item, isSelected, isDragging, index }: ExpandableListRenderItemArgs<T>) => ReactElement;
     onSelected?: (item: T) => void;
     boxProps?: BoxProps;
     memoData?: Record<string | number, any>;
 };
 
-export type ExpandableListRenderBoxArgs = Pick<ExpandableRenderListProps, "selected"> & { unselect: () => void };
+export type ExpandableListRenderBoxArgs<T extends object = object> = Pick<ExpandableRenderListProps<T>, "selected"> & {
+    unselect: () => void;
+};
 export type ExpandableListRenderItemArgs<T extends object = object, M = any> = {
     item: T;
     index: number;

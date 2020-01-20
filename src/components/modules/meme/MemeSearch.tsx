@@ -74,8 +74,16 @@ export const MemeResultList = memo(function(
                                 <ButtonGroup>
                                     <MenuModalBtn
                                         items={[
-                                            { label: "Enregistrer", onClick: () => console.log("save") },
-                                            { label: "Ajouter aux favoris", onClick: () => console.log("add") },
+                                            {
+                                                label: "Enregistrer",
+                                                onClick: () => {
+                                                    console.log("save");
+                                                },
+                                            },
+                                            {
+                                                label: "Ajouter aux favoris",
+                                                onClick: () => console.log("add", props.selected),
+                                            },
                                             { label: "Signaler", onClick: () => console.log("report") },
                                         ]}
                                         options={{

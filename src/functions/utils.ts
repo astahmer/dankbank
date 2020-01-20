@@ -261,3 +261,14 @@ export function shallowDiffers(a: Record<any, any>, b: Record<any, any>) {
     for (let i in b) if (a[i] !== b[i]) return true;
     return false;
 }
+
+export function downloadUrl(data: string, fileName: string) {
+    const linkElement = document.createElement("a");
+    fetch(data)
+        .then((res) => res.blob())
+        .then((blob) => {
+            linkElement.href = window.URL.createObjectURL(blob);
+            linkElement.download = fileName;
+            linkElement.click();
+        });
+}

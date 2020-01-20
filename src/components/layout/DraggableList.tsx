@@ -123,8 +123,6 @@ export function DraggableList({ children, getId, onOrderChange, dragDelay = 180,
         return memo;
     });
 
-    console.log(isDragging);
-
     return (
         <Box
             {...props}

@@ -50,7 +50,7 @@ export const PageLayout = ({ children, head }: PageLayoutProps) => {
                         {children}
                     </Flex>
                 </Flex>
-                <TabBar tabs={shownLinks} />
+                <TabBar tabs={shownLinks} pos="fixed" bottom="0" left="0" right="0" zIndex={100} />
             </Flex>
         </Box>
     );

@@ -51,6 +51,7 @@ export function useAPI<Data = any, Props = any>(
         return API[method](url, props, { cancelToken, ...config, ...overrideConfig });
     };
 
+    // TODO make useMountAPI = useAPI(url, {onMount: true}) instead
     const isSecondArgAsyncOptions = isAsyncOptions(valuesOrAsyncOptions);
     const values = !isType<UseAsyncOptions>(valuesOrAsyncOptions, isSecondArgAsyncOptions)
         ? valuesOrAsyncOptions
