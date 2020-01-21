@@ -29,11 +29,6 @@ export const ExpandableBtn = forwardRef<HTMLInputElement, ExpandableBtnProps>(
             borderRadius: "50px",
         });
 
-        const { x } = useSpring({
-            config: { tension: 400, friction: 31, duration: 50 },
-            x: isExpanded ? -vwToPixel(100) + 40 + 48 : 0,
-        });
-
         // Focus input on opening
         useEffect(() => {
             if (isExpanded) {
@@ -54,26 +49,25 @@ export const ExpandableBtn = forwardRef<HTMLInputElement, ExpandableBtnProps>(
                         _placeholder={{ color: "gray.500", fontSize: "0.9em" }}
                         pl="56px"
                         pr="15px"
+                        minWidth="56px"
                         {...inputProps}
                         as="input"
                         ref={ref}
                         style={spring}
                     />
+                    <AnimatedActionBtn
+                        size="lg"
+                        bg={colorMode === "dark" ? "blue.500" : "blue.300"}
+                        color="gray.50"
+                        _active={{}}
+                        _hover={{}}
+                        pos="absolute"
+                        left="0"
+                        transform={!isExpanded ? `translate3d(15px, 0, 0)` : undefined}
+                        {...btnProps}
+                        onClick={() => toggle()}
+                    />
                 </Box>
-                <AnimatedActionBtn
-                    size="lg"
-                    bg={colorMode === "dark" ? "blue.500" : "blue.300"}
-                    color="gray.50"
-                    _active={{}}
-                    _hover={{}}
-                    // _focus={{}}
-                    // _focusWithin={{}}
-                    {...btnProps}
-                    onClick={() => toggle()}
-                    style={{
-                        transform: x.interpolate((x: number) => `translate3d(${x}px, 0px, 0px)`),
-                    }}
-                />
             </Box>
         );
     }
