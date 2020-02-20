@@ -1,15 +1,12 @@
 import { Box, BoxProps } from "@chakra-ui/core";
 import { disableBodyScroll, enableBodyScroll } from "body-scroll-lock";
-import {
-    Children, ReactElement, useEffect, useLayoutEffect, useMemo, useRef, useState
-} from "react";
+import { Children, ReactElement, useEffect, useMemo, useRef, useState } from "react";
 import { IoMdImages } from "react-icons/io";
 import { animated, interpolate, useSprings } from "react-spring";
 import { useDrag } from "react-use-gesture";
 
 import { API_ROUTES } from "@/config/api";
-import { move } from "@/functions/utils";
-import { useAPI } from "@/hooks/async";
+import { move, useClientEffect } from "@/functions/utils";
 import { useMutationObserver } from "@/hooks/dom/useMutationObserver";
 import { AutocompleteResponse } from "@/hooks/form/useAutocomplete";
 
@@ -87,7 +84,7 @@ export function DraggableList({ children, getId, onOrderChange, dragDelay = 180,
         setSprings(makeSprings(heights, getIndexes(items.current), { immediate: true }) as any);
     }, [entries]);
 
-    useLayoutEffect(() => {
+    useClientEffect(() => {
         if (isDragging) {
             disableBodyScroll(window.document.documentElement);
         } else {
