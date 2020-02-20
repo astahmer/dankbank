@@ -26,6 +26,7 @@ function useAuth(serverCookies?: any, newAccessToken?: string): [AuthInitialStat
     // Whenever we get a new accessToken, refresh AuthContext
     useEffect(() => {
         refresh(accessToken);
+        Auth.setAccessToken(accessToken);
     }, [accessToken]);
 
     // Auth Actions
@@ -91,7 +92,7 @@ const reducer: Reducer<AuthInitialState, AuthActionPayload> = (state, action) =>
     }
 };
 
-type AuthContext = AuthInitialState & { actions: AuthActions };
+export type AuthContext = AuthInitialState & { actions: AuthActions };
 type AuthActions = {
     login: (accessToken: string, refreshToken: string) => void;
     refresh: (accessToken: string) => void;

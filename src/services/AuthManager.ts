@@ -43,7 +43,7 @@ class AuthManager {
     storeCurrentUser({ accessToken, refreshToken, user }: LoginArgs) {
         Cookies.set("tokens", { accessToken, refreshToken }, "1 day");
         Memory.set("user", user);
-        axiosInstance.defaults.headers.common["Authorization"] = "Bearer " + accessToken;
+        this.setAccessToken(accessToken);
     }
 
     isTokenValid(token: string, safeDuration = 0) {
@@ -82,7 +82,8 @@ class AuthManager {
         try {
             const headers = { authorization: "Bearer " + refreshToken };
             const newTokenReq = await axiosRefresh.get(API_ROUTES.Auth.refresh, { headers });
-            this.setAccessToken(newTokenReq.data.accessToken, ctx);
+            this.setAccessToken(newTokenReq.data.accessToken);
+            Cookies.set("tokens.accessToken", newTokenReq.data.accessToken, "1 day", ctx);
 
             return newTokenReq.data.accessToken;
         } catch (error) {
@@ -90,8 +91,7 @@ class AuthManager {
         }
     }
 
-    setAccessToken(accessToken: string, ctx?: NextPageContext) {
-        Cookies.set("tokens.accessToken", accessToken, "1 day", ctx);
+    setAccessToken(accessToken: string) {
         axiosInstance.defaults.headers.common["Authorization"] = "Bearer " + accessToken;
     }
 
