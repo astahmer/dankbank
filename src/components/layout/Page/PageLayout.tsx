@@ -23,8 +23,7 @@ export const PageLayout = ({ children, head }: PageLayoutProps) => {
     const { isTokenValid } = useContext(AuthContext);
     const router = useRouter();
 
-    const authAccess = isTokenValid ? [AuthAccess.LOGGED, AuthAccess.BOTH] : [AuthAccess.ANONYMOUS, AuthAccess.BOTH];
-    const shownLinks = useMemo(() => links.filter((link) => authAccess.includes(link.access)), [
+    const shownLinks = useMemo(() => links.filter((link) => getAuthorizedAccess(isTokenValid).includes(link.access)), [
         router.route,
         isTokenValid,
     ]);
@@ -50,7 +49,7 @@ export const PageLayout = ({ children, head }: PageLayoutProps) => {
                         {children}
                     </Flex>
                 </Flex>
-                <TabBar tabs={shownLinks} pos="fixed" bottom="0" left="0" right="0" zIndex={100} />
+                <TabBar tabs={shownLinks} pos="fixed" bottom="0" left="0" right="0" zIndex={3} />
             </Flex>
         </Box>
     );
@@ -60,6 +59,9 @@ export interface ILinkItem {
     name?: string;
     route?: string;
 }
+
+export const getAuthorizedAccess = (isTokenValid: boolean) =>
+    isTokenValid ? [AuthAccess.LOGGED, AuthAccess.BOTH] : [AuthAccess.ANONYMOUS, AuthAccess.BOTH];
 
 const links = [
     { route: "/", name: "Home", icon: IoMdHome, access: AuthAccess.LOGGED },
