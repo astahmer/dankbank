@@ -3,14 +3,14 @@ import { useContext } from "react";
 import { LogoutBtn } from "@/components/buttons/LogoutBtn";
 import { Debug } from "@/components/common/Debug";
 import { baseURL } from "@/config/api";
-import { useAPI } from "@/hooks/async";
+import { useInitialAPI } from "@/hooks/async/useAPI";
 import { AuthContext } from "@/hooks/async/useAuth";
 import { AuthAccess } from "@/services/AuthManager";
 import { IUser } from "@/types/entities/User";
 
 export default function Profile() {
     const auth = useContext(AuthContext);
-    const [async] = useAPI<ItemResponse<IUser>>(baseURL + "/users/" + auth.user.id, { onMount: true });
+    const [async] = useInitialAPI<ItemResponse<IUser>>(baseURL + "/users/" + auth.user?.id);
 
     return (
         <div>

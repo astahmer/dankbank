@@ -3,7 +3,7 @@ import { FunctionComponent, useCallback, useContext } from "react";
 
 import { ImageUploader, UploadResult } from "@/components/field/ImageUploader/ImageUploader";
 import { TagsAutocomplete } from "@/components/modules/tag/TagsAutocomplete";
-import { useAPI } from "@/hooks/async/useAPI";
+import { useRequestAPI } from "@/hooks/async/useAPI";
 import { AuthContext } from "@/hooks/async/useAuth";
 import { FormSubmitCallback, useForm } from "@/hooks/form/useForm";
 import { IImage } from "@/types/entities/Image";
@@ -44,7 +44,7 @@ export function MemeFormTemplate({ onSubmit, isLoading }: FormProps) {
 }
 
 export function MemeForm() {
-    const [async, run] = useAPI<MemeResponse, MemeBody>("/memes/", null, { method: "post" });
+    const [async, run] = useRequestAPI<MemeResponse, MemeBody>("/memes/", { method: "post" });
     const { user } = useContext(AuthContext);
 
     const onSubmit: FormSubmitCallback<MemeFormState> = async (data, e) => {

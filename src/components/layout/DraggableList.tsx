@@ -7,6 +7,7 @@ import { useDrag } from "react-use-gesture";
 
 import { API_ROUTES } from "@/config/api";
 import { move, useClientEffect } from "@/functions/utils";
+import { useInitialAPI } from "@/hooks/async/useAPI";
 import { useMutationObserver } from "@/hooks/dom/useMutationObserver";
 import { AutocompleteResponse } from "@/hooks/form/useAutocomplete";
 
@@ -213,12 +214,12 @@ const getCurrentRow = (heights: number[], draggedIndex: number, y: number) => {
 };
 
 export function DraggableListTest() {
-    const [async] = useAPI<AutocompleteResponse<MemeSearchResult>>(
+    const [async] = useInitialAPI<AutocompleteResponse<MemeSearchResult>>(
         API_ROUTES.Search.memes,
         { q: "a", size: 100 },
         null,
         null,
-        { initialData: { items: [], total: undefined }, onMount: true }
+        { initialData: { items: [], total: undefined } }
     );
 
     return (

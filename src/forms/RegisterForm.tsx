@@ -3,7 +3,7 @@ import { useCallback, useContext } from "react";
 
 import { PasswordInput } from "@/components/field/PasswordInput";
 import { API_ROUTES } from "@/config/api";
-import { useAPI } from "@/hooks/async/useAPI";
+import { useRequestAPI } from "@/hooks/async/useAPI";
 import { AuthContext } from "@/hooks/async/useAuth";
 import { FormSubmitCallback, useForm } from "@/hooks/form/useForm";
 import { RegisterBody, RegisterResponse } from "@/types/routes/register";
@@ -37,7 +37,7 @@ export function RegisterTemplate({ onSubmit, isLoading }: FormProps) {
 type RegisterFormState = { email: string; name: string; password: string };
 
 export function RegisterForm() {
-    const [async, run] = useAPI<RegisterResponse, RegisterBody>(API_ROUTES.Auth.register, null, { method: "post" });
+    const [async, run] = useRequestAPI<RegisterResponse, RegisterBody>(API_ROUTES.Auth.register, { method: "post" });
     const { actions } = useContext(AuthContext);
 
     const onSubmit: FormSubmitCallback<RegisterFormState> = async (data, e) => {

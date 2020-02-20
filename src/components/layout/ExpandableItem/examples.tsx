@@ -4,7 +4,7 @@ import { CustomIcon } from "@/components/common/CustomIcon";
 import { CustomImage } from "@/components/common/CustomImage";
 import { MemeSearchResult } from "@/components/modules/meme/ExpandableMemesAutocomplete";
 import { API_ROUTES } from "@/config/api";
-import { useAPI } from "@/hooks/async";
+import { useInitialAPI } from "@/hooks/async/useAPI";
 import { AutocompleteResponse } from "@/hooks/form/useAutocomplete";
 
 import { ExpandableBox } from "./ExpandableBox";
@@ -12,13 +12,10 @@ import { ExpandableGrid } from "./ExpandableGrid";
 import { ExpandableList } from "./ExpandableList";
 
 export function ExpandableGridTest() {
-    const [async] = useAPI<AutocompleteResponse<MemeSearchResult>>(
-        API_ROUTES.Search.memes,
-        { q: "a", size: 100 },
-        null,
-        null,
-        { onMount: true }
-    );
+    const [async] = useInitialAPI<AutocompleteResponse<MemeSearchResult>>(API_ROUTES.Search.memes, {
+        q: "a",
+        size: 100,
+    });
 
     return (
         <ExpandableList

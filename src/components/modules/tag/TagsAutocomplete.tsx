@@ -2,7 +2,7 @@ import { BoxProps } from "@chakra-ui/core";
 import { IoMdPricetag } from "react-icons/io";
 
 import { API_ROUTES } from "@/config/api";
-import { useAPI } from "@/hooks/async/useAPI";
+import { useRequestAPI } from "@/hooks/async/useAPI";
 import {
     AutocompleteDataProps, AutocompleteFnProps, AutocompleteProps, AutocompleteResponseProps,
     AutocompleteWrapperProps
@@ -14,7 +14,7 @@ type TagsAutocomplete = Pick<AutocompleteProps, "display" | "options" | "inputPr
     AutocompleteWrapperProps & { boxProps?: BoxProps };
 
 export function TagsAutocomplete({ setSelecteds, ...props }: TagsAutocomplete) {
-    const [async, run, resetFn, canceler] = useAPI(API_ROUTES.Search.tag, {
+    const [async, run, resetFn, canceler] = useRequestAPI(API_ROUTES.Search.tag, null, null, {
         initialData: { items: [], total: undefined },
     });
 

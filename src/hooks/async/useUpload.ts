@@ -4,7 +4,7 @@ import { Reducer, useEffect, useReducer, useRef } from "react";
 import { CancelToken } from "@/config/api";
 import { getRandomString, makeFormData } from "@/functions/utils";
 
-import { useAPI } from "./useAPI";
+import { useRequestAPI } from "./useAPI";
 import { UseAsyncOptions, UseAsyncState } from "./useAsync";
 
 export type UseUploadOptions = {
@@ -63,9 +63,8 @@ export function useUpload<Result = any>(
     };
 
     const cancelSource = useRef(CancelToken.source());
-    const [async, run] = useAPI(
+    const [async, run] = useRequestAPI(
         url,
-        null,
         {
             ...config,
             method: "post",

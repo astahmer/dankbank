@@ -9,7 +9,7 @@ import { CustomImage } from "@/components/common/CustomImage";
 import { FullscreenModal } from "@/components/layout/Modal/FullscreenModal";
 import { API_ROUTES } from "@/config/api";
 import { round } from "@/functions/utils";
-import { useAPI } from "@/hooks/async/useAPI";
+import { useRequestAPI } from "@/hooks/async/useAPI";
 import { useAsync, UseAsyncState } from "@/hooks/async/useAsync";
 import { useUpload, UseUploadOptions } from "@/hooks/async/useUpload";
 import { useToggle } from "@/hooks/useToggle";
@@ -66,7 +66,7 @@ export function ImageItem({
     const displayedProgress = hasProgress ? round(fileProgress) : 0;
 
     const [thumbnail] = useAsync({ actionFn: () => getImgThumbnail(file), onTrigger: file.name });
-    const [cropReq, crop] = useAPI<IImage>(API_ROUTES.Upload.crop, null, { method: "post" });
+    const [cropReq, crop] = useRequestAPI<IImage>(API_ROUTES.Upload.crop, { method: "post" });
 
     const dataUrl = cropReq.data ? cropReq.data.url + "?t=" + Date.now() : thumbnail.data ? thumbnail.data.dataUrl : "";
     const cropData = cropReq.data && cropReq.data.cropData;
