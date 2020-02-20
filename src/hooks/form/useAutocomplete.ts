@@ -1,7 +1,7 @@
 import { IconProps, InputProps, PortalProps, useColorMode } from "@chakra-ui/core";
 import {
-    ChangeEvent, cloneElement, ElementType, FormEvent, KeyboardEvent, MouseEvent, MutableRefObject,
-    ReactElement, ReactNode, useCallback, useEffect, useMemo, useRef, useState
+    ChangeEvent, cloneElement, FormEvent, KeyboardEvent, MouseEvent, MutableRefObject, ReactElement,
+    ReactNode, useCallback, useEffect, useMemo, useRef, useState
 } from "react";
 import { IconType } from "react-icons/lib/cjs";
 
@@ -278,11 +278,16 @@ export function useAutocomplete<T = any>(
     );
 
     // Computeds
-    const shouldDisplayList = useMemo(() => !response.isLoading && (value.length > 0 || data.items.length > 0), [
-        response.isLoading,
-        value.length,
-        data.items.length,
-    ]);
+    const shouldDisplayList = useMemo(() => {
+        if (response.isLoading) {
+            return false;
+        }
+
+        const hasInput = value.length > 0;
+        const hasResults = data.items.length > 0;
+
+        return hasInput || hasResults;
+    }, [response.isLoading, value.length, data.items.length]);
     const shouldHideLeftEl = useMemo(
         () => options.shouldHideLeftElementOnFocus && (isFocused || value || selecteds.length),
         [options.shouldHideLeftElementOnFocus, isFocused, value, selecteds.length]
@@ -448,13 +453,15 @@ export type AutocompleteProps<T = any> = {
 };
 
 export type AutocompleteRendersProps = {
-    wrapperElement?: ElementType;
-    autocompleteInput?: (props: any) => ReactNode;
     resultList?: (props: AutocompleteResultListRenderPropArg) => ReactNode;
-    loader?: () => ReactNode;
+    selectedList?: (props: AutocompleteSelectedListRenderPropArg) => ReactNode;
+    // wrapperElement?: ElementType;
+    // autocompleteInput?: (props: any) => ReactNode;
+    // loader?: () => ReactNode;
 };
+export type AutocompleteDataSelectedItem<T = any> = T & { text: string };
 export type AutocompleteDataProps<T = any> = {
-    onSelectionChange: (selecteds: T[]) => void;
+    onSelectionChange: (selecteds: AutocompleteDataSelectedItem<T>[]) => void;
     items: T[];
     total: number;
 };
@@ -506,4 +513,8 @@ export type AutocompleteResultListRenderPropArg<T = any> = UseAutocompleteReturn
 };
 export type AutocompleteResultListRenderProp<T = any> = {
     resultList?: (props: AutocompleteResultListRenderPropArg<T>) => ReactNode;
+};
+
+export type AutocompleteSelectedListRenderPropArg<T = any> = UseAutocompleteReturnValues<T> & {
+    bind: UseAutocompleteReturnRefs<T>["selectedItem"];
 };
