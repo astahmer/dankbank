@@ -6,6 +6,9 @@ import { isDev } from "@/functions/utils";
 class ApiManager {
     async request<T = any>(method: Method, url: string, config: AxiosRequestConfig) {
         try {
+            // Get rid of /api/ from @id/iri
+            config.url = (config.url || url || "").replace("/api/", "");
+
             const res: AxiosResponse<T> = await axiosInstance({ method, url, ...config });
             return res.data;
         } catch (error) {
