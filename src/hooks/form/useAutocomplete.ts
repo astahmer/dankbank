@@ -58,7 +58,7 @@ export function useAutocomplete<T = any>(
             debounced(value);
         } else {
             cancelOpening.current = true;
-            response?.resetFn();
+            options.shouldResetOnEmptyInput && response?.resetFn();
             closeSuggestions();
         }
     }, [value]);
@@ -433,6 +433,7 @@ export const defaultOptions = {
     delay: 180,
     shouldHideLeftElementOnFocus: true,
     shouldShowResultsOnFocus: true,
+    shouldResetOnEmptyInput: true,
     withGhostSuggestion: true,
 };
 
@@ -479,6 +480,7 @@ export type AutocompleteOptionsCommonProps = {
     // usePortal?: boolean;
     shouldShowResultsOnFocus?: boolean;
     shouldHideLeftElementOnFocus?: boolean;
+    shouldResetOnEmptyInput?: boolean;
     withGhostSuggestion?: boolean;
     delay?: number;
 };
