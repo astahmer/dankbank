@@ -50,14 +50,12 @@ export function ExpandableAutocompleteBtn(props: ExpandableAutocompleteBtnProps)
 
     return (
         <div {...bindings.self}>
-            {/* TODO displayEmptyResult renderProp ? */}
-            {
-                <Portal
-                    isDisabled={!options.usePortal}
-                    container={options.usePortal && props.options.resultListContainer}
-                    children={response.isLoading ? <Spinner size="lg" /> : <ResultList />}
-                />
-            }
+            {props.render?.selectedList?.({ ...hook, bind: bindings.selectedItem })}
+            <Portal
+                isDisabled={!options.usePortal}
+                container={options.usePortal && props.options.resultListContainer}
+                children={response.isLoading ? <Spinner size="lg" /> : <ResultList />}
+            />
             {expandableProps.isFloating ? <FloatingBtn button={Button} /> : Button}
         </div>
     );
