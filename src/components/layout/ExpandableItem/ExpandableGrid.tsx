@@ -9,6 +9,8 @@ export function ExpandableGrid({ items, getFlipId, selected, memoData, ...props 
     const { width, height } = useWindowSize();
     const gridItemProps = { width, height, ...props };
 
+    // TODO use react-window & react-virtualized-auto-sizer
+
     return (
         <Grid gridTemplateColumns="repeat(3, 1fr)" autoRows="100px" gap={1}>
             {items.map((item, i) => (
