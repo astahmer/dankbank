@@ -36,7 +36,11 @@ export function LoginTemplate({ onSubmit, isLoading }: FormProps) {
 type LoginFormState = { username: string; password: string };
 
 export function LoginForm() {
-    const [async, run] = useRequestAPI<LoginResponse, LoginBody>(API_ROUTES.Auth.login, { method: "post" });
+    const [async, run] = useRequestAPI<LoginResponse, LoginBody>(
+        API_ROUTES.Auth.login,
+        { method: "post" },
+        { withToken: false }
+    );
     const { actions } = useContext(AuthContext);
 
     const onSubmit: FormSubmitCallback<LoginFormState> = async (data, e) => {

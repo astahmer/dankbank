@@ -21,7 +21,7 @@ export function useAPI<Data = any, Props = any>(
     options?: UseAPIOptions,
     asyncOptions?: UseAsyncOptions<Data>
 ): [UseAsyncState<Data>, ApiRunFn<Data, Props>, AsyncReset, Canceler] {
-    const { withToken } = options || {};
+    const { withToken = true } = options || {};
 
     const auth = useContext(AuthContext);
     const { refresh, logout } = auth.actions;
@@ -37,7 +37,7 @@ export function useAPI<Data = any, Props = any>(
             if (err) {
                 logout();
                 throw err;
-            } else {
+            } else if (accessToken) {
                 refresh(accessToken);
             }
         }

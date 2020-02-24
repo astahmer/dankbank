@@ -14,7 +14,7 @@ let atobFn = process.browser ? atob : require("atob");
 const axiosRefresh = axios.create({ baseURL, timeout: 5000 });
 
 export type Token = { token: string; expiresAt: number };
-export type JwtPayload = Pick<IUser, "id" | "name"> & { isRefreshToken?: boolean };
+export type JwtPayload = Pick<IUser, "id" | "name"> & { defaultMemeBank: number; isRefreshToken?: boolean };
 export type JwtDecoded = JwtPayload & { iat: number; exp: number };
 type LoginArgs = { accessToken: string; refreshToken: string; user: JwtPayload };
 
@@ -27,16 +27,16 @@ export enum AuthAccess {
 class AuthManager {
     private ctx: NextPageContext;
 
-    parseToken(token: string) {
+    parseToken(token: string): JwtDecoded {
         if (!token) {
-            return {};
+            return null;
         }
 
         const split = token.split(".");
         try {
             return JSON.parse(atobFn(split[1]));
         } catch (error) {
-            return {};
+            return null;
         }
     }
 
@@ -53,6 +53,12 @@ class AuthManager {
         }
 
         return false;
+    }
+
+    getDecoded() {
+        if (process.browser) {
+            return this.parseToken(Cookies.get("tokens.accessToken"));
+        }
     }
 
     async preRequestGuard(accessToken?: string) {

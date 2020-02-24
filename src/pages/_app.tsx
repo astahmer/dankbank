@@ -28,7 +28,7 @@ class BaseApp extends App<BaseProps> {
 
         // If access token is valid for at least 3 more seconds
         // 3 seconds is to avoid the case where token would be valid at this point but invalid when rendering page
-        let hasValidToken = Auth.isTokenValid(tokens.accessToken, 3000);
+        let hasValidToken = Auth.isTokenValid(tokens.accessToken, process.browser ? 0 : 3000);
 
         let newAccessToken;
         // No access token stored in cookies or has expired

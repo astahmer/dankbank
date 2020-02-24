@@ -25,8 +25,10 @@ function useAuth(serverCookies?: any, newAccessToken?: string): [AuthInitialStat
 
     // Whenever we get a new accessToken, refresh AuthContext
     useEffect(() => {
-        refresh(accessToken);
-        Auth.setAccessToken(accessToken);
+        if (accessToken) {
+            refresh(accessToken);
+            Auth.setAccessToken(accessToken);
+        }
     }, [accessToken]);
 
     // Auth Actions
@@ -85,6 +87,7 @@ const reducer: Reducer<AuthInitialState, AuthActionPayload> = (state, action) =>
             return { accessToken, user, isTokenValid: Auth.isTokenValid(accessToken) };
 
         case AuthActionType.REFRESH:
+            console.log("REFRESH", accessToken);
             return { accessToken, user: Auth.parseToken(accessToken), isTokenValid: Auth.isTokenValid(accessToken) };
 
         case AuthActionType.LOGOUT:
