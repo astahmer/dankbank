@@ -50,8 +50,8 @@ export function useAPI<Data = any, Props = any>(
     return [async, run, reset, cancelRef.current];
 }
 
-export function useRequestAPI<Data = any, Props = any>(
-    url: string,
+export function useRequestAPI<Data = any>(
+    url?: string,
     config?: AxiosRequestConfig,
     options?: UseAPIOptions,
     asyncOptions?: UseAsyncOptions<Data>

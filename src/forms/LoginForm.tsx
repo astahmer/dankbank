@@ -6,7 +6,7 @@ import { API_ROUTES } from "@/config/api";
 import { useRequestAPI } from "@/hooks/async/useAPI";
 import { AuthContext } from "@/hooks/async/useAuth";
 import { FormSubmitCallback, useForm } from "@/hooks/form/useForm";
-import { LoginBody, LoginResponse } from "@/types/routes/login";
+import { LoginResponse } from "@/types/routes/login";
 
 export function LoginTemplate({ onSubmit, isLoading }: FormProps) {
     const [form, actions] = useForm({ username: "", password: "" }, { username: (value) => value.length > 3 });
@@ -36,11 +36,7 @@ export function LoginTemplate({ onSubmit, isLoading }: FormProps) {
 type LoginFormState = { username: string; password: string };
 
 export function LoginForm() {
-    const [async, run] = useRequestAPI<LoginResponse, LoginBody>(
-        API_ROUTES.Auth.login,
-        { method: "post" },
-        { withToken: false }
-    );
+    const [async, run] = useRequestAPI<LoginResponse>(API_ROUTES.Auth.login, { method: "post" }, { withToken: false });
     const { actions } = useContext(AuthContext);
 
     const onSubmit: FormSubmitCallback<LoginFormState> = async (data, e) => {

@@ -87,7 +87,6 @@ const reducer: Reducer<AuthInitialState, AuthActionPayload> = (state, action) =>
             return { accessToken, user, isTokenValid: Auth.isTokenValid(accessToken) };
 
         case AuthActionType.REFRESH:
-            console.log("REFRESH", accessToken);
             return { accessToken, user: Auth.parseToken(accessToken), isTokenValid: Auth.isTokenValid(accessToken) };
 
         case AuthActionType.LOGOUT:
