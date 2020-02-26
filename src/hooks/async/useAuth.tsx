@@ -1,5 +1,7 @@
 import { createContext, Reducer, useContext, useEffect, useReducer } from "react";
 
+import { redirectToLogin } from "@/functions/route";
+import { future, getVisibilityChangeEvent } from "@/functions/utils";
 import { Cookies, Memory } from "@/services";
 import { Auth, JwtPayload } from "@/services/AuthManager";
 
@@ -55,15 +57,38 @@ function useAuth(serverCookies?: any, newAccessToken?: string): [AuthInitialStat
         }
     };
 
+    const [hidden, visibilityChange] = getVisibilityChangeEvent();
+    const checkTokenOnVisible = async (e: Event) => {
+        // If user is logged and app is visible
+        if (accessToken && !(document as any)[hidden]) {
+            if (!Auth.isTokenValid(accessToken)) {
+                // Trying to refresh access token
+                const [err, accessToken] = await future(Auth.refreshAccessToken());
+                if (err) {
+                    Auth.logout(); // Removing auth cookies to avoid a redirect loop
+                    redirectToLogin();
+                } else {
+                    refresh(accessToken);
+                }
+            }
+        }
+    };
+
     // Reset route history on login/logout
     const { reset } = useContext(HistoryContext);
+
     // TODO auto Logout at refreshToken expireAt
+
     useEffect(() => {
         window.addEventListener("storage", syncLogout);
+        window.addEventListener(visibilityChange, checkTokenOnVisible);
+        window.addEventListener("focus", checkTokenOnVisible);
         reset();
 
         return () => {
             window.removeEventListener("storage", syncLogout);
+            window.removeEventListener(visibilityChange, checkTokenOnVisible);
+            window.removeEventListener("focus", checkTokenOnVisible);
         };
     }, [state.isTokenValid]);
 
