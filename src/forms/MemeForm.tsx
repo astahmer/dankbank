@@ -44,7 +44,7 @@ export function MemeFormTemplate({ onSubmit, isLoading }: FormProps) {
 }
 
 export function MemeForm() {
-    const [async, run] = useRequestAPI<MemeResponse, MemeBody>("/memes/", { method: "post" });
+    const [async, run] = useRequestAPI<MemeResponse>("/memes/", { method: "post" });
     const { user } = useContext(AuthContext);
 
     const onSubmit: FormSubmitCallback<MemeFormState> = async (data, e) => {
