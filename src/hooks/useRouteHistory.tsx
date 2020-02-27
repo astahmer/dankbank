@@ -1,6 +1,8 @@
 import { Router, useRouter } from "next/router";
 import { createContext, useEffect, useState } from "react";
 
+import { AuthAccess } from "@/services/AuthManager";
+
 function useRouteHistory() {
     const router = useRouter();
     const [history, setHistory] = useState([router.route]);
@@ -30,20 +32,32 @@ function useRouteHistory() {
     return [history, { currentRoute, pushUrl, goBack, reset }] as const;
 }
 
-export function RouteHistoryProvider({ children }: ChildrenProp) {
+export function RouteHistoryProvider({ children, routeAccess }: ChildrenProp & { routeAccess: AuthAccess }) {
     const [history, { currentRoute, pushUrl, goBack, reset }] = useRouteHistory();
 
     return (
-        <HistoryContext.Provider value={{ history, currentRoute, pushUrl, goBack, reset }}>
+        <HistoryContext.Provider value={{ history, currentRoute, routeAccess, pushUrl, goBack, reset }}>
             {children}
         </HistoryContext.Provider>
     );
 }
 
-export const HistoryContext = createContext({
+export const HistoryContext = createContext<HistoryContextProps>({
     history: [],
     currentRoute: "",
+    routeAccess: undefined,
     pushUrl: undefined,
     goBack: undefined,
     reset: undefined,
 });
+
+type UseRouteHistoryReturn = ReturnType<typeof useRouteHistory>;
+
+export type HistoryContextProps = {
+    history: UseRouteHistoryReturn[0];
+    currentRoute: UseRouteHistoryReturn[1]["currentRoute"];
+    routeAccess: AuthAccess;
+    pushUrl: UseRouteHistoryReturn[1]["pushUrl"];
+    goBack: UseRouteHistoryReturn[1]["goBack"];
+    reset: UseRouteHistoryReturn[1]["reset"];
+};

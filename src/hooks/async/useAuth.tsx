@@ -1,5 +1,6 @@
 import { createContext, Reducer, useContext, useEffect, useReducer } from "react";
 
+import { getAuthorizedAccess } from "@/components/layout/Page/PageLayout";
 import { redirectToLogin } from "@/functions/route";
 import { future, getVisibilityChangeEvent } from "@/functions/utils";
 import { Cookies, Memory } from "@/services";
@@ -57,11 +58,15 @@ function useAuth(serverCookies?: any, newAccessToken?: string): [AuthInitialStat
         }
     };
 
+    // Reset route history on login/logout
+    const { reset, routeAccess } = useContext(HistoryContext);
+
     const [hidden, visibilityChange] = getVisibilityChangeEvent();
     const checkTokenOnVisible = async (e: Event) => {
         // If user is logged and app is visible
         if (accessToken && !(document as any)[hidden]) {
-            if (!Auth.isTokenValid(accessToken)) {
+            // If token is not valid anymore and user is on a restricted page
+            if (!Auth.isTokenValid(accessToken) && !getAuthorizedAccess(false).includes(routeAccess)) {
                 // Trying to refresh access token
                 const [err, accessToken] = await future(Auth.refreshAccessToken());
                 if (err) {
@@ -73,9 +78,6 @@ function useAuth(serverCookies?: any, newAccessToken?: string): [AuthInitialStat
             }
         }
     };
-
-    // Reset route history on login/logout
-    const { reset } = useContext(HistoryContext);
 
     // TODO auto Logout at refreshToken expireAt
 

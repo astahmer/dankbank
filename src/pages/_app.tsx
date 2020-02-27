@@ -21,7 +21,12 @@ export const ServerReqContext = createContext({
     cookies: {} as Record<string, any>,
 });
 
-type BaseProps = { userAgent: string; cookies: Record<string, string>; newAccessToken?: string };
+type BaseProps = {
+    userAgent: string;
+    cookies: Record<string, string>;
+    newAccessToken?: string;
+    routeAccess?: AuthAccess;
+};
 class BaseApp extends App<BaseProps> {
     static async getInitialProps(appContext: AppContext) {
         const routeAccess = appContext.Component.AuthAccess;
@@ -68,11 +73,11 @@ class BaseApp extends App<BaseProps> {
         const userAgent = appContext.ctx.req ? appContext.ctx.req.headers["user-agent"] : navigator.userAgent;
         const cookies = Cookies.getAll(appContext.ctx);
 
-        return { userAgent, cookies, newAccessToken, ...appProps };
+        return { userAgent, cookies, newAccessToken, routeAccess, ...appProps };
     }
 
     render() {
-        const { Component, pageProps, userAgent, cookies, newAccessToken } = this.props;
+        const { Component, pageProps, userAgent, cookies, newAccessToken, routeAccess } = this.props;
         const head = (Component as any).PageHead as PageHeadProps;
 
         return (
@@ -80,7 +85,7 @@ class BaseApp extends App<BaseProps> {
                 <ServerReqContext.Provider value={{ userAgent, cookies }}>
                     <Global styles={globalStyle} />
                     <ColorTheme cookies={cookies}>
-                        <RouteHistoryProvider>
+                        <RouteHistoryProvider routeAccess={routeAccess}>
                             <AuthProvider serverCookies={cookies} newAccessToken={newAccessToken}>
                                 <PageLayout head={head}>
                                     <Component {...pageProps} />
