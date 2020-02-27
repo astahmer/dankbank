@@ -1,5 +1,5 @@
 import { Portal, Spinner } from "@chakra-ui/core";
-import { useCallback, useRef } from "react";
+import { useCallback, useMemo, useRef } from "react";
 
 import { useAutocomplete } from "@/hooks/form";
 import { AutocompleteProps, AutocompleteWrapperProps } from "@/hooks/form/useAutocomplete";
@@ -22,18 +22,23 @@ export function ExpandableAutocompleteBtn(props: ExpandableAutocompleteBtnProps)
 
     const [hook, bindings] = useAutocomplete(props, { inputRef, resultListRef, ownRef: inputRef });
 
+    console.log("ExpandableAutocompleteBtn");
+
     // Render items
-    const Button = (
-        <ExpandableBtn
-            ref={inputRef}
-            btnProps={{
-                type: "search" as any,
-                boxShadow: data.items.length ? "0 0 1px 2px white" : undefined,
-                ...btnProps,
-            }}
-            inputProps={{ ...inputProps, ...bindings.input }}
-            {...expandableProps}
-        />
+    const Button = useMemo(
+        () => (
+            <ExpandableBtn
+                ref={inputRef}
+                btnProps={{
+                    type: "search" as any,
+                    boxShadow: data.items.length ? "0 0 1px 2px white" : undefined,
+                    ...btnProps,
+                }}
+                inputProps={{ ...inputProps, ...bindings.input }}
+                {...expandableProps}
+            />
+        ),
+        [btnProps, inputProps, bindings.input, expandableProps]
     );
     const ResultList = useCallback(
         () =>
