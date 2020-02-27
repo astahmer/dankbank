@@ -1,9 +1,8 @@
-import { Box, BoxProps, useColorMode, usePrevious } from "@chakra-ui/core";
+import { Box, BoxProps, usePrevious } from "@chakra-ui/core";
 import { disableBodyScroll, enableBodyScroll } from "body-scroll-lock";
 import { forwardRef, ReactElement, useCallback, useEffect, useRef, useState } from "react";
 import { animated, useSpring } from "react-spring";
 
-import { COMMON_COLORS } from "@/config/theme";
 import { useEnhancedEffect } from "@/functions/utils";
 import { useCombinedRefs } from "@/hooks/useCombinedRefs";
 import { Flipper } from "@/services/Flipper";
@@ -101,7 +100,6 @@ export const ExpandableList = forwardRef<HTMLElement, ExpandableListProps>(
             zIndexQueue: zIndexQueue.current,
             memoData,
         };
-        const { colorMode } = useColorMode();
 
         return (
             <Box pos="relative" {...boxProps} ref={containerRef}>
@@ -114,8 +112,8 @@ export const ExpandableList = forwardRef<HTMLElement, ExpandableListProps>(
                     right="0"
                     bottom="0"
                     pointerEvents={!selected ? "none" : "all"}
-                    backgroundColor={COMMON_COLORS.bgColor[colorMode]}
-                    zIndex={3}
+                    backgroundColor={"gray.900"}
+                    zIndex={4}
                     willChange="opacity"
                     style={backgroundSpring}
                 >
