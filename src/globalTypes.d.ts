@@ -44,13 +44,11 @@ declare global {
         retrieveItems: number;
         totalItems: number;
     };
+    type ResponseContextProp = { "@context": ResponseContext };
 
-    type CollectionResponse<EntityType extends IAbstractEntity> = {
-        "@context": ResponseContext;
-        items?: EntityType[];
-    };
-
-    type ItemResponse<EntityType extends IAbstractEntity> = { "@context": ResponseContext } & EntityType;
+    type CollectionResponse<EntityType extends IAbstractEntity> = ResponseContextProp & { items: EntityType[] };
+    type ItemResponse<EntityType extends IAbstractEntity> = ResponseContextProp & EntityType;
+    type DeleteResponse = ResponseContextProp & { deleted: number };
 
     type PartialEntity<EntityType extends IAbstractEntity, Props> = Required<IAbstractEntity> & Pick<EntityType, Props>;
     type ElasticDocument<Source = any> = {
