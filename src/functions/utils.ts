@@ -119,6 +119,8 @@ export const buildIntersectionThresholdList = (stepCount: number) =>
         .fill(null)
         .map((item, i) => i / stepCount);
 
+// TODO extract in functions/array.ts etc
+
 export const areArrayEqual = (arr1: any[], arr2: any[]) => {
     let i = arr1.length;
     while (i--) {
@@ -272,3 +274,23 @@ export function downloadUrl(data: string, fileName: string) {
             linkElement.click();
         });
 }
+
+// https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API
+export const getVisibilityChangeEvent = () => {
+    if (!process.browser) return [];
+
+    let documentProp, eventName;
+    if (typeof document.hidden !== "undefined") {
+        // Opera 12.10 and Firefox 18 and later support
+        documentProp = "hidden";
+        eventName = "visibilitychange";
+    } else if (typeof (document as any).msHidden !== "undefined") {
+        documentProp = "msHidden";
+        eventName = "msvisibilitychange";
+    } else if (typeof (document as any).webkitHidden !== "undefined") {
+        documentProp = "webkitHidden";
+        eventName = "webkitvisibilitychange";
+    }
+
+    return [documentProp, eventName];
+};

@@ -1,5 +1,6 @@
 import "@/public/empty.css";
 
+// TODO Remove that empty css & use NextJs built-in css imports
 import App, { AppContext } from "next/app";
 import React, { createContext } from "react";
 
