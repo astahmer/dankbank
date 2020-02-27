@@ -26,6 +26,14 @@ class ApiManager {
     async post<T = any>(url: string, data?: any, config?: AxiosRequestConfig) {
         return this.request<T>("post", url, { data, ...config });
     }
+
+    async put<T = any>(url: string, data?: any, config?: AxiosRequestConfig) {
+        return this.request<T>("put", url, { data, ...config });
+    }
+
+    async delete<T = any>(url: string, data?: null, config?: AxiosRequestConfig) {
+        return this.request<T>("delete", url, config);
+    }
 }
 
 export const API = new ApiManager();
