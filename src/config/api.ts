@@ -27,4 +27,11 @@ export const API_ROUTES = {
         crop: "/images/upload/crop",
         chunks: "/images/upload/chunk",
     },
+    Meme: {
+        baseRoute: "/memes/",
+        isInAnyBank: "/isInAnyBank",
+    },
+    MemeBank: {
+        baseRoute: "/banks/",
+    },
 };

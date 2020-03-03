@@ -1,4 +1,4 @@
-import { IAbstractEntity } from "./AbstractEntity";
+import { IAbstractEntity, IAbstractEntityDocument } from "./AbstractEntity";
 import { IImage } from "./Image";
 import { IMemeBank } from "./MemeBank";
 import { ITag } from "./Tag";
@@ -16,3 +16,10 @@ export interface IMeme extends IAbstractEntity {
     comments: Comment[];
     owner: IUser | number;
 }
+
+export type MemeDocument = IAbstractEntityDocument & {
+    owner: string;
+    tags: string[];
+} & Pick<IMeme, "upvoteCount" | "downvoteCount" | "views" | "visibility" | "pictures" | "dateCreated">;
+
+export type Meme = IMeme | MemeDocument;

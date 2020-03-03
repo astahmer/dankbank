@@ -22,8 +22,6 @@ export function ExpandableAutocompleteBtn(props: ExpandableAutocompleteBtnProps)
 
     const [hook, bindings] = useAutocomplete(props, { inputRef, resultListRef, ownRef: inputRef });
 
-    console.log("ExpandableAutocompleteBtn");
-
     // Render items
     const Button = useMemo(
         () => (

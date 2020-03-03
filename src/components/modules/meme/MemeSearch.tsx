@@ -1,29 +1,41 @@
-import { Box, ButtonGroup, Flex } from "@chakra-ui/core";
-import {
-    ForwardRefExoticComponent, memo, RefAttributes, useCallback, useMemo, useState
+import { Box, ButtonGroup, Flex, Tag } from "@chakra-ui/core";
+import { AxiosRequestConfig } from "axios";
+import React, {
+    ForwardRefExoticComponent, memo, RefAttributes, useCallback, useContext, useMemo, useState
 } from "react";
-import { IoMdImages } from "react-icons/io";
+import { IoMdHeart, IoMdHeartEmpty, IoMdImages } from "react-icons/io";
 
 import { ActionBtn } from "@/components/buttons";
 import { MenuModalBtn } from "@/components/buttons/MenuModalBtn";
 import { CustomIcon } from "@/components/common/CustomIcon";
 import { Picture } from "@/components/common/Picture";
+import { AutocompleteItem } from "@/components/field/Autocomplete/AutocompleteItem";
 import { ExpandableGrid } from "@/components/layout/ExpandableItem/ExpandableGrid";
 import {
-    ExpandableList as ExpList, ExpandableListProps, ExpandableListRenderItemArgs
+    ExpandableList as ExpList, ExpandableListProps, ExpandableListRenderBoxArgs,
+    ExpandableListRenderItemArgs
 } from "@/components/layout/ExpandableItem/ExpandableList";
+import { MovableList } from "@/components/layout/MovableList";
+import { getAuthorizedAccess } from "@/components/layout/Page/PageLayout";
 import { SwipableProps, SwipeDirection, SwipePosition } from "@/components/layout/Swipable";
+import { API_ROUTES } from "@/config/api";
+import { isType } from "@/functions/utils";
+import { useRequestAPI, useTriggerAPI } from "@/hooks/async/useAPI";
+import { AuthContext } from "@/hooks/async/useAuth";
 import { useWindowSize } from "@/hooks/dom";
 import { useLazyScroll } from "@/hooks/dom/useLazyScroll";
-import { AutocompleteResultListRenderPropArg } from "@/hooks/form/useAutocomplete";
+import {
+    AutocompleteResultListRenderPropArg, AutocompleteSelectedListRenderPropArg
+} from "@/hooks/form/useAutocomplete";
 import { useCallbackRef } from "@/hooks/useCallbackRef";
+import { Auth, AuthAccess } from "@/services/AuthManager";
+import { IMeme } from "@/types/entities/Meme";
 
 import { ExpandableMemesAutocomplete, MemeSearchResult } from "./ExpandableMemesAutocomplete";
-import { MemeSlider } from "./MemeBox";
+import { MemeSlider } from "./MemePictures";
 
 export function MemeSearch() {
     const [containerRef, getRef] = useCallbackRef();
-    // console.log("meme search render");
     const setSelecteds = useCallback((selecteds) => {
         selecteds.length && console.log(selecteds);
     }, []);
@@ -35,6 +47,7 @@ export function MemeSearch() {
                     options={{ resultListContainer: containerRef.current }}
                     render={{
                         resultList: (args) => <MemeResultList items={args.items} resultListRef={args.resultListRef} />,
+                        selectedList: (args) => <MemeSelectedTags {...args} />,
                     }}
                     setSelecteds={setSelecteds}
                 />
@@ -43,11 +56,13 @@ export function MemeSearch() {
     );
 }
 
-export const MemeResultList = memo(function(
+const MemeResultList = memo(function(
     args: Pick<AutocompleteResultListRenderPropArg<MemeSearchResult>, "resultListRef" | "items">
 ) {
     const [sliderPos, setSliderPos] = useState<Record<string, SwipePosition>>({});
     const storeSliderPos = (id: string, pos: SwipePosition) => setSliderPos((prevPos) => ({ ...prevPos, [id]: pos }));
+
+    const { isTokenValid } = useContext(AuthContext);
 
     return (
         <ExpandableList
@@ -55,61 +70,127 @@ export const MemeResultList = memo(function(
             items={args.items}
             getId={(item) => item._id}
             memoData={sliderPos}
-            renderBox={(props) =>
-                props.selected && (
-                    <>
-                        <Box pos="absolute" top="0" w="100%">
-                            top
-                            <Flex justifyContent="space-between">
-                                <ButtonGroup>
-                                    <ActionBtn
-                                        variant="ghost"
-                                        size="md"
-                                        label="Back"
-                                        icon={"arrow-back"}
-                                        fontSize="2xl"
-                                        onClick={() => props.unselect()}
-                                    />
-                                </ButtonGroup>
-                                <ButtonGroup>
-                                    <MenuModalBtn
-                                        items={[
-                                            {
-                                                label: "Enregistrer",
-                                                onClick: () => {
-                                                    console.log("save");
-                                                },
-                                            },
-                                            {
-                                                label: "Ajouter aux favoris",
-                                                onClick: () => console.log("add", props.selected),
-                                            },
-                                            { label: "Signaler", onClick: () => console.log("report") },
-                                        ]}
-                                        options={{
-                                            placement: ["right", "top"],
-                                            topModifier: ({ value, triggerRect }) => value - triggerRect.height - 5,
-                                        }}
-                                    />
-                                </ButtonGroup>
-                            </Flex>
-                        </Box>
-                        <Box pos="absolute" bottom="0" w="100%">
-                            bot
-                        </Box>
-                    </>
-                )
-            }
+            renderBox={(props) => props.selected && <MemeBox {...props} isTokenValid={isTokenValid} />}
             renderList={(props) => <ExpandableGrid {...props} />}
             renderItem={(itemProps) => <MemeResult {...itemProps} storeSliderPos={storeSliderPos} />}
         />
     );
 });
 
+type MemeBoxProps = ExpandableListRenderBoxArgs<MemeSearchResult> & {
+    isTokenValid: AuthContext["isTokenValid"];
+};
+
+const getFavReqParams = (defaultMemeBankId: number, memeId: number, shouldAdd: boolean): AxiosRequestConfig => ({
+    method: shouldAdd ? "post" : "delete",
+    data: shouldAdd ? { id: memeId } : null,
+    url: API_ROUTES.MemeBank.baseRoute + defaultMemeBankId + API_ROUTES.Meme.baseRoute + (!shouldAdd ? memeId : ""),
+});
+
+// TODO Check how to merge Swipable.as component's props to SwipableProps automatically
+// const Swipable = BaseSwipable as React.ForwardRefExoticComponent<React.PropsWithChildren<SwipableProps<StackProps>>>;
+const MemeBox = (props: MemeBoxProps) => {
+    const meme = props.selected._source;
+    const decoded = Auth.getDecoded();
+
+    // On Meme selected check that it is in any User.MemeBank if logged
+    const [isInAnyBankReq] = useTriggerAPI<{ result: boolean }>(
+        meme.iri + API_ROUTES.Meme.isInAnyBank,
+        props.isTokenValid
+    );
+    // Add/remove selected Meme to default MemeBank
+    const [async, run] = useRequestAPI<ItemResponse<IMeme> | DeleteResponse>();
+
+    // Checks that selected meme was either already in a User.MemeBank or was added
+    const wasFavorited = async.data && isType<ItemResponse<IMeme>>(async.data, "id" in async.data);
+    const isInAnyBank = async.data ? wasFavorited : isInAnyBankReq.data?.result;
+
+    const toggleFavorite = () => run(null, getFavReqParams(decoded.defaultMemeBank, meme.id, !isInAnyBank));
+    const addFavorite = () => run(null, getFavReqParams(decoded.defaultMemeBank, meme.id, true));
+
+    // TODO add to specific MemeBank / create it
+    // TOOD loading state heart (opacity down / icon change)
+
+    return (
+        <>
+            <Box pos="absolute" top="0" w="100%" h="calc(50vh - 50vw)">
+                top
+                <Flex justifyContent="space-between">
+                    <ButtonGroup>
+                        <ActionBtn
+                            variant="ghost"
+                            size="md"
+                            label="Back"
+                            icon={"arrow-back"}
+                            fontSize="2xl"
+                            onClick={() => props.unselect()}
+                        />
+                    </ButtonGroup>
+                    <MenuModalBtn
+                        items={[
+                            {
+                                label: "Enregistrer",
+                                onClick: () => {
+                                    console.log("save");
+                                },
+                            },
+                            {
+                                label: "Ajouter aux favoris",
+                                onClick: addFavorite,
+                                hidden: !getAuthorizedAccess(props.isTokenValid).includes(AuthAccess.LOGGED),
+                            },
+                            { label: "Signaler", onClick: () => console.log("report") },
+                        ]}
+                        options={{
+                            placement: ["right", "top"],
+                            topModifier: ({ value, triggerRect }) => value - triggerRect.height - 5,
+                        }}
+                    />
+                </Flex>
+                <MovableList>
+                    {meme.tags.map((tag, index) => (
+                        <Tag
+                            key={index}
+                            size="sm"
+                            rounded="full"
+                            variant="solid"
+                            variantColor="cyan"
+                            ml="2"
+                            _last={{ mr: 2 }}
+                        >
+                            {tag}
+                        </Tag>
+                    ))}
+                </MovableList>
+            </Box>
+            {/* Logged user can add the selected Meme as favorite */}
+            {props.isTokenValid && (
+                <Flex
+                    pos="absolute"
+                    bottom="0"
+                    w="100%"
+                    h="calc(50vh - 50vw - 50px)"
+                    direction="column"
+                    justifyContent="center"
+                >
+                    <Flex justifyContent="center">
+                        {isInAnyBank ? (
+                            <Box as={IoMdHeart} size="32px" color="red.400" onClick={toggleFavorite} />
+                        ) : (
+                            <Box as={IoMdHeartEmpty} size="32px" onClick={toggleFavorite} />
+                        )}
+                        {/* <Box as={IoMdHeartDislike} size="32px" color="red.400" /> */}
+                    </Flex>
+                </Flex>
+            )}
+        </>
+    );
+};
+
 type MemeResultProps = ExpandableListRenderItemArgs<MemeSearchResult, SwipableProps["currentPos"]> & {
     storeSliderPos: (id: string | number, pos: SwipePosition) => void;
 };
-export const MemeResult = memo(
+const MemeResult = memo(
     function({
         item,
         index,
@@ -182,3 +263,21 @@ export const MemeResult = memo(
 const ExpandableList = ExpList as ForwardRefExoticComponent<
     ExpandableListProps<MemeSearchResult> & RefAttributes<HTMLElement>
 >;
+
+function MemeSelectedTags(props: AutocompleteSelectedListRenderPropArg) {
+    const displaySelecteds = useMemo(
+        () =>
+            props.selecteds.map((item, index) => (
+                <AutocompleteItem
+                    {...props.bind(item, index)}
+                    height="32px"
+                    fontSize="18px"
+                    marginRight="4px"
+                    marginBottom="8px"
+                />
+            )),
+        [props.selecteds, props.bind]
+    );
+
+    return <div>{displaySelecteds}</div>;
+}

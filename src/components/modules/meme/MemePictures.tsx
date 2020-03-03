@@ -4,15 +4,15 @@ import { CustomImage } from "@/components/common/CustomImage";
 import { Picture } from "@/components/common/Picture";
 import { Slider, SliderProps } from "@/components/layout/Slider";
 import { chunk } from "@/functions/utils";
-import { IMeme } from "@/types/entities/Meme";
+import { Meme } from "@/types/entities/Meme";
 
-export function MemeBox({ meme, layout }: MemeBoxProps) {
+export function MemePictures({ meme, layout }: MemePicturesProps) {
     return <>{layout === "grid" ? <MemeGrid meme={meme} /> : <MemeSlider width={200} meme={meme} />}</>;
 }
 
-export type MemeBoxProps = { meme: IMeme; layout: "grid" | "slider" };
+export type MemePicturesProps = { meme: Meme; layout: "grid" | "slider" };
 
-export type MemeSliderProps = Omit<SliderProps, "children"> & { meme: IMeme };
+export type MemeSliderProps = Omit<SliderProps, "children"> & { meme: Meme };
 export function MemeSlider({ meme, ...props }: MemeSliderProps) {
     return (
         <Slider {...props}>
@@ -40,7 +40,7 @@ export function MemeGrid({ meme }: MemeGridProps) {
     );
 }
 
-export type MemeGridProps = { meme: IMeme };
+export type MemeGridProps = { meme: Meme };
 
 const getColumns = (picturesCount: number) => (picturesCount < 3 ? "1fr" : "1fr 1fr");
 export function MemeGrid2({ meme }: MemeGridProps) {

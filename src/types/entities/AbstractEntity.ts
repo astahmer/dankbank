@@ -5,3 +5,8 @@ export interface IAbstractEntity {
     dateUpdated: Date;
     id: number;
 }
+
+export interface IAbstractEntityDocument {
+    iri: string;
+    id: number;
+}
