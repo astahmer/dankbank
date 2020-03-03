@@ -1,24 +1,28 @@
-import { MutableRefObject, useRef, useState } from "react";
+import { MutableRefObject, useCallback, useEffect, useRef, useState } from "react";
 
-import { useEnhancedEffect } from "@/functions/utils";
 
-export function useDimensions(): [MutableRefObject<HTMLElement>, Dimensions] {
+
+export function useDimensions(): [MutableRefObject<HTMLElement>, (element: HTMLElement) => void, Dimensions] {
     const hasUnmounted = useRef(null);
     const ref = useRef<HTMLElement>();
     const [dimensions, setDimensions] = useState<Dimensions>(initialDimensions);
-    useEnhancedEffect(() => {
-        if (ref.current) {
+
+    const setRef = useCallback((element: HTMLElement) => {
+        if (!ref.current && element) {
+            ref.current = element;
             const measure = () =>
                 window.requestAnimationFrame(
                     () => !hasUnmounted.current && setDimensions(getDimensionObject(ref.current))
                 );
             measure();
         }
+    }, []);
 
+    useEffect(() => {
         return () => (hasUnmounted.current = true);
     }, []);
 
-    return [ref, dimensions];
+    return [ref, setRef, dimensions];
 }
 
 export type Dimensions = {
