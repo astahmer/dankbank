@@ -1,8 +1,8 @@
 import { Box, BoxProps } from "@chakra-ui/core";
-import React, { forwardRef, useEffect, useMemo, useState } from "react";
+import React, { ElementType, forwardRef, useEffect, useMemo, useState } from "react";
 import { animated, interpolate, useSpring } from "react-spring";
 import { useDrag } from "react-use-gesture";
-import { Vector2 } from "react-use-gesture/dist/types";
+import { UseDragConfig, Vector2 } from "react-use-gesture/dist/types";
 
 // Original https://codesandbox.io/s/crimson-dawn-pzf9t
 
@@ -14,14 +14,17 @@ export const Swipable = forwardRef<HTMLElement, SwipableProps>(
             swipeVelocity = 0.5,
             xDistance = 1,
             yDistance = 1,
-            AnimatedComponent = AnimatedBox,
+            as: Component = Box,
             isDraggable = true,
             currentPos: currentPosProp,
             isDisabled,
+            isFreeMode,
+            dragOptions,
             ...props
         },
         ref
     ) => {
+        const AnimatedComponent = useMemo(() => animated(Component), []);
         const [localPos, setPos] = useState<SwipePosition>({ x: 0, y: 0 });
         const currentPos = currentPosProp ? reversePos(currentPosProp) : localPos;
         const [{ x, y }, setXY] = useSpring(() => ({ x: xDistance * currentPos.x, y: yDistance * currentPos.y }));
@@ -38,7 +41,7 @@ export const Swipable = forwardRef<HTMLElement, SwipableProps>(
         const boundaries = useMemo(() => getBoundaries(propsBoundaries), [propsBoundaries]);
 
         const bind = useDrag(
-            ({ last, direction: dirV, vxvy, movement: [movX, movY] }) => {
+            ({ last, direction: dirV, vxvy, movement: [movX, movY], offset: [offX, offY] }) => {
                 if (isDisabled) {
                     setXY({
                         x: canMoveAxisX(axis) ? xDistance * currentPos.x : 0,
@@ -51,7 +54,7 @@ export const Swipable = forwardRef<HTMLElement, SwipableProps>(
                     const direction = getDirection(vxvy, dirV);
 
                     // Swipe is done
-                    if (last) {
+                    if (last && !isFreeMode) {
                         const isValid = isSwipeValid(direction, [movX, movY], swipeDistance, vxvy, swipeVelocity);
 
                         // Swipe distance or velocity was not reached, returning to previous position
@@ -79,8 +82,8 @@ export const Swipable = forwardRef<HTMLElement, SwipableProps>(
                     } else {
                         // Dragging
                         setXY({
-                            x: canMoveAxisX(axis) ? movX + xDistance * currentPos.x : 0,
-                            y: canMoveAxisY(axis) ? movY + yDistance * currentPos.y : 0,
+                            x: canMoveAxisX(axis) ? (isFreeMode ? offX : movX) + xDistance * currentPos.x : 0,
+                            y: canMoveAxisY(axis) ? (isFreeMode ? offY : movY) + yDistance * currentPos.y : 0,
                         });
                     }
                 }
@@ -89,6 +92,8 @@ export const Swipable = forwardRef<HTMLElement, SwipableProps>(
                 axis: axis !== "BOTH" ? (axis.toLowerCase() as "x" | "y") : undefined,
                 threshold: 15,
                 lockDirection: true,
+                rubberband: isFreeMode,
+                ...dragOptions,
             }
         );
 
@@ -99,24 +104,27 @@ export const Swipable = forwardRef<HTMLElement, SwipableProps>(
                 pointerEvents={isDisabled && "none"}
                 style={{ transform: interpolate([x, y], (x, y) => `translate3d(${x}px,${y}px,0)`) }}
                 ref={ref}
+                forwardedRef={ref}
             />
         );
     }
 );
 Swipable.displayName = "Swipable";
 
-export type SwipableProps = BoxProps & {
+export type SwipableProps<ElementProps = BoxProps> = ElementProps & {
     axis?: SwipeAxis;
     swipeDistance?: number;
     swipeVelocity?: number;
     xDistance?: number;
     yDistance?: number;
-    AnimatedComponent?: React.ForwardRefExoticComponent<React.PropsWithChildren<any>>;
+    as?: ElementType;
     isDraggable?: boolean;
     currentPos?: SwipePosition;
     boundaries?: SwipeBoundaries;
     isDisabled?: boolean;
+    isFreeMode?: boolean;
     onSwipe?: (direction: SwipeDirection, updatedPos: SwipePosition) => void;
+    dragOptions?: UseDragConfig;
 };
 
 export type SwipeAxis = "X" | "Y" | "BOTH";
@@ -124,7 +132,6 @@ export type SwipeDirection = "LEFT" | "RIGHT" | "UP" | "DOWN";
 export type SwipePosition = { x: number; y: number };
 export type SwipeBoundaries = { x: [number, number]; y: [number, number] };
 
-const AnimatedBox = animated(Box);
 const isSwipeAxisX = (direction: SwipeDirection) => ["LEFT", "RIGHT"].includes(direction);
 const canMoveAxisX = (axis: SwipeAxis) => axis !== "Y";
 const canMoveAxisY = (axis: SwipeAxis) => axis !== "X";
