@@ -1,8 +1,9 @@
 import { Box, useColorMode } from "@chakra-ui/core";
-import { memo, useEffect, useState } from "react";
+import { CSSProperties, memo, useEffect, useState } from "react";
 import { animated, interpolate, useSpring } from "react-spring";
 import { useDrag } from "react-use-gesture";
 
+import { COMMON_COLORS } from "@/config/theme";
 import { areArrayEqual, shallowDiffers } from "@/functions/utils";
 import { useVelocityTrackedSpring } from "@/hooks/dom/useVelocityTrackedSpring";
 
@@ -25,6 +26,7 @@ export const ExpandableItem = memo(
         zIndexQueue,
         setBackgroundSpring,
         memoData,
+        style,
     }: ExpandableGridItem) {
         const { colorMode } = useColorMode();
 
@@ -86,12 +88,15 @@ export const ExpandableItem = memo(
                     data-flip-key={flipId}
                     pos="relative"
                     display="flex"
-                    bg={colorMode === "light" ? "gray.100" : "blue.900"}
+                    bg={colorMode === "light" ? "gray.200" : "gray.900"}
+                    borderWidth="2px"
+                    borderColor={COMMON_COLORS.bgColor[colorMode]}
                     height="100%"
                     transformOrigin="0 0"
                     css={isSelected ? getSelectedCss(height) : { touchAction: "manipulation" }}
                     {...bind()}
                     style={{
+                        ...(isSelected ? {} : style),
                         zIndex: interpolate([x, y], (x, y) => {
                             const animationInProgress = x !== 0 || y !== 0;
                             if (isSelected) return 5;
@@ -134,6 +139,7 @@ export type ExpandableGridItem<T extends object = object> = {
     width: number;
     height: number;
     memoData?: any;
+    style?: CSSProperties;
 } & Pick<
     ExpandableRenderListProps<T>,
     "renderItem" | "setSelected" | "unselect" | "storeSpringSet" | "zIndexQueue" | "setBackgroundSpring"
