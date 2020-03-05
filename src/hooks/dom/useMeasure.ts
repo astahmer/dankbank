@@ -1,13 +1,12 @@
-import { useRef, useState } from "react";
+import { MutableRefObject, useState } from "react";
 import ResizeObserver from "resize-observer-polyfill";
 
 import { useEnhancedEffect } from "@/functions/utils";
 
 import { Dimensions, initialDimensions } from "./useDimensions";
 
-export function useMeasure() {
-    const ref = useRef();
-    const [bounds, set] = useState<Dimensions | ClientRect>(initialDimensions);
+export function useMeasure(ref: MutableRefObject<HTMLElement>) {
+    const [rect, set] = useState<Dimensions | ClientRect>(initialDimensions);
     const [ro] = useState(() => new ResizeObserver(([entry]) => set(entry.contentRect)));
 
     useEnhancedEffect(() => {
@@ -15,7 +14,7 @@ export function useMeasure() {
             ro.observe(ref.current);
         }
         return () => ro.disconnect();
-    }, []);
+    }, [ref.current]);
 
-    return [ref, bounds] as const;
+    return rect;
 }
