@@ -1,4 +1,4 @@
-import { Box, Flex } from "@chakra-ui/core";
+import { Flex } from "@chakra-ui/core";
 import { useRouter } from "next/router";
 import { ReactNode, useContext, useMemo } from "react";
 import {
@@ -36,22 +36,27 @@ export const PageLayout = ({ children, head }: PageLayoutProps) => {
     }, [height]);
 
     return (
-        <Box id="dankbank-app" display="flex" w="100vw" minH="100vh" overflow="hidden">
+        <Flex
+            id="dankbank-app"
+            display="flex"
+            w="100vw"
+            minH="100vh"
+            height="100vh"
+            overflow="hidden"
+            direction="column"
+            justifyContent="space-between"
+        >
             <PageHead {...head} />
-            <Flex direction="column" justifyContent="space-between" width="100%">
-                {!isMobile && <Header links={shownLinks} />}
-                <Flex flex="1" direction="column">
-                    <Flex justify="space-between">
-                        <BackBtn />
-                        <ColorToggle ml="auto" />
-                    </Flex>
-                    <Flex direction="column" flex="1" paddingBottom="48px">
-                        {children}
-                    </Flex>
-                </Flex>
-                <TabBar tabs={shownLinks} pos="fixed" bottom="0" left="0" right="0" zIndex={3} />
+            {!isMobile && <Header links={shownLinks} />}
+            <Flex justify="space-between">
+                <BackBtn />
+                <ColorToggle ml="auto" />
             </Flex>
-        </Box>
+            <Flex direction="column" flexGrow={1} paddingBottom="48px">
+                {children}
+            </Flex>
+            <TabBar tabs={shownLinks} pos="fixed" bottom="0" left="0" right="0" zIndex={3} />
+        </Flex>
     );
 };
 

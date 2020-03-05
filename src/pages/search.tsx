@@ -5,7 +5,7 @@ import { AuthAccess } from "@/services/AuthManager";
 
 export default function Search() {
     return (
-        <div>
+        <>
             <Heading>Search page</Heading>
             {/* <ExpandableBoxExample /> */}
             {/* <ExpandableGridTest /> */}
@@ -23,7 +23,7 @@ export default function Search() {
                 withCloseBtn={false}
             /> */}
             <MemeSearch />
-        </div>
+        </>
     );
 }
 

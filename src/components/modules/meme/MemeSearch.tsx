@@ -41,7 +41,6 @@ export function MemeSearch() {
     }, []);
 
     return (
-        <>
             <div ref={getRef}>
                 <ExpandableMemesAutocomplete
                     options={{ resultListContainer: containerRef.current }}
@@ -52,7 +51,6 @@ export function MemeSearch() {
                     setSelecteds={setSelecteds}
                 />
             </div>
-        </>
     );
 }
 

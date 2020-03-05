@@ -103,7 +103,6 @@ export const ExpandableList = forwardRef<HTMLElement, ExpandableListProps>(
 
         return (
             <Box pos="relative" {...boxProps} ref={containerRef}>
-                selected: {selected?._id}
                 {renderList(listProps)}
                 <AnimatedBox
                     pos="fixed"
