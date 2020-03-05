@@ -3,6 +3,8 @@ import { memo } from "react";
 import { areEqual, FixedSizeGrid, GridChildComponentProps } from "react-window";
 
 import { useWindowSize } from "@/hooks/dom";
+import { useAvailableHeight } from "@/hooks/dom/useAvailableHeight";
+import { useCallbackRef } from "@/hooks/useCallbackRef";
 
 import { ExpandableItem } from "./ExpandableItem";
 import { ExpandableListProps } from "./ExpandableList";
@@ -19,14 +21,18 @@ export function ExpandableGrid({
     const gridItemProps = { width, height, ...props };
     const data = { items, getFlipId, selected, memoData, gridItemProps };
 
+    const [ref, setRef] = useCallbackRef();
+    const availableHeight = useAvailableHeight(ref);
+
     return (
         <FixedSizeGrid
+            outerRef={setRef}
             columnCount={columnCount}
             columnWidth={width / columnCount}
             rowCount={Math.round(items.length / columnCount + (items.length % columnCount))}
             rowHeight={100}
             width={width}
-            height={480}
+            height={availableHeight}
             itemData={data}
             style={{ willChange: "unset" }}
         >

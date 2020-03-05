@@ -41,16 +41,16 @@ export function MemeSearch() {
     }, []);
 
     return (
-            <div ref={getRef}>
-                <ExpandableMemesAutocomplete
-                    options={{ resultListContainer: containerRef.current }}
-                    render={{
-                        resultList: (args) => <MemeResultList items={args.items} resultListRef={args.resultListRef} />,
-                        selectedList: (args) => <MemeSelectedTags {...args} />,
-                    }}
-                    setSelecteds={setSelecteds}
-                />
-            </div>
+        <div ref={getRef}>
+            <ExpandableMemesAutocomplete
+                options={{ resultListContainer: containerRef.current }}
+                render={{
+                    resultList: (args) => <MemeResultList items={args.items} resultListRef={args.resultListRef} />,
+                    selectedList: (args) => <MemeSelectedTags {...args} />,
+                }}
+                setSelecteds={setSelecteds}
+            />
+        </div>
     );
 }
 
@@ -277,5 +277,5 @@ function MemeSelectedTags(props: AutocompleteSelectedListRenderPropArg) {
         [props.selecteds, props.bind]
     );
 
-    return <div>{displaySelecteds}</div>;
+    return props.selecteds.length ? <div>{displaySelecteds}</div> : null;
 }
