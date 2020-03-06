@@ -16,7 +16,9 @@ export const AuthContext = createContext<AuthContext>({
     actions: { login: undefined, refresh: undefined, logout: undefined },
 });
 
-function useAuth(serverCookies?: any, newAccessToken?: string): [AuthInitialState, AuthActions] {
+export const useAuth = () => useContext(AuthContext);
+
+function useAuthProvider(serverCookies?: any, newAccessToken?: string): [AuthInitialState, AuthActions] {
     const accessToken = newAccessToken || Cookies.get("tokens.accessToken", serverCookies);
 
     // Auth State
@@ -102,7 +104,7 @@ export function AuthProvider({
     serverCookies,
     newAccessToken,
 }: ChildrenProp & { serverCookies: any; newAccessToken?: string }) {
-    const [state, actions] = useAuth(serverCookies, newAccessToken);
+    const [state, actions] = useAuthProvider(serverCookies, newAccessToken);
 
     return <AuthContext.Provider value={{ ...state, actions }}>{children}</AuthContext.Provider>;
 }

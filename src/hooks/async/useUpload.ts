@@ -70,7 +70,7 @@ export function useUpload<Result = any>(
             method: "post",
             cancelToken: cancelSource.current.token,
         },
-        null,
+        { withToken: false },
         { initialData }
     );
     const cancel = () => {

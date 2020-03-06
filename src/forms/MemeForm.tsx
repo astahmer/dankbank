@@ -1,10 +1,10 @@
-import { Box, Button, Stack, Switch as ChakraSwitch, SwitchProps } from "@chakra-ui/core";
-import { FunctionComponent, useCallback, useContext } from "react";
+import { Box, Button, Stack } from "@chakra-ui/core";
+import { useCallback } from "react";
 
 import { ImageUploader, UploadResult } from "@/components/field/ImageUploader/ImageUploader";
 import { TagsAutocomplete } from "@/components/modules/tag/TagsAutocomplete";
 import { useRequestAPI } from "@/hooks/async/useAPI";
-import { AuthContext } from "@/hooks/async/useAuth";
+import { useAuth } from "@/hooks/async/useAuth";
 import { FormSubmitCallback, useForm } from "@/hooks/form/useForm";
 import { IImage } from "@/types/entities/Image";
 import { Visibility } from "@/types/entities/Visibility";
@@ -44,11 +44,10 @@ export function MemeFormTemplate({ onSubmit, isLoading }: FormProps) {
 }
 
 export function MemeForm() {
-    const [async, run] = useRequestAPI<MemeResponse>("/memes/", { method: "post" });
-    const { user } = useContext(AuthContext);
+    const { user, isTokenValid } = useAuth();
+    const [async, run] = useRequestAPI<MemeResponse>("/memes/", { method: "post" }, { withToken: isTokenValid });
 
     const onSubmit: FormSubmitCallback<MemeFormState> = async (data, e) => {
-        console.log(e);
         e.preventDefault();
         const payload = {
             ...data,
@@ -61,14 +60,14 @@ export function MemeForm() {
         }
 
         const [err, result] = await run(payload);
-        console.log(data, result);
+        console.log(payload, result);
     };
 
     return <MemeFormTemplate onSubmit={onSubmit} isLoading={async.isLoading} />;
 }
 
 // Fix Chakra-UI typing mistake
-const Switch = ChakraSwitch as FunctionComponent<Optional<SwitchProps, "children">>;
+// const Switch = ChakraSwitch as FunctionComponent<Optional<SwitchProps, "children">>;
 
 const getPictureId = (result: UploadResult<IImage>) => result.data && result.data.id;
 const forrmatTags = (tag: ElasticDocument) => ({ tag: tag.text, id: tag._id });

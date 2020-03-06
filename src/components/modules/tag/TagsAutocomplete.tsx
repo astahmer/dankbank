@@ -14,9 +14,14 @@ type TagsAutocomplete = Pick<AutocompleteProps, "display" | "options" | "inputPr
     AutocompleteWrapperProps & { boxProps?: BoxProps };
 
 export function TagsAutocomplete({ setSelecteds, ...props }: TagsAutocomplete) {
-    const [async, run, resetFn, canceler] = useRequestAPI(API_ROUTES.Search.tag, null, null, {
-        initialData: { items: [], total: undefined },
-    });
+    const [async, run, resetFn, canceler] = useRequestAPI(
+        API_ROUTES.Search.tag,
+        null,
+        { withToken: false },
+        {
+            initialData: { items: [], total: undefined },
+        }
+    );
 
     const suggestionFn = (value: string) => {
         canceler && canceler();

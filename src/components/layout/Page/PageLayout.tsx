@@ -42,7 +42,7 @@ export const PageLayout = ({ children, head }: PageLayoutProps) => {
             w="100vw"
             minH="100vh"
             height="100vh"
-            overflow="hidden"
+            overflow="auto"
             direction="column"
             justifyContent="space-between"
         >
