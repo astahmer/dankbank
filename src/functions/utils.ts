@@ -129,6 +129,15 @@ export const areArrayEqual = (arr1: any[], arr2: any[]) => {
     return true;
 };
 
+export function getShallowDiffs(a: Record<any, any>, b: Record<any, any>) {
+    const diffs = [];
+    const missings = [];
+
+    for (let key in a) if (!(key in b)) missings.push(key);
+    for (let key in b) if (a[key] !== b[key]) diffs.push(key);
+    return [diffs.concat(missings), { diffs, missings }];
+}
+
 // https://github.com/granteagon/move/
 export function move<T = any>(arr: T[], fromIndex: number, toIndex: number): T[] {
     const item = arr[fromIndex];

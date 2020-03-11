@@ -20,6 +20,7 @@ export const Slider = forwardRef<HTMLElement, SliderProps>(
             flexProps,
             stackProps,
             wrapperProps,
+            slideProps,
             currentPos = { x: 0, y: 0 },
         },
         ref
@@ -31,8 +32,6 @@ export const Slider = forwardRef<HTMLElement, SliderProps>(
             setSliderPos(currentPos);
             onSwipe?.(direction, currentPos);
         }, []);
-        // const [ref, { width }] = useMeasure();
-        // console.log(sliderPos, width);
 
         return (
             <Flex {...(!isFullHeight && baseCss.flex)} {...flexProps} direction="column" ref={ref}>
@@ -49,7 +48,14 @@ export const Slider = forwardRef<HTMLElement, SliderProps>(
                         isDisabled={isDisabled}
                     >
                         {list.map((child, index) => (
-                            <Box key={index} w="100%" h="100%" pos="absolute" transform={`translateX(${index * 100}%)`}>
+                            <Box
+                                key={index}
+                                w="100%"
+                                h="100%"
+                                pos="absolute"
+                                style={{ transform: `translateX(${index * 100}%)` }}
+                                {...slideProps}
+                            >
                                 {child}
                             </Box>
                         ))}
@@ -99,7 +105,8 @@ export type SliderProps = ChildrenProp<object> & {
     width: number;
     flexProps?: FlexProps;
     stackProps?: StackProps;
-    wrapperProps?: BoxProps;
+    wrapperProps?: SwipableProps<BoxProps>;
+    slideProps?: BoxProps;
     isFullHeight?: boolean;
     isDisabled?: boolean;
     onSwipe?: SwipableProps["onSwipe"];

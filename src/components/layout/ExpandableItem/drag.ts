@@ -18,7 +18,7 @@ export const dragSelected = ({
     onDragReset?: Function;
     x: VelocityTrackedAnimatedValue;
     y: VelocityTrackedAnimatedValue;
-    set: (args: any) => void;
+    set: Function;
     setBackgroundSpring: Function;
     width: number;
 }) => ({
@@ -46,7 +46,7 @@ export const dragSelected = ({
                 onFrame: () => {
                     if (Math.abs(y.lastVelocity) < 1000) {
                         onImageDismiss();
-                        set({ onFrame: undefined });
+                        set({ onFrame: undefined }, { data: { isDismissing: true } });
                     }
                 },
             });
@@ -54,13 +54,16 @@ export const dragSelected = ({
             // Reset back to initial position
             onDragReset?.();
             setBackgroundSpring({ opacity: 1 });
-            return set({
-                immediate: false,
-                y: 0,
-                x: 0,
-                scaleY: 1,
-                scaleX: 1,
-            });
+            return set(
+                {
+                    immediate: false,
+                    y: 0,
+                    x: 0,
+                    scaleY: 1,
+                    scaleX: 1,
+                },
+                { data: { isResetting: true } }
+            );
         }
     }
 
@@ -72,14 +75,17 @@ export const dragSelected = ({
 
     const scale = clampedRangeMap(yStops, scaleStops, movementY + memo.y);
 
-    set({
-        y: newY,
-        x: newX + ((1 - scale) / 2) * width,
-        scaleY: scale,
-        scaleX: scale,
-        onFrame: null,
-        immediate: memo.immediate,
-    });
+    set(
+        {
+            y: newY,
+            x: newX + ((1 - scale) / 2) * width,
+            scaleY: scale,
+            scaleX: scale,
+            onFrame: null,
+            immediate: memo.immediate,
+        },
+        { data: { isDragging: true } }
+    );
 
     setBackgroundSpring({ opacity: rangeMap(yStops, opacityTuple, newY) });
 

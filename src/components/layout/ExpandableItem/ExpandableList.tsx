@@ -7,8 +7,8 @@ import { useEnhancedEffect } from "@/functions/utils";
 import { useCombinedRefs } from "@/hooks/useCombinedRefs";
 import { Flipper } from "@/services/Flipper";
 
-import { bounceConfig, defaultSpringSettings } from "./config";
 import { ExpandableRenderListProps } from "./ExpandableGrid";
+import { ExpandableItemProps } from "./ExpandableItem";
 
 export const ExpandableList = forwardRef<HTMLElement, ExpandableListProps>(
     ({ items, getId, renderBox, renderList, renderItem, onSelected, boxProps, memoData }, ref) => {
@@ -27,15 +27,21 @@ export const ExpandableList = forwardRef<HTMLElement, ExpandableListProps>(
         const flipRef = useRef(
             new Flipper({
                 ref: containerRef,
-                onFlip(id, vals, data = {}) {
-                    const set = springsRef.current[id];
+                onFlip(id, { diff, data = {}, before, after }) {
+                    const set = springsRef.current[id] as any;
                     const el = this.getEl(id);
+
+                    data.isFlipping = true;
                     el.style.zIndex = 5;
-                    set({
-                        ...vals,
-                        immediate: true,
-                        onFrame: undefined,
-                    } as any);
+
+                    set(
+                        {
+                            ...diff,
+                            immediate: true,
+                            onFrame: undefined,
+                        } as any,
+                        { before, after, data }
+                    );
 
                     requestAnimationFrame(() => {
                         setBackgroundSpring({ opacity: data.isLeaving ? 0 : 1 });
@@ -45,7 +51,7 @@ export const ExpandableList = forwardRef<HTMLElement, ExpandableListProps>(
                             config: data.isLeaving ? bounceConfig : defaultSpringSettings.config,
                         };
 
-                        set({ ...springSettings, immediate: false });
+                        set({ ...springSettings, immediate: false }, { data });
                     });
                 },
             })
@@ -53,9 +59,18 @@ export const ExpandableList = forwardRef<HTMLElement, ExpandableListProps>(
 
         const previous = usePrevious(selected);
 
+        const getEl = useCallback((flipId: string) => flipRef.current.getEl(flipId), []);
+        const setTopToCenter = useCallback((flipId: string) => {
+            const el = flipRef.current.getEl(flipId);
+            const after = el.getBoundingClientRect();
+            el.style.top = `calc(50vh - ${after.height / 2}px)`;
+        }, []);
+
         useEnhancedEffect(() => {
             if (previous === undefined || isSame(previous, selected)) return;
             if (selected) {
+                setTopToCenter(getFlipId(selected));
+
                 flipRef.current.flip(getFlipId(selected));
                 requestAnimationFrame(() => {
                     zIndexQueue.current.push(getFlipId(selected));
@@ -99,6 +114,7 @@ export const ExpandableList = forwardRef<HTMLElement, ExpandableListProps>(
             setBackgroundSpring,
             zIndexQueue: zIndexQueue.current,
             memoData,
+            getEl,
         };
 
         return (
@@ -115,9 +131,10 @@ export const ExpandableList = forwardRef<HTMLElement, ExpandableListProps>(
                     zIndex={4}
                     willChange="opacity"
                     style={backgroundSpring}
-                >
+                ></AnimatedBox>
+                <Box pos="fixed" top="0" left="0" right="0" zIndex={5} style={backgroundSpring}>
                     {renderBox?.({ selected, unselect: () => unselect(selected) })}
-                </AnimatedBox>
+                </Box>
             </Box>
         );
     }
@@ -128,7 +145,7 @@ export type ExpandableListProps<T extends object = object> = {
     getId: (item: T) => string | number;
     renderBox?: ({ selected }: ExpandableListRenderBoxArgs<T>) => ReactElement;
     renderList: (props: ExpandableRenderListProps<T>) => ReactElement;
-    renderItem: ({ item, isSelected, isDragging, index }: ExpandableListRenderItemArgs<T>) => ReactElement;
+    renderItem: (args: ExpandableListRenderItemArgs<T>) => ReactElement;
     onSelected?: (item: T) => void;
     boxProps?: BoxProps;
     memoData?: Record<string | number, any>;
@@ -137,13 +154,22 @@ export type ExpandableListProps<T extends object = object> = {
 export type ExpandableListRenderBoxArgs<T extends object = object> = Pick<ExpandableRenderListProps<T>, "selected"> & {
     unselect: () => void;
 };
-export type ExpandableListRenderItemArgs<T extends object = object, M = any> = {
-    item: T;
-    index: number;
-    flipId: ReturnType<ExpandableListProps["getId"]>;
+export type ExpandableListRenderItemArgs<T extends object = object, M = any> = Pick<
+    ExpandableItemProps<T>,
+    "item" | "index" | "flipId" | "memoData" | "isSelected" | "after" | "getEl" | "columnWidth"
+> & {
     memoData: M;
-    isSelected: boolean;
     isDragging: boolean;
+    isResting: boolean;
 };
 
 const AnimatedBox = animated(Box);
+
+const defaultSpringSettings = {
+    y: 0,
+    x: 0,
+    scaleX: 1,
+    scaleY: 1,
+    config: { tension: 500, friction: 50 },
+};
+const bounceConfig = { tension: 500, friction: 30 };

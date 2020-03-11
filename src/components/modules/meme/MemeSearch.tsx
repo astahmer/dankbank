@@ -15,7 +15,6 @@ import {
     ExpandableList as ExpList, ExpandableListProps, ExpandableListRenderBoxArgs,
     ExpandableListRenderItemArgs
 } from "@/components/layout/ExpandableItem/ExpandableList";
-import { MovableList } from "@/components/layout/MovableList";
 import { getAuthorizedAccess } from "@/components/layout/Page/PageLayout";
 import { SwipableProps, SwipeDirection, SwipePosition } from "@/components/layout/Swipable";
 import { API_ROUTES } from "@/config/api";
@@ -23,7 +22,6 @@ import { isType } from "@/functions/utils";
 import { useRequestAPI, useTriggerAPI } from "@/hooks/async/useAPI";
 import { AuthContext } from "@/hooks/async/useAuth";
 import { useWindowSize } from "@/hooks/dom";
-import { useLazyScroll } from "@/hooks/dom/useLazyScroll";
 import {
     AutocompleteResultListRenderPropArg, AutocompleteSelectedListRenderPropArg
 } from "@/hooks/form/useAutocomplete";
@@ -32,7 +30,7 @@ import { Auth, AuthAccess } from "@/services/AuthManager";
 import { IMeme } from "@/types/entities/Meme";
 
 import { ExpandableMemesAutocomplete, MemeSearchResult } from "./ExpandableMemesAutocomplete";
-import { MemeSlider } from "./MemePictures";
+import { MemeSlider, MemeSliderProps } from "./MemePictures";
 
 export function MemeSearch() {
     const [containerRef, getRef] = useCallbackRef();
@@ -70,7 +68,7 @@ const MemeResultList = memo(function(
             memoData={sliderPos}
             renderBox={(props) => props.selected && <MemeBox {...props} isTokenValid={isTokenValid} />}
             renderList={(props) => <ExpandableGrid {...props} />}
-            renderItem={(itemProps) => <MemeResult {...itemProps} storeSliderPos={storeSliderPos} />}
+            renderItem={(props) => <MemeResult {...props} storeSliderPos={storeSliderPos} />}
         />
     );
 });
@@ -145,7 +143,7 @@ const MemeBox = (props: MemeBoxProps) => {
                         }}
                     />
                 </Flex>
-                <MovableList>
+                <Flex wrap="wrap">
                     {meme.tags.map((tag, index) => (
                         <Tag
                             key={index}
@@ -154,12 +152,13 @@ const MemeBox = (props: MemeBoxProps) => {
                             variant="solid"
                             variantColor="cyan"
                             ml="2"
+                            mb="2"
                             _last={{ mr: 2 }}
                         >
                             {tag}
                         </Tag>
                     ))}
-                </MovableList>
+                </Flex>
             </Box>
             {/* Logged user can add the selected Meme as favorite */}
             {props.isTokenValid && (
@@ -196,13 +195,31 @@ const MemeResult = memo(
         isDragging,
         storeSliderPos,
         memoData: currentPos = { x: 0, y: 0 },
+        isResting,
+        flipId,
+        getEl,
+        columnWidth,
     }: MemeResultProps) {
-        const onSwipe = (direction: SwipeDirection, pos: SwipePosition) => storeSliderPos(index, pos);
+        const onSwipe = (direction: SwipeDirection, pos: SwipePosition) => {
+            storeSliderPos(index, pos);
+            // Re-center based on height of current image displayed
+            const el = getEl(flipId as string);
+            const after = el.getBoundingClientRect();
+            el.style.top = `calc(50vh - ${after.height / 2}px)`;
+        };
 
         const { width } = useWindowSize();
-        const [ref, isVisible] = useLazyScroll();
-
         const isMultipartMeme = useMemo(() => item._source.pictures.length > 1, [item]);
+
+        // TODO Hide tags when dragging ?
+
+        const sliderSelectedProps: Partial<MemeSliderProps> = {
+            wrapperProps: {
+                display: "flex",
+                alignItems: "center",
+            },
+            slideProps: { height: "auto" },
+        };
 
         const component = (
             <>
@@ -210,40 +227,37 @@ const MemeResult = memo(
                     useResponsive={false}
                     item={item._source.pictures[currentPos.x]}
                     w="100%"
-                    css={{ visibility: isMultipartMeme && isSelected && !isDragging ? "hidden" : undefined }}
+                    style={{ visibility: isMultipartMeme && isSelected ? "hidden" : undefined }}
                 />
-                {isMultipartMeme ? (
+                {isMultipartMeme && isSelected ? (
                     <MemeSlider
+                        {...(isSelected ? sliderSelectedProps : {})}
                         meme={item._source}
-                        flexProps={{
-                            pos: "absolute",
-                            left: 0,
-                            top: 0,
-                            w: "100%",
-                            h: "100%",
-                            display: !(isSelected && !isDragging) ? "none" : undefined,
-                        }}
-                        width={width}
+                        flexProps={{ w: "100%", h: "100%", pos: "absolute" }}
+                        stackProps={{ top: "calc(100% - 32px)", style: { display: isDragging ? "none" : undefined } }}
+                        width={isSelected ? width : columnWidth}
                         isFullHeight
                         onSwipe={onSwipe}
                         currentPos={currentPos}
                         isDisabled={isDragging}
                     />
                 ) : null}
+
                 {isMultipartMeme && !isSelected ? (
                     <CustomIcon icon={IoMdImages} color="white" pos="absolute" top="5px" right="5px" size="20px" />
                 ) : null}
                 <Box pos="absolute" bottom="0">
                     {currentPos.x}
                     {isDragging ? "oui" : "non"}
+                    {isResting ? "stop" : "start"}
                 </Box>
             </>
         );
 
         return (
-            <div css={{ display: "flex", width: "100%" }} ref={ref}>
-                {isVisible && component}
-            </div>
+            <Flex w="100%" h="100%">
+                {component}
+            </Flex>
         );
     },
     (prevProps, nextProps) => {
@@ -251,8 +265,11 @@ const MemeResult = memo(
             prevProps.item._id === nextProps.item._id &&
             prevProps.isSelected === nextProps.isSelected &&
             prevProps.isDragging === nextProps.isDragging &&
+            prevProps.after === nextProps.after &&
+            prevProps.isResting === nextProps.isResting &&
             ((prevProps.memoData === undefined && nextProps.memoData === undefined) ||
                 (prevProps.memoData?.x === nextProps.memoData?.x && prevProps.memoData?.y === nextProps.memoData?.y));
+
         return areEqual;
     }
 );

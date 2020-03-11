@@ -75,7 +75,9 @@ export class Flipper {
         el.style.transform = `translate(${diff.x}px, ${diff.y}px) scaleX(${diff.scaleX}) scaleY(${diff.scaleY})`;
 
         // let the consumer decide how the actual animation should be done
-        this.onFlip(id, diff, data);
+        const params = { diff, data, after, before };
+        this.onFlip(id, params);
+        return params;
     }
 }
 
@@ -91,4 +93,5 @@ export type FlipperDiff = {
     scaleY: number;
 };
 
-export type FlipperOnFlip = (id: string, diff: FlipperDiff, data: any) => void;
+export type FlipperOnFlipParams = { diff: FlipperDiff; data?: any; before: DOMRect; after: DOMRect };
+export type FlipperOnFlip = (id: string, params: FlipperOnFlipParams) => void;
