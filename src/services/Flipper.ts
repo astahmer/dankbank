@@ -16,7 +16,8 @@ export class Flipper {
     }
 
     // mark FLIP-able elements with this data attribute
-    getEl = (id: string) => this.ref.current.querySelector(`[data-flip-key=${id}]`) as HTMLElement;
+    getEl = (id: string) =>
+        this.ref.current && (this.ref.current.querySelector(`[data-flip-key=${id}]`) as HTMLElement);
 
     measure(id: string) {
         const el = this.getEl(id);

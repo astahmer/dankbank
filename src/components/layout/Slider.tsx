@@ -50,6 +50,7 @@ export const Slider = forwardRef<HTMLElement, SliderProps>(
                         {list.map((child, index) => (
                             <Box
                                 key={index}
+                                data-index={index}
                                 w="100%"
                                 h="100%"
                                 pos="absolute"

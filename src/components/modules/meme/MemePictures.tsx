@@ -1,4 +1,5 @@
 import { Box, Flex, Grid } from "@chakra-ui/core";
+import { MutableRefObject } from "react";
 
 import { CustomImage } from "@/components/common/CustomImage";
 import { Picture } from "@/components/common/Picture";
@@ -12,10 +13,10 @@ export function MemePictures({ meme, layout }: MemePicturesProps) {
 
 export type MemePicturesProps = { meme: Meme; layout: "grid" | "slider" };
 
-export type MemeSliderProps = Omit<SliderProps, "children"> & { meme: Meme };
-export function MemeSlider({ meme, ...props }: MemeSliderProps) {
+export type MemeSliderProps = Omit<SliderProps, "children"> & { meme: Meme; innerRef?: MutableRefObject<HTMLElement> };
+export function MemeSlider({ meme, innerRef, ...props }: MemeSliderProps) {
     return (
-        <Slider {...props}>
+        <Slider {...props} ref={innerRef}>
             {meme.pictures.map((picture) => (
                 <Picture item={picture} key={picture.id} useResponsive={false} w="100%" h="100%" />
             ))}

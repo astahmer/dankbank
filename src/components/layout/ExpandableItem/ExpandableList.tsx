@@ -60,17 +60,10 @@ export const ExpandableList = forwardRef<HTMLElement, ExpandableListProps>(
         const previous = usePrevious(selected);
 
         const getEl = useCallback((flipId: string) => flipRef.current.getEl(flipId), []);
-        const setTopToCenter = useCallback((flipId: string) => {
-            const el = flipRef.current.getEl(flipId);
-            const after = el.getBoundingClientRect();
-            el.style.top = `calc(50vh - ${after.height / 2}px)`;
-        }, []);
 
         useEnhancedEffect(() => {
             if (previous === undefined || isSame(previous, selected)) return;
             if (selected) {
-                setTopToCenter(getFlipId(selected));
-
                 flipRef.current.flip(getFlipId(selected));
                 requestAnimationFrame(() => {
                     zIndexQueue.current.push(getFlipId(selected));

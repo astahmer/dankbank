@@ -196,17 +196,9 @@ const MemeResult = memo(
         storeSliderPos,
         memoData: currentPos = { x: 0, y: 0 },
         isResting,
-        flipId,
-        getEl,
         columnWidth,
     }: MemeResultProps) {
-        const onSwipe = (direction: SwipeDirection, pos: SwipePosition) => {
-            storeSliderPos(index, pos);
-            // Re-center based on height of current image displayed
-            const el = getEl(flipId as string);
-            const after = el.getBoundingClientRect();
-            el.style.top = `calc(50vh - ${after.height / 2}px)`;
-        };
+        const onSwipe = (direction: SwipeDirection, pos: SwipePosition) => storeSliderPos(index, pos);
 
         const { width } = useWindowSize();
         const isMultipartMeme = useMemo(() => item._source.pictures.length > 1, [item]);
