@@ -16,7 +16,7 @@
         "emotion-theming": "^10.0.19",
         "ismobilejs": "^1.0.3",
         "ms": "^2.1.2",
-        "next": "^9.1.4",
+        "next": "^9.3.0",
         "react": "^16.12.0",
         "react-dom": "^16.12.0",
         "react-icons": "^3.8.0",
@@ -49,7 +49,7 @@
         "debug": "NODE_OPTIONS='--inspect=0.0.0.0:9231' next ./src -p 4000",
         "dev": "next ./src -p 4000",
         "build": "next build ./src",
-        "start": "next start ./src",
+        "start": "next start -p 4000 ./src",
         "prettier": "node_modules/.bin/prettier --config .prettierrc.json './src/**/*.ts*'"
     },
     "keywords": [],

@@ -16,6 +16,15 @@ import { css, Global } from "@emotion/core";
 import { ColorTheme } from "../components/layout/Color/ColorTheme";
 import { PageLayout } from "../components/layout/Page/PageLayout";
 
+// https://github.com/sheerun/extracted-loader/issues/11
+if ((module as any).hot) {
+    (module as any).hot.addStatusHandler((status: any) => {
+        if (typeof window !== "undefined" && status === "ready") {
+            (window as any).__webpack_reload_css__ = true;
+        }
+    });
+}
+
 export const ServerReqContext = createContext({
     userAgent: undefined,
     cookies: {} as Record<string, any>,
