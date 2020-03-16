@@ -18,7 +18,7 @@ import {
 import { getAuthorizedAccess } from "@/components/layout/Page/PageLayout";
 import { SwipableProps, SwipeDirection, SwipePosition } from "@/components/layout/Swipable";
 import { API_ROUTES } from "@/config/api";
-import { isType } from "@/functions/utils";
+import { isType, useClientEffect } from "@/functions/utils";
 import { useRequestAPI, useTriggerAPI } from "@/hooks/async/useAPI";
 import { AuthContext } from "@/hooks/async/useAuth";
 import { useWindowSize } from "@/hooks/dom";
@@ -197,6 +197,8 @@ const MemeResult = memo(
         memoData: currentPos = { x: 0, y: 0 },
         isResting,
         columnWidth,
+        getEl,
+        flipId,
     }: MemeResultProps) {
         const onSwipe = (direction: SwipeDirection, pos: SwipePosition) => storeSliderPos(index, pos);
 
@@ -204,6 +206,17 @@ const MemeResult = memo(
         const isMultipartMeme = useMemo(() => item._source.pictures.length > 1, [item]);
 
         // TODO Hide tags when dragging ?
+
+        /** Re-center ExpandableItem div while dragging */
+        useClientEffect(() => {
+            const el = getEl(flipId as string);
+            if (isDragging) {
+                const rect = el.getBoundingClientRect();
+                el.style.top = `calc(50vh - ${rect.height / 2}px)`;
+            } else if (isSelected) {
+                el.style.top = "";
+            }
+        }, [isDragging]);
 
         const sliderSelectedProps: Partial<MemeSliderProps> = {
             wrapperProps: {

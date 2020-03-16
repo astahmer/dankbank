@@ -123,6 +123,7 @@ export const ExpandableItem = memo(
                               justifyContent: "center",
                               touchAction: "none",
                               alignItems: "center",
+                              ...(isValid ? { height: "auto" } : {}),
                           }
                         : { touchAction: "manipulation" }
                 }
