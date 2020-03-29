@@ -125,9 +125,21 @@ export const ExpandableList = forwardRef<HTMLElement, ExpandableListProps>(
                     willChange="opacity"
                     style={backgroundSpring}
                 ></AnimatedBox>
-                <Box pos="fixed" top="0" left="0" right="0" zIndex={5} style={backgroundSpring}>
+                <AnimatedBox
+                    pos="fixed"
+                    top="0"
+                    left="0"
+                    right="0"
+                    zIndex={5}
+                    style={{
+                        opacity: backgroundSpring.opacity.interpolate({
+                            range: [1, 0.8, 0.7, 0.6, 0.5],
+                            output: [1, 0.66, 0.4, 0.2, 0],
+                        }),
+                    }}
+                >
                     {renderBox?.({ selected, unselect: () => unselect(selected) })}
-                </Box>
+                </AnimatedBox>
             </Box>
         );
     }
