@@ -12,8 +12,7 @@ import { Picture } from "@/components/common/Picture";
 import { AutocompleteItem } from "@/components/field/Autocomplete/AutocompleteItem";
 import { ExpandableGrid } from "@/components/layout/ExpandableItem/ExpandableGrid";
 import {
-    ExpandableList as ExpList, ExpandableListProps, ExpandableListRenderBoxArgs,
-    ExpandableListRenderItemArgs
+    ExpandableList as ExpList, ExpandableListProps, ExpandableListRenderBoxArgs, ExpandableListRenderItemArgs
 } from "@/components/layout/ExpandableItem/ExpandableList";
 import { getAuthorizedAccess } from "@/components/layout/Page/PageLayout";
 import { SwipableProps, SwipeDirection, SwipePosition } from "@/components/layout/Swipable";
@@ -163,7 +162,7 @@ const MemeBox = (props: MemeBoxProps) => {
             {/* Logged user can add the selected Meme as favorite */}
             {props.isTokenValid && (
                 <Flex
-                    pos="absolute"
+                    pos="fixed"
                     bottom="0"
                     w="100%"
                     h="calc(50vh - 50vw - 50px)"
