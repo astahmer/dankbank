@@ -17,8 +17,7 @@ services:
       - VIRTUAL_PORT=4000
       - SERVER_API_URL=http://${PROJECT_NAME}-koa:3000
       - CLIENT_API_URL=http://api.${PROJECT_NAME}.lol
-    networks:
-      - meme-api_proxy
+    network_mode: "bridge"
     external_links:
       - dankbank-koa
 
@@ -40,7 +39,3 @@ services:
     volumes:
       - .:/usr/app/
       - ./node_modules/:/usr/app/node_modules
-
-networks:
-  meme-api_proxy:
-    external: true
