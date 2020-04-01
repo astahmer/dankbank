@@ -5,7 +5,7 @@ import { animated, config, useSpring } from "react-spring";
 import { COMMON_COLORS } from "@/config/theme";
 import { vwToPixel } from "@/functions/utils";
 import { useClickOutside } from "@/hooks/dom";
-import { useToggle } from "@/hooks/useToggle";
+import { useToggle, UseToggle } from "@/hooks/useToggle";
 
 import { ActionBtn } from "./ActionBtn";
 import { FloatingBtnProps } from "./FloatingBtn";
@@ -72,7 +72,7 @@ export const ExpandableBtn = forwardRef<HTMLInputElement, ExpandableBtnProps>(
                         {...btnProps}
                         onClick={() => toggle()}
                     />
-                    {renderBottom({ isExpanded, isReady })}
+                    {renderBottom({ isExpanded, isReady, toggle })}
                 </Box>
             </Box>
         );
@@ -100,4 +100,5 @@ export type ExpandableBtnWrapperProps = {
 export type ExpandableBtnRenderBottomProps = {
     isExpanded: boolean;
     isReady: boolean;
+    toggle: UseToggle[1]["toggle"];
 };

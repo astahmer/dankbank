@@ -302,6 +302,7 @@ export function useAutocomplete<T = any>(
     const returnValues = useMemo(
         () => ({
             value,
+            clearValue,
             selecteds,
             selection,
             activeX,
@@ -385,6 +386,7 @@ export type UseAutocompleteProps<T = any> = {
 
 export type UseAutocompleteReturnValues<T = any> = {
     value: string;
+    clearValue: Function;
     selecteds: T[];
     selection: SelectionActions<T>;
     activeX: ReturnType<typeof useHorizontalNav>[0];

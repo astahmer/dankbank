@@ -7,7 +7,7 @@ import { useAutocomplete } from "@/hooks/form";
 import { AutocompleteProps, AutocompleteWrapperProps } from "@/hooks/form/useAutocomplete";
 
 import {
-    ExpandableBtn, ExpandableBtnProps, ExpandableBtnWrapperProps
+    ExpandableBtn, ExpandableBtnProps, ExpandableBtnRenderBottomProps, ExpandableBtnWrapperProps
 } from "../buttons/ExpandableBtn";
 import { FloatingBtn } from "../buttons/FloatingBtn";
 
@@ -31,10 +31,15 @@ export function ExpandableAutocompleteBtn(props: ExpandableAutocompleteBtnProps)
     ]);
 
     // Allow resetting input.value + hook.selecteds + response.data.items
-    const reset = useCallback(() => {
-        response.resetFn();
-        hook.selection.reset();
-    }, [canReset]);
+    const reset = useCallback(
+        (toggle: ExpandableBtnRenderBottomProps["toggle"]) => {
+            response.resetFn();
+            hook.selection.reset();
+            hook.clearValue();
+            toggle(false);
+        },
+        [canReset]
+    );
 
     const { colorMode } = useColorMode();
 
@@ -49,11 +54,11 @@ export function ExpandableAutocompleteBtn(props: ExpandableAutocompleteBtnProps)
                     ...btnProps,
                 }}
                 inputProps={{ ...inputProps, ...bindings.input }}
-                renderBottom={({ isExpanded, isReady }) =>
+                renderBottom={({ isExpanded, isReady, toggle }) =>
                     (isExpanded ? isReady : false) && canReset ? (
                         <Box
                             as={IoMdClose}
-                            onClick={reset}
+                            onClick={() => reset(toggle)}
                             size="24px"
                             pos="absolute"
                             top="50%"
