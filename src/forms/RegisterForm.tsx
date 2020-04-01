@@ -37,7 +37,7 @@ export function RegisterTemplate({ onSubmit, isLoading }: FormProps) {
 type RegisterFormState = { email: string; name: string; password: string };
 
 export function RegisterForm() {
-    const [async, run] = useRequestAPI<RegisterResponse>(API_ROUTES.Auth.register, { method: "post" });
+    const [async, run] = useRequestAPI<RegisterResponse>(API_ROUTES.Auth.register, { method: "post" }, { withToken: false});
     const { actions } = useContext(AuthContext);
 
     const onSubmit: FormSubmitCallback<RegisterFormState> = async (data, e) => {
