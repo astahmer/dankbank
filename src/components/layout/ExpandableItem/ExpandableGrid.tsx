@@ -31,7 +31,7 @@ export function ExpandableGrid({
     const [ref, setRef] = useCallbackRef();
     const availableHeight = useAvailableHeight(ref);
 
-    return (
+    return items.length ? (
         <FixedSizeGrid
             outerRef={setRef}
             {...gridProps}
@@ -41,7 +41,7 @@ export function ExpandableGrid({
         >
             {GridCell}
         </FixedSizeGrid>
-    );
+    ) : null;
 }
 
 type ExpandableGridItemData = Pick<
@@ -57,7 +57,7 @@ const GridCell = memo(
         const index = columnIndex + rowIndex * 3;
         const item = items[index];
 
-        return (
+        return item ? (
             <ExpandableItem
                 style={style}
                 index={index}
@@ -68,7 +68,7 @@ const GridCell = memo(
                 memoData={memoData ? memoData[index] : undefined}
                 {...gridItemProps}
             />
-        );
+        ) : null;
     },
     areEqual
 );
