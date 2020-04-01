@@ -1,0 +1,23 @@
+{
+    "name": "Dankbank",
+    "short_name": "DK",
+    "icons": [
+        {
+            "src": "/icon-128.png",
+            "type": "image/png",
+            "sizes": "128x128"
+        },
+        {
+            "src": "/icon-512.png",
+            "type": "image/png",
+            "sizes": "512x512"
+        }
+    ],
+    "description": "banque de memes du cul",
+    "theme_color": "#008cfb",
+    "background_color": "#2196f3",
+    "display": "fullscreen",
+    "orientation": "portrait",
+    "Scope": "/",
+    "start_url": "/"
+}

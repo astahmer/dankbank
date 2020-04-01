@@ -8,3 +8,4 @@ temp/
 *.sqlite
 *.log
 var
+**/service-worker.js
