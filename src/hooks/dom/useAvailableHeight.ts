@@ -2,14 +2,12 @@ import { MutableRefObject, useEffect, useRef, useState } from "react";
 
 import { getInnerDimensions } from "@/functions/utils";
 
-import { useMeasure } from "./";
-
 /** Get available height of an element by substracting its sibling heights to its parent height  */
 export function useAvailableHeight(elementRef: MutableRefObject<HTMLElement>) {
     const [availableHeight, setAvailableHeight] = useState(0);
     const parentRef = useRef<HTMLElement>();
 
-    const rect = useMeasure(parentRef);
+    // const rect = useMeasure(parentRef);
 
     useEffect(() => {
         if (elementRef.current) {
@@ -17,7 +15,7 @@ export function useAvailableHeight(elementRef: MutableRefObject<HTMLElement>) {
             parentRef.current = heights.currentElement;
             setAvailableHeight(available);
         }
-    }, [elementRef.current, rect]);
+    }, [elementRef.current]);
 
     return availableHeight;
 }
