@@ -4,6 +4,7 @@
 -include .env
 
 EXECUTOR = docker exec -i $(PROJECT_NAME)-nextjs /bin/sh -c
+RUNNER = docker-compose run -p 4000:4000 nextjs /bin/sh -c
 
 DEFAULT_CONTAINER := nextjs
 # If the first argument is one of the supported commands...
@@ -37,7 +38,11 @@ install:
 	 ${MAKE} start-install;
 
 start: ## Start container
-start: stop docker-compose-up ${MAKE} logs;
+start:
+	${MAKE} stop; \
+	${MAKE} docker-compose-up; \
+	${MAKE} logs; \
+	${MAKE} ndev;
 
 start-install: ## Install vendors and then start
 start-install: stop vendors docker-compose-up
@@ -89,6 +94,18 @@ term: ## Enter in container terminal as root
 
 prettier:
 	$(EXECUTOR) "npm run prettier"
+
+ndev:
+	$(RUNNER) "npm run dev"
+
+nbuild:
+	$(RUNNER) "npm run build"
+
+nstart:
+	$(RUNNER) "npm run start"
+
+cterm:
+	docker-compose run nextjs /bin/sh
 
 rl: ## Restart main container &
 rl:

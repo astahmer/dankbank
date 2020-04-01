@@ -1,41 +1,27 @@
 version: "3"
 services:
-  nextjs:
-    container_name: ${PROJECT_NAME}-nextjs
-    build:
-      context: ./
-      dockerfile: ./docker/Dockerfile
-    command: npm run dev
-    volumes:
-      - .:/usr/app/
-      - ./node_modules/:/usr/app/node_modules
-    ports:
-      - 4000:4000
-      # - 9231:9229
-    environment:
-      - VIRTUAL_HOST=${PROJECT_NAME}.lol
-      - VIRTUAL_PORT=4000
-      - SERVER_API_URL=http://${PROJECT_NAME}-koa:3000
-      - CLIENT_API_URL=http://api.${PROJECT_NAME}.lol
-    network_mode: "bridge"
-    external_links:
-      - dankbank-koa
+    nextjs:
+        container_name: ${PROJECT_NAME}-nextjs
+        build:
+            context: ./
+            dockerfile: ./docker/Dockerfile
+        volumes:
+            - .:/usr/app/
+            - ./node_modules/:/usr/app/node_modules
+        ports:
+            - 4000:4000
+            # - 9231:9229
+        environment:
+            - VIRTUAL_HOST=${PROJECT_NAME}.lol
+            - VIRTUAL_PORT=4000
+        network_mode: "bridge"
 
-  # Only used to install vendors
-  vendors:
-    build:
-      context: ./
-      dockerfile: ./docker/install/Dockerfile
-    container_name: ${PROJECT_NAME}-vendors
-    volumes:
-      - .:/usr/app/
-      - ./node_modules/:/usr/app/node_modules
-
-  # Only used to enter container & install packages
-  term:
-    image: node:10-alpine
-    command: tail -f /dev/null
-    container_name: ${PROJECT_NAME}-term
-    volumes:
-      - .:/usr/app/
-      - ./node_modules/:/usr/app/node_modules
+    # Only used to install vendors
+    vendors:
+        build:
+            context: ./
+            dockerfile: ./docker/install/Dockerfile
+        container_name: ${PROJECT_NAME}-vendors-front
+        volumes:
+            - .:/usr/app/
+            - ./node_modules/:/usr/app/node_modules

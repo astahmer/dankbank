@@ -3,7 +3,7 @@ import { ButtonProps } from "@chakra-ui/core/dist/Button";
 import { useRef } from "react";
 import { IoLogoTwitter } from "react-icons/io";
 
-import { API_ROUTES, clientApiUrl } from "@/config/api";
+import { API_ROUTES, baseURL } from "@/config/api";
 import { isDev } from "@/functions/utils";
 import { Tokens } from "@/hooks/async/useAuth";
 import { Memory } from "@/services/MemoryManager";
@@ -17,7 +17,7 @@ export function TwitterLogin({ onLogged, label = "Login with Twitter", ...props 
 
     const onClick = () => {
         callbackWindow.current = window.open(
-            clientApiUrl + API_ROUTES.Auth.twitter,
+            baseURL + API_ROUTES.Auth.twitter,
             "TwitterAuth",
             "width=972,height=660,status=0"
         );

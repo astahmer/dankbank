@@ -1,6 +1,7 @@
 import { ImageProps } from "@chakra-ui/core";
 import { forwardRef } from "react";
 
+import { baseURL } from "@/config/api";
 import { IImage, Quality } from "@/types/entities/Image";
 
 import { CustomImage } from "./CustomImage";
@@ -13,15 +14,11 @@ export const Picture = forwardRef(
         const responsiveProps = useResponsive
             ? { srcSet: getSrcSetForPicture(item), sizes: getSizesForPicture(item) }
             : {};
-        return (
-            <CustomImage
-                objectFit="cover"
-                src={getQualityUrlOrFallback(item, useResponsive ? quality : Quality.ORIGINAL)}
-                {...responsiveProps}
-                {...props}
-                ref={ref}
-            />
-        );
+
+        const filePath = getQualityUrlOrFallback(item, useResponsive ? quality : Quality.ORIGINAL);
+        const url = baseURL + filePath;
+
+        return <CustomImage objectFit="cover" src={url} {...responsiveProps} {...props} ref={ref} />;
     }
 );
 
