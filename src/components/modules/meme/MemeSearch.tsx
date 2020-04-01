@@ -12,12 +12,13 @@ import { Picture } from "@/components/common/Picture";
 import { AutocompleteItem } from "@/components/field/Autocomplete/AutocompleteItem";
 import { ExpandableGrid } from "@/components/layout/ExpandableItem/ExpandableGrid";
 import {
-    ExpandableList as ExpList, ExpandableListProps, ExpandableListRenderBoxArgs, ExpandableListRenderItemArgs
+    ExpandableList as ExpList, ExpandableListProps, ExpandableListRenderBoxArgs,
+    ExpandableListRenderItemArgs
 } from "@/components/layout/ExpandableItem/ExpandableList";
 import { getAuthorizedAccess } from "@/components/layout/Page/PageLayout";
 import { SwipableProps, SwipeDirection, SwipePosition } from "@/components/layout/Swipable";
 import { API_ROUTES } from "@/config/api";
-import { isType, useClientEffect } from "@/functions/utils";
+import { downloadUrl, isType, useClientEffect } from "@/functions/utils";
 import { useRequestAPI, useTriggerAPI } from "@/hooks/async/useAPI";
 import { AuthContext } from "@/hooks/async/useAuth";
 import { useWindowSize } from "@/hooks/dom";
@@ -126,7 +127,7 @@ const MemeBox = (props: MemeBoxProps) => {
                             {
                                 label: "Enregistrer",
                                 onClick: () => {
-                                    console.log("save");
+                                    downloadUrl(meme.pictures[0].url, meme.pictures[0].originalName);
                                 },
                             },
                             {
