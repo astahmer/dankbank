@@ -1,6 +1,8 @@
-import { Portal, Spinner } from "@chakra-ui/core";
+import { Box, Portal, Spinner, useColorMode } from "@chakra-ui/core";
 import { useCallback, useMemo, useRef } from "react";
+import { IoMdClose } from "react-icons/io";
 
+import { COMMON_COLORS } from "@/config/theme";
 import { useAutocomplete } from "@/hooks/form";
 import { AutocompleteProps, AutocompleteWrapperProps } from "@/hooks/form/useAutocomplete";
 
@@ -22,6 +24,20 @@ export function ExpandableAutocompleteBtn(props: ExpandableAutocompleteBtnProps)
 
     const [hook, bindings] = useAutocomplete(props, { inputRef, resultListRef, ownRef: inputRef });
 
+    const canReset = useMemo(() => hook.value || hook.selecteds.length || data.items.length, [
+        hook.value,
+        hook.selecteds.length,
+        data.items.length,
+    ]);
+
+    // Allow resetting input.value + hook.selecteds + response.data.items
+    const reset = useCallback(() => {
+        response.resetFn();
+        hook.selection.reset();
+    }, [canReset]);
+
+    const { colorMode } = useColorMode();
+
     // Render items
     const Button = useMemo(
         () => (
@@ -33,10 +49,24 @@ export function ExpandableAutocompleteBtn(props: ExpandableAutocompleteBtnProps)
                     ...btnProps,
                 }}
                 inputProps={{ ...inputProps, ...bindings.input }}
+                renderBottom={({ isExpanded, isReady }) =>
+                    (isExpanded ? isReady : false) && canReset ? (
+                        <Box
+                            as={IoMdClose}
+                            onClick={reset}
+                            size="24px"
+                            pos="absolute"
+                            top="50%"
+                            right="0"
+                            transform="translate3d(-50%, -50%, 0)"
+                            color={COMMON_COLORS.bgColor[colorMode]}
+                        />
+                    ) : null
+                }
                 {...expandableProps}
             />
         ),
-        [btnProps, inputProps, bindings.input, expandableProps]
+        [btnProps, inputProps, bindings.input, expandableProps, canReset]
     );
     const ResultList = useCallback(
         () =>
@@ -48,7 +78,7 @@ export function ExpandableAutocompleteBtn(props: ExpandableAutocompleteBtnProps)
                       resultListRef,
                   }) as JSX.Element)
                 : null,
-        [hook.shouldDisplayList, render.resultList]
+        [hook.shouldDisplayList, render.resultList, data.items, bindings.resultItem]
     );
 
     return (

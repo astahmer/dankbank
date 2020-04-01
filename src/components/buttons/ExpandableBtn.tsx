@@ -1,5 +1,5 @@
 import { Box, BoxProps, InputProps, PseudoBox, useColorMode } from "@chakra-ui/core";
-import { forwardRef, MutableRefObject, useEffect, useRef, useState } from "react";
+import { forwardRef, MutableRefObject, ReactNode, useEffect, useRef, useState } from "react";
 import { animated, config, useSpring } from "react-spring";
 
 import { COMMON_COLORS } from "@/config/theme";
@@ -15,14 +15,15 @@ export type ExpandableBtnProps = {
     wrapperPosition?: BoxProps["position"];
     btnProps?: FloatingBtnProps;
     inputProps?: InputProps;
+    renderBottom?: (props: ExpandableBtnRenderBottomProps) => ReactNode;
 };
 
 export const ExpandableBtn = forwardRef<HTMLInputElement, ExpandableBtnProps>(
-    ({ direction = "left", wrapperPosition = "absolute", btnProps, inputProps }, ref) => {
+    ({ direction = "left", wrapperPosition = "absolute", btnProps, inputProps, renderBottom }, ref) => {
         const { colorMode } = useColorMode();
 
         const [isExpanded, { toggle, close }] = useToggle();
-        const [isReady, setReady] = useState();
+        const [isReady, setReady] = useState<boolean>();
 
         const spring = useSpring({
             config: { tension: 320, friction: 32 },
@@ -71,11 +72,13 @@ export const ExpandableBtn = forwardRef<HTMLInputElement, ExpandableBtnProps>(
                         {...btnProps}
                         onClick={() => toggle()}
                     />
+                    {renderBottom({ isExpanded, isReady })}
                 </Box>
             </Box>
         );
     }
 );
+ExpandableBtn.displayName = "ExpandableBtn";
 
 const AnimatedInput = animated(PseudoBox);
 const AnimatedActionBtn = animated(ActionBtn);
@@ -92,4 +95,9 @@ type ExpandDirection = "left" | "right" | "center";
 export type ExpandableBtnWrapperProps = {
     isFloating?: boolean;
     // icon?: IconType | IconButtonProps["icon"];
+};
+
+export type ExpandableBtnRenderBottomProps = {
+    isExpanded: boolean;
+    isReady: boolean;
 };
