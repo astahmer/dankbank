@@ -7,7 +7,7 @@ import { InterpolationWithTheme } from "@emotion/core";
 import { Swipable } from "./";
 import { SwipableProps, SwipeDirection, SwipePosition } from "./Swipable";
 
-// TODO Infinite items loop ?
+// TODO Infinite items loop ? + swipe decay + multiple pos change if swipe projection is fast/long enough
 
 export const Slider = forwardRef<HTMLElement, SliderProps>(
     (
@@ -17,11 +17,13 @@ export const Slider = forwardRef<HTMLElement, SliderProps>(
             isFullHeight,
             isDisabled,
             onSwipe,
+            afterSwipe,
             flexProps,
             stackProps,
             wrapperProps,
             slideProps,
             currentPos = { x: 0, y: 0 },
+            onRest,
         },
         ref
     ) => {
@@ -44,6 +46,7 @@ export const Slider = forwardRef<HTMLElement, SliderProps>(
                         xDistance={width}
                         boundaries={{ x: [0, list.length - 1], y: [0, 0] }}
                         onSwipe={handleSwipe}
+                        onRest={onRest}
                         currentPos={sliderPos}
                         isDisabled={isDisabled}
                     >
@@ -112,4 +115,6 @@ export type SliderProps = ChildrenProp<object> & {
     isDisabled?: boolean;
     onSwipe?: SwipableProps["onSwipe"];
     currentPos?: SwipableProps["currentPos"];
+    afterSwipe?: (currentPos: SwipableProps["currentPos"]) => void;
+    onRest?: SwipableProps["onRest"];
 };

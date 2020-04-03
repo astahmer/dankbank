@@ -4,13 +4,15 @@ import * as Rematrix from "rematrix";
 // Original https://github.com/aholachek/mobile-first-animation
 
 // tiny FLIP technique handler that only does 1 animation at a time
-export class Flipper {
+export class Flipper<T = any> {
     private ref: MutableRefObject<HTMLElement>;
-    private onFlip: FlipperOnFlip;
-    private positions: any;
+    private onBeforeFlip: FlipperOnBeforeFlip<T>;
+    private onFlip: FlipperOnFlip<T>;
+    private positions: Record<string, DOMRect>;
 
-    constructor({ ref, onFlip }: FlipperProps) {
+    constructor({ ref, onBeforeFlip, onFlip }: FlipperProps<T>) {
         this.ref = ref;
+        this.onBeforeFlip = onBeforeFlip;
         this.onFlip = onFlip;
         this.positions = {};
     }
@@ -28,7 +30,7 @@ export class Flipper {
         this.positions[id] = this.measure(id);
     }
 
-    flip(id: string, data?: any) {
+    flip(id: string, data?: T) {
         const el = this.getEl(id);
 
         if (!el) {
@@ -49,10 +51,13 @@ export class Flipper {
         // we need to figure out what the "real" final state is without any residual transform from an interrupted animation
         el.style.transform = "";
 
+        this.onBeforeFlip?.({ id, element: this.getEl(id), data });
         const after = this.measure(id);
         const before = this.positions[id];
+
         const scaleX = before.width / after.width;
         const scaleY = before.height / after.height;
+
         const x = before.left - after.left;
         const y = before.top - after.top;
 
@@ -82,9 +87,10 @@ export class Flipper {
     }
 }
 
-export type FlipperProps = {
+export type FlipperProps<T = any> = {
     ref: MutableRefObject<HTMLElement>;
-    onFlip: FlipperOnFlip;
+    onBeforeFlip?: FlipperOnBeforeFlip<T>;
+    onFlip: FlipperOnFlip<T>;
 };
 
 export type FlipperDiff = {
@@ -94,5 +100,8 @@ export type FlipperDiff = {
     scaleY: number;
 };
 
-export type FlipperOnFlipParams = { diff: FlipperDiff; data?: any; before: DOMRect; after: DOMRect };
-export type FlipperOnFlip = (id: string, params: FlipperOnFlipParams) => void;
+export type FlipperOnBeforeFlipProps<T = any> = { id: string; element: HTMLElement; data?: T };
+
+export type FlipperOnFlipParams<T = any> = { diff: FlipperDiff; data?: T; before: DOMRect; after: DOMRect };
+export type FlipperOnFlip<T = any> = (id: string, params: FlipperOnFlipParams<T>) => void;
+export type FlipperOnBeforeFlip<T = any> = (props: FlipperOnBeforeFlipProps<T>) => void;

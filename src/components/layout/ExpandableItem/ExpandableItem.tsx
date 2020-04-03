@@ -50,6 +50,7 @@ export const ExpandableItem = memo(
         const [after, setAfter] = useState<DOMRect>();
 
         const set = (args: any, flipParams?: FlipperOnFlipParams) => {
+            // args.config = { duration: 10000 }; // SlowMo debug
             // Allow passing future (measure after spring) DOMRect to renderItem
             flipParams?.after && setAfter(flipParams.after);
 
@@ -110,7 +111,6 @@ export const ExpandableItem = memo(
                 display="flex"
                 borderWidth={isSelected ? 0 : "2px"}
                 borderColor={COMMON_COLORS.bgColor[colorMode]}
-                height="100%"
                 transformOrigin="0 0"
                 css={
                     isSelected
@@ -119,11 +119,9 @@ export const ExpandableItem = memo(
                               top: 0,
                               left: 0,
                               width: "100vw",
-                              height: "100%",
                               justifyContent: "center",
                               touchAction: "none",
                               alignItems: "center",
-                              ...(isValid ? { height: "auto" } : {}),
                           }
                         : { touchAction: "manipulation" }
                 }

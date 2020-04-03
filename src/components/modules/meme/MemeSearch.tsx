@@ -1,4 +1,4 @@
-import { Box, ButtonGroup, Flex, Tag } from "@chakra-ui/core";
+import { Box, ButtonGroup, Flex, Portal, Tag } from "@chakra-ui/core";
 import { AxiosRequestConfig } from "axios";
 import React, {
     ForwardRefExoticComponent, memo, RefAttributes, useCallback, useContext, useMemo, useState
@@ -12,13 +12,13 @@ import { Picture } from "@/components/common/Picture";
 import { AutocompleteItem } from "@/components/field/Autocomplete/AutocompleteItem";
 import { ExpandableGrid } from "@/components/layout/ExpandableItem/ExpandableGrid";
 import {
-    ExpandableList as ExpList, ExpandableListProps, ExpandableListRenderBoxArgs,
-    ExpandableListRenderItemArgs
+    ExpandableList as ExpList, ExpandableListFlipperData, ExpandableListProps,
+    ExpandableListRenderBoxArgs, ExpandableListRenderItemArgs
 } from "@/components/layout/ExpandableItem/ExpandableList";
 import { getAuthorizedAccess } from "@/components/layout/Page/PageLayout";
 import { SwipableProps, SwipeDirection, SwipePosition } from "@/components/layout/Swipable";
 import { API_ROUTES } from "@/config/api";
-import { downloadUrl, isType, useClientEffect } from "@/functions/utils";
+import { downloadUrl, isType, shallowDiffers } from "@/functions/utils";
 import { useRequestAPI, useTriggerAPI } from "@/hooks/async/useAPI";
 import { AuthContext } from "@/hooks/async/useAuth";
 import { useWindowSize } from "@/hooks/dom";
@@ -27,6 +27,7 @@ import {
 } from "@/hooks/form/useAutocomplete";
 import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { Auth, AuthAccess } from "@/services/AuthManager";
+import { FlipperProps } from "@/services/Flipper";
 import { IMeme } from "@/types/entities/Meme";
 
 import { ExpandableMemesAutocomplete, MemeSearchResult } from "./ExpandableMemesAutocomplete";
@@ -60,15 +61,24 @@ const MemeResultList = memo(function(
 
     const { isTokenValid } = useContext(AuthContext);
 
+    const onBeforeFlip: FlipperProps<ExpandableListFlipperData>["onBeforeFlip"] = ({ id, element, data }) => {
+        if (data?.isLeaving) return;
+
+        const rect = element.getBoundingClientRect();
+        const top = `calc(50vh - ${rect.height / 2}px)`;
+        element.style.top = top;
+    };
+
     return (
         <ExpandableList
             ref={args.resultListRef}
             items={args.items}
             getId={(item) => item._id}
             memoData={sliderPos}
+            onBeforeFlip={onBeforeFlip}
             renderBox={(props) => props.selected && <MemeBox {...props} isTokenValid={isTokenValid} />}
             renderList={(props) => <ExpandableGrid {...props} />}
-            renderItem={(props) => <MemeResult {...props} storeSliderPos={storeSliderPos} />}
+            renderItem={(props) => <MemeResult {...props} {...{ storeSliderPos, resultListRef: args.resultListRef }} />}
         />
     );
 });
@@ -186,6 +196,7 @@ const MemeBox = (props: MemeBoxProps) => {
 
 type MemeResultProps = ExpandableListRenderItemArgs<MemeSearchResult, SwipableProps["currentPos"]> & {
     storeSliderPos: (id: string | number, pos: SwipePosition) => void;
+    resultListRef: AutocompleteResultListRenderPropArg<MemeSearchResult>["resultListRef"];
 };
 const MemeResult = memo(
     function({
@@ -197,26 +208,12 @@ const MemeResult = memo(
         memoData: currentPos = { x: 0, y: 0 },
         isResting,
         columnWidth,
-        getEl,
-        flipId,
+        resultListRef,
     }: MemeResultProps) {
         const onSwipe = (direction: SwipeDirection, pos: SwipePosition) => storeSliderPos(index, pos);
 
         const { width } = useWindowSize();
         const isMultipartMeme = useMemo(() => item._source.pictures.length > 1, [item]);
-
-        // TODO Hide tags when dragging ?
-
-        /** Re-center ExpandableItem div while dragging */
-        useClientEffect(() => {
-            const el = getEl(flipId as string);
-            if (isDragging) {
-                const rect = el.getBoundingClientRect();
-                el.style.top = `calc(50vh - ${rect.height / 2}px)`;
-            } else if (isSelected) {
-                el.style.top = "";
-            }
-        }, [isDragging]);
 
         const sliderSelectedProps: Partial<MemeSliderProps> = {
             wrapperProps: {
@@ -226,26 +223,44 @@ const MemeResult = memo(
             slideProps: { height: "auto" },
         };
 
+        const shouldHidePreview = isMultipartMeme && isSelected && isResting && !isDragging;
+        const shouldHideSlider = !(isSelected && isResting) || isDragging;
+
         const component = (
             <>
-                <Picture
-                    useResponsive={false}
-                    item={item._source.pictures[currentPos.x]}
-                    w="100%"
-                    style={{ visibility: isMultipartMeme && isSelected ? "hidden" : undefined }}
-                />
-                {isMultipartMeme && isSelected ? (
-                    <MemeSlider
-                        {...(isSelected ? sliderSelectedProps : {})}
-                        meme={item._source}
-                        flexProps={{ w: "100%", h: "100%", pos: "absolute" }}
-                        stackProps={{ top: "calc(100% - 32px)", style: { display: isDragging ? "none" : undefined } }}
-                        width={isSelected ? width : columnWidth}
-                        isFullHeight
-                        onSwipe={onSwipe}
-                        currentPos={currentPos}
-                        isDisabled={isDragging}
+                <Box overflow="hidden" w="100%" h={!isSelected ? "100%" : undefined}>
+                    <Picture
+                        useResponsive={false}
+                        item={item._source.pictures[currentPos.x]}
+                        w="100%"
+                        minH={!isSelected ? "96px" : undefined}
+                        style={{ visibility: shouldHidePreview ? "hidden" : undefined }}
                     />
+                </Box>
+                {isMultipartMeme ? (
+                    <Portal container={resultListRef.current}>
+                        <MemeSlider
+                            {...(isSelected ? sliderSelectedProps : {})}
+                            meme={item._source}
+                            flexProps={{
+                                w: "100%",
+                                h: "100vh",
+                                pos: "fixed",
+                                top: 0,
+                                zIndex: 5,
+                                style: { visibility: shouldHideSlider ? "hidden" : undefined },
+                            }}
+                            stackProps={{
+                                top: "calc(100% - 32px)",
+                                style: { display: isDragging ? "none" : undefined },
+                            }}
+                            width={isSelected ? width : columnWidth}
+                            isFullHeight
+                            onSwipe={onSwipe}
+                            currentPos={currentPos}
+                            isDisabled={isDragging}
+                        />
+                    </Portal>
                 ) : null}
 
                 {isMultipartMeme && !isSelected ? (
@@ -266,14 +281,17 @@ const MemeResult = memo(
         );
     },
     (prevProps, nextProps) => {
+        const areMemoEqual =
+            prevProps.memoData || nextProps.memoData
+                ? prevProps.memoData && nextProps.memoData && !shallowDiffers(prevProps.memoData, nextProps.memoData)
+                : true;
         const areEqual =
             prevProps.item._id === nextProps.item._id &&
             prevProps.isSelected === nextProps.isSelected &&
             prevProps.isDragging === nextProps.isDragging &&
             prevProps.after === nextProps.after &&
             prevProps.isResting === nextProps.isResting &&
-            ((prevProps.memoData === undefined && nextProps.memoData === undefined) ||
-                (prevProps.memoData?.x === nextProps.memoData?.x && prevProps.memoData?.y === nextProps.memoData?.y));
+            areMemoEqual;
 
         return areEqual;
     }

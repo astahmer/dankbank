@@ -20,6 +20,7 @@ export const Swipable = forwardRef<HTMLElement, SwipableProps>(
             isDisabled,
             isFreeMode,
             dragOptions,
+            onRest,
             ...props
         },
         ref
@@ -27,7 +28,11 @@ export const Swipable = forwardRef<HTMLElement, SwipableProps>(
         const AnimatedComponent = useMemo(() => animated(Component), []);
         const [localPos, setPos] = useState<SwipePosition>({ x: 0, y: 0 });
         const currentPos = currentPosProp ? reversePos(currentPosProp) : localPos;
-        const [{ x, y }, setXY] = useSpring(() => ({ x: xDistance * currentPos.x, y: yDistance * currentPos.y }));
+        const [{ x, y }, setXY] = useSpring(() => ({
+            x: xDistance * currentPos.x,
+            y: yDistance * currentPos.y,
+            onRest,
+        }));
 
         // On controlled currentPos change, set spring
         useEffect(() => {
@@ -124,6 +129,7 @@ export type SwipableProps<ElementProps = BoxProps> = ElementProps & {
     isDisabled?: boolean;
     isFreeMode?: boolean;
     onSwipe?: (direction: SwipeDirection, updatedPos: SwipePosition) => void;
+    onRest?: any;
     dragOptions?: UseDragConfig;
 };
 

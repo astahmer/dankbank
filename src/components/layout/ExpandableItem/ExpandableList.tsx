@@ -5,13 +5,13 @@ import { animated, useSpring } from "react-spring";
 
 import { useEnhancedEffect } from "@/functions/utils";
 import { useCombinedRefs } from "@/hooks/useCombinedRefs";
-import { Flipper } from "@/services/Flipper";
+import { Flipper, FlipperProps } from "@/services/Flipper";
 
 import { ExpandableRenderListProps } from "./ExpandableGrid";
 import { ExpandableItemProps } from "./ExpandableItem";
 
 export const ExpandableList = forwardRef<HTMLElement, ExpandableListProps>(
-    ({ items, getId, renderBox, renderList, renderItem, onSelected, boxProps, memoData }, ref) => {
+    ({ items, getId, renderBox, renderList, renderItem, onSelected, onBeforeFlip, boxProps, memoData }, ref) => {
         const [selected, setSelected] = useState<any>(null);
         const getFlipId = useCallback((item: object) => "img-" + getId(item), [getId]);
         const isSame = useCallback((a: object, b: object) => a && b && getFlipId(a) === getFlipId(b), [getFlipId]);
@@ -25,8 +25,9 @@ export const ExpandableList = forwardRef<HTMLElement, ExpandableListProps>(
         const [backgroundSpring, setBackgroundSpring] = useSpring(() => ({ opacity: 0 }));
 
         const flipRef = useRef(
-            new Flipper({
+            new Flipper<ExpandableListFlipperData>({
                 ref: containerRef,
+                onBeforeFlip,
                 onFlip(id, { diff, data = {}, before, after }) {
                     const set = springsRef.current[id] as any;
                     const el = this.getEl(id);
@@ -152,6 +153,7 @@ export type ExpandableListProps<T extends object = object> = {
     renderList: (props: ExpandableRenderListProps<T>) => ReactElement;
     renderItem: (args: ExpandableListRenderItemArgs<T>) => ReactElement;
     onSelected?: (item: T) => void;
+    onBeforeFlip?: FlipperProps["onBeforeFlip"];
     boxProps?: BoxProps;
     memoData?: Record<string | number, any>;
 };
@@ -167,6 +169,8 @@ export type ExpandableListRenderItemArgs<T extends object = object, M = any> = P
     isDragging: boolean;
     isResting: boolean;
 };
+
+export type ExpandableListFlipperData = { isLeaving?: boolean; isFlipping?: boolean };
 
 const AnimatedBox = animated(Box);
 
