@@ -1,5 +1,7 @@
 import { Box, BoxProps, InputProps, PseudoBox, useColorMode } from "@chakra-ui/core";
-import { forwardRef, MutableRefObject, ReactNode, useEffect, useRef, useState } from "react";
+import {
+    forwardRef, MutableRefObject, ReactNode, useCallback, useEffect, useRef, useState
+} from "react";
 import { animated, config, useSpring } from "react-spring";
 
 import { COMMON_COLORS } from "@/config/theme";
@@ -13,16 +15,21 @@ import { FloatingBtnProps } from "./FloatingBtn";
 export type ExpandableBtnProps = {
     direction?: ExpandDirection;
     wrapperPosition?: BoxProps["position"];
+    isDefaultExpanded?: boolean;
     btnProps?: FloatingBtnProps;
     inputProps?: InputProps;
     renderBottom?: (props: ExpandableBtnRenderBottomProps) => ReactNode;
 };
 
 export const ExpandableBtn = forwardRef<HTMLInputElement, ExpandableBtnProps>(
-    ({ direction = "left", wrapperPosition = "absolute", btnProps, inputProps, renderBottom }, ref) => {
+    (
+        { direction = "left", wrapperPosition = "absolute", btnProps, inputProps, renderBottom, isDefaultExpanded },
+        ref
+    ) => {
         const { colorMode } = useColorMode();
 
-        const [isExpanded, { toggle, close }] = useToggle();
+        // TODO Fix SSR with isDefaultExpanded
+        const [isExpanded, { toggle, close }] = useToggle(isDefaultExpanded);
         const [isReady, setReady] = useState<boolean>();
 
         const spring = useSpring({
@@ -41,7 +48,8 @@ export const ExpandableBtn = forwardRef<HTMLInputElement, ExpandableBtnProps>(
         }, [isReady]);
 
         const selfRef = useRef<HTMLElement>();
-        useClickOutside(selfRef, close);
+        const handleClickOutside = useCallback(() => !isDefaultExpanded && close(), []);
+        useClickOutside(selfRef, handleClickOutside);
 
         return (
             <Box position={wrapperPosition} w="48px" ref={selfRef}>
