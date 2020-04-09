@@ -1,5 +1,5 @@
-import { Box, Button, Stack } from "@chakra-ui/core";
-import { useCallback } from "react";
+import { Box, Button, Flex, FormLabel, Stack, Switch, useToast } from "@chakra-ui/core";
+import { ChangeEvent, EventHandler, useCallback, useState } from "react";
 
 import { ImageUploader, UploadResult } from "@/components/field/ImageUploader/ImageUploader";
 import { TagsAutocomplete } from "@/components/modules/tag/TagsAutocomplete";
@@ -18,8 +18,10 @@ export function MemeFormTemplate({ onSubmit, isLoading }: FormProps) {
         { tags: (selecteds) => selecteds.length > 0, pictures: (selecteds) => selecteds.length > 0 }
     );
 
-    const handleSelectedTags = (selectedTags: ElasticDocument[]) => actions.set("tags", selectedTags.map(forrmatTags));
+    const handleSelectedTags = (selectedTags: ElasticDocument[]) => actions.set("tags", selectedTags.map(formatTags));
     const handleUploadResults = (results: UploadResult[]) => actions.set("pictures", results.map(getPictureId));
+    const handleVisibility: EventHandler<ChangeEvent> = (e) =>
+        actions.set("visibility", (e.target as HTMLInputElement).checked ? Visibility.PUBLIC : Visibility.PRIVATE);
     const handleSubmit = useCallback(actions.onSubmit(onSubmit), []);
 
     return (
@@ -27,6 +29,10 @@ export function MemeFormTemplate({ onSubmit, isLoading }: FormProps) {
             <Stack spacing={2}>
                 <ImageUploader onUploadComplete={handleUploadResults} multiple mb={"20px"} />
                 <TagsAutocomplete setSelecteds={handleSelectedTags} />
+                <Flex align="center" mt="10px">
+                    <FormLabel>Is public ?</FormLabel>
+                    <Switch defaultIsChecked onChange={handleVisibility} />
+                </Flex>
             </Stack>
             <Button
                 type="submit"
@@ -46,13 +52,16 @@ export function MemeFormTemplate({ onSubmit, isLoading }: FormProps) {
 export function MemeForm() {
     const { user, isTokenValid } = useAuth();
     const [async, run] = useRequestAPI<MemeResponse>("/memes/", { method: "post" }, { withToken: isTokenValid });
+    const [key, setKey] = useState(0);
+
+    const toast = useToast();
 
     const onSubmit: FormSubmitCallback<MemeFormState> = async ({ state: { data }, actions, e }) => {
         e.preventDefault();
         const payload = {
+            visibility: Visibility.PUBLIC,
             ...data,
             owner: user && user.id,
-            visibility: Visibility.PUBLIC,
         };
 
         if (!data.pictures.length || !data.tags.length) {
@@ -60,14 +69,26 @@ export function MemeForm() {
         }
 
         const [err, result] = await run(payload);
-        console.log(payload, result);
+        toast({
+            title: err ? "There was an error" : "Meme successfully posted.",
+            description: err && err.message,
+            status: err ? "error" : "success",
+            duration: 2000,
+            isClosable: true,
+        });
+        if (!err) {
+            setKey(key + 1);
+        } else {
+            actions.addError(err.message, "form");
+        }
+        console.log(payload, err, result);
     };
 
-    return <MemeFormTemplate onSubmit={onSubmit} isLoading={async.isLoading} />;
+    return <MemeFormTemplate onSubmit={onSubmit} isLoading={async.isLoading} key={key} />;
 }
 
 // Fix Chakra-UI typing mistake
 // const Switch = ChakraSwitch as FunctionComponent<Optional<SwitchProps, "children">>;
 
 const getPictureId = (result: UploadResult<IImage>) => result.data && result.data.id;
-const forrmatTags = (tag: ElasticDocument) => ({ tag: tag.text, id: tag._id });
+const formatTags = (tag: ElasticDocument) => ({ tag: tag.text.toLowerCase(), id: tag._id });
