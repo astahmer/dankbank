@@ -11,10 +11,8 @@ import {
 } from "@/hooks/form/useAutocomplete";
 import { MemeDocument } from "@/types/entities/Meme";
 
-export function ExpandableMemesAutocomplete({
-    setSelecteds,
-    ...props
-}: ExpandableAutocompleteWrapperBtnProps<MemeSearchResult>) {
+export type ExpandableMemesAutocompleteProps = ExpandableAutocompleteWrapperBtnProps<MemeSearchResult>;
+export function ExpandableMemesAutocomplete({ setSelecteds, ...props }: ExpandableMemesAutocompleteProps) {
     const [async, run, resetFn, canceler] = useRequestAPI<AutocompleteResponse<MemeSearchResult>>(
         API_ROUTES.Search.memes,
         null,
@@ -34,7 +32,7 @@ export function ExpandableMemesAutocomplete({
     );
 
     const suggestionFn = (value: string) => {
-        canceler && canceler();
+        canceler?.();
         return run({ q: value.toLowerCase(), size: 100, tags });
     };
     const displayFn = (suggestion: ElasticDocument) => ("" + suggestion.text).toLowerCase();
@@ -55,7 +53,7 @@ export function ExpandableMemesAutocomplete({
                 inputProps: { placeholder: "Search memes by tags", max: 20 },
                 ...props.expandableProps,
             }}
-            options={{ ...props.options, shouldResetOnEmptyInput: false }}
+            options={{ ...props.options, withGhostSuggestion: false, delay: 500 }}
             render={props.render}
             {...autocompleteProps}
         />

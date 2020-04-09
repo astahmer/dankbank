@@ -7,21 +7,6 @@ export default function Search() {
     return (
         <>
             <Heading>Search page</Heading>
-            {/* <ExpandableBoxExample /> */}
-            {/* <ExpandableGridTest /> */}
-            {/* <DraggableListTest /> */}
-            {/* <FullscreenModal
-                isOpen={false}
-                close={() => {}}
-                body={
-                    <Box w="100%" h="100%">
-                        <Debug data={selected?._source} initialState={false} />
-                        <MemeBox meme={selected?._source} layout="slider" />
-                    </Box>
-                }
-                withHeader={false}
-                withCloseBtn={false}
-            /> */}
             <MemeSearch />
         </>
     );

@@ -73,17 +73,16 @@ export function ExpandableAutocompleteBtn(props: ExpandableAutocompleteBtnProps)
         ),
         [btnProps, inputProps, bindings.input, expandableProps, canReset]
     );
-    const ResultList = useCallback(
+
+    const ResultList = useMemo(
         () =>
-            hook.shouldDisplayList && render.resultList
-                ? (render.resultList({
-                      ...hook,
-                      items: data.items,
-                      bind: bindings.resultItem,
-                      resultListRef,
-                  }) as JSX.Element)
-                : null,
-        [hook.shouldDisplayList, render.resultList, data.items, bindings.resultItem]
+            render.resultList?.({
+                ...hook,
+                items: data.items,
+                bind: bindings.resultItem,
+                resultListRef,
+            }),
+        [hook, render.resultList, data.items, bindings.resultItem]
     );
 
     return (
@@ -92,7 +91,7 @@ export function ExpandableAutocompleteBtn(props: ExpandableAutocompleteBtnProps)
             <Portal
                 isDisabled={!options.usePortal}
                 container={options.usePortal && props.options.resultListContainer}
-                children={response.isLoading ? <Spinner size="lg" /> : <ResultList />}
+                children={response.isLoading ? <Spinner size="lg" /> : ResultList}
             />
             {expandableProps.isFloating ? <FloatingBtn button={Button} /> : Button}
         </div>

@@ -19,11 +19,11 @@ import { getAuthorizedAccess } from "@/components/layout/Page/PageLayout";
 import { SwipableProps, SwipeDirection, SwipePosition } from "@/components/layout/Swipable";
 import { API_ROUTES } from "@/config/api";
 import { downloadUrl, isType, shallowDiffers } from "@/functions/utils";
-import { useRequestAPI, useTriggerAPI } from "@/hooks/async/useAPI";
-import { AuthContext } from "@/hooks/async/useAuth";
+import { useInitialAPI, useRequestAPI, useTriggerAPI } from "@/hooks/async/useAPI";
+import { AuthContext, useAuth } from "@/hooks/async/useAuth";
 import { useWindowSize } from "@/hooks/dom";
 import {
-    AutocompleteResultListRenderPropArg, AutocompleteSelectedListRenderPropArg
+    AutocompleteResponse, AutocompleteResultListRenderPropArg, AutocompleteSelectedListRenderPropArg
 } from "@/hooks/form/useAutocomplete";
 import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { Auth, AuthAccess } from "@/services/AuthManager";
@@ -34,7 +34,21 @@ import { ExpandableMemesAutocomplete, MemeSearchResult } from "./ExpandableMemes
 import { MemeSlider, MemeSliderProps } from "./MemePictures";
 
 export function MemeSearch() {
+    const { isTokenValid } = useAuth();
+    const [async, run] = useInitialAPI<AutocompleteResponse<MemeSearchResult>>(
+        "/memes/list",
+        { size: 100 },
+        null,
+        {
+            withToken: isTokenValid,
+        },
+        {
+            initialData: { items: [], total: undefined },
+        }
+    );
+
     const [containerRef, getRef] = useCallbackRef();
+
     const setSelecteds = useCallback((selecteds) => {
         selecteds.length && console.log(selecteds);
     }, []);
@@ -44,7 +58,12 @@ export function MemeSearch() {
             <ExpandableMemesAutocomplete
                 options={{ resultListContainer: containerRef.current }}
                 render={{
-                    resultList: (args) => <MemeResultList items={args.items} resultListRef={args.resultListRef} />,
+                    resultList: (args) => (
+                        <MemeResultList
+                            items={args.shouldDisplayList ? args.items : async.data.items}
+                            resultListRef={containerRef}
+                        />
+                    ),
                     selectedList: (args) => <MemeSelectedTags {...args} />,
                 }}
                 setSelecteds={setSelecteds}
@@ -53,7 +72,7 @@ export function MemeSearch() {
     );
 }
 
-const MemeResultList = memo(function(
+export const MemeResultList = memo(function (
     args: Pick<AutocompleteResultListRenderPropArg<MemeSearchResult>, "resultListRef" | "items">
 ) {
     const [sliderPos, setSliderPos] = useState<Record<string, SwipePosition>>({});
@@ -199,7 +218,7 @@ type MemeResultProps = ExpandableListRenderItemArgs<MemeSearchResult, SwipablePr
     resultListRef: AutocompleteResultListRenderPropArg<MemeSearchResult>["resultListRef"];
 };
 const MemeResult = memo(
-    function({
+    function ({
         item,
         index,
         isSelected,
