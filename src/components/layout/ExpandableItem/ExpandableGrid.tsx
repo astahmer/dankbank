@@ -3,8 +3,6 @@ import { memo } from "react";
 import { areEqual, FixedSizeGrid, GridChildComponentProps } from "react-window";
 
 import { useWindowSize } from "@/hooks/dom";
-import { useAvailableHeight } from "@/hooks/dom/useAvailableHeight";
-import { useCallbackRef } from "@/hooks/useCallbackRef";
 import { Flipper, FlipperOnFlipParams } from "@/services/Flipper";
 
 import { ExpandableItem } from "./ExpandableItem";
@@ -23,22 +21,14 @@ export function ExpandableGrid({
     const columnWidth = width / columnCount;
     const rowHeight = 100;
     const rowCount = Math.ceil(items.length / columnCount); // Min count of row to fit all items
+    const gridHeight = rowHeight * rowCount > height ? height : rowHeight * rowCount;
 
     const gridProps = { columnCount, columnWidth, rowCount, rowHeight, width };
     const gridItemProps = { width, height, columnWidth, ...props };
     const data = { items, getFlipId, selected, memoData, gridItemProps, getEl };
 
-    const [ref, setRef] = useCallbackRef();
-    const availableHeight = useAvailableHeight(ref);
-
     return items.length ? (
-        <FixedSizeGrid
-            outerRef={setRef}
-            {...gridProps}
-            height={availableHeight}
-            itemData={data}
-            style={{ willChange: "unset" }}
-        >
+        <FixedSizeGrid {...gridProps} height={gridHeight} itemData={data} style={{ willChange: "unset" }}>
             {GridCell}
         </FixedSizeGrid>
     ) : null;
