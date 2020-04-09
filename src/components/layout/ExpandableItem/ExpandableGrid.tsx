@@ -15,11 +15,11 @@ export function ExpandableGrid({
     memoData,
     columnCount = 3,
     getEl,
+    rowHeight = 100,
     ...props
 }: ExpandableGridProps) {
     const { width, height } = useWindowSize();
     const columnWidth = width / columnCount;
-    const rowHeight = 100;
     const rowCount = Math.ceil(items.length / columnCount); // Min count of row to fit all items
     const gridHeight = rowHeight * rowCount > height ? height : rowHeight * rowCount;
 
@@ -63,13 +63,20 @@ const GridCell = memo(
     areEqual
 );
 
-export function ExpandableClassicGrid({ items, getFlipId, selected, memoData, ...props }: ExpandableRenderListProps) {
+export function ExpandableClassicGrid({
+    items,
+    getFlipId,
+    selected,
+    memoData,
+    rowHeight = 100,
+    ...props
+}: ExpandableGridProps) {
     const { width, height } = useWindowSize();
     const columnWidth = width / 3;
     const gridItemProps = { width, height, columnWidth, ...props };
 
     return (
-        <Grid gridTemplateColumns="repeat(3, 1fr)" autoRows="100px" gap={1}>
+        <Grid gridTemplateColumns="repeat(3, 1fr)" autoRows={rowHeight} gap={1}>
             {items.map((item, i) => (
                 <ExpandableItem
                     key={i}
@@ -101,4 +108,5 @@ export type ExpandableRenderListProps<T extends object = object> = {
 };
 export type ExpandableGridProps<T extends object = object> = ExpandableRenderListProps<T> & {
     columnCount?: number;
+    rowHeight?: number;
 };
