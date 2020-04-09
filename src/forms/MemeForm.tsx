@@ -91,4 +91,4 @@ export function MemeForm() {
 // const Switch = ChakraSwitch as FunctionComponent<Optional<SwitchProps, "children">>;
 
 const getPictureId = (result: UploadResult<IImage>) => result.data && result.data.id;
-const formatTags = (tag: ElasticDocument) => ({ tag: tag.text.toLowerCase(), id: tag._id });
+const formatTags = (tag: ElasticDocument) => ({ tag: tag.text.toLowerCase() });
