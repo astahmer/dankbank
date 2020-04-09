@@ -19,8 +19,8 @@ export function useForm<Values extends FormValues>(
         }
     };
 
-    const actions = useMemo(
-        () => ({
+    const actions = useMemo(() => {
+        const tmp = {
             // Getters
             get: (path: string | string[]) =>
                 typeof path === "string"
@@ -39,16 +39,18 @@ export function useForm<Values extends FormValues>(
             // Events
             onChange: (name: string) => (event: ChangeEvent<HTMLInputElement>) =>
                 doAction(FormActionType.SET)(name, event.target.value),
+        };
+        return {
+            ...tmp,
             onSubmit: (callback: FormSubmitCallback<Values>) => (event: FormEvent) => {
                 if (event) {
                     event.preventDefault();
                     event.persist();
                 }
-                callback(state.current.data, event);
+                callback({ state: state.current, actions, event, e: event });
             },
-        }),
-        []
-    );
+        };
+    }, []);
 
     return [state.current, actions];
 }
@@ -78,7 +80,13 @@ export type FormState<Values = any> = {
 };
 const initialState: FormState<any> = { data: {}, validations: {}, errors: {}, isValid: undefined };
 
-export type FormSubmitCallback<Values extends FormValues> = (data: Values, event?: FormEvent) => void;
+export type FormSubmitCallbackArgs<Values extends FormValues> = {
+    state: FormState<Values>;
+    actions: FormActions<Values>;
+    e?: FormEvent; // Same as event
+    event?: FormEvent; // Same as e
+};
+export type FormSubmitCallback<Values extends FormValues> = (args: FormSubmitCallbackArgs<Values>) => void;
 export type FormActions<Values extends FormValues> = {
     // Getters
     get: (path: string | string[]) => any;

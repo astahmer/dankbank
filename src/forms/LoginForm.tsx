@@ -39,7 +39,7 @@ export function LoginForm() {
     const [async, run] = useRequestAPI<LoginResponse>(API_ROUTES.Auth.login, { method: "post" }, { withToken: false });
     const { actions } = useContext(AuthContext);
 
-    const onSubmit: FormSubmitCallback<LoginFormState> = async (data, e) => {
+    const onSubmit: FormSubmitCallback<LoginFormState> = async ({ state: { data }, e }) => {
         e.preventDefault();
         const { username, password } = data;
         const [err, result] = await run({ name: username, email: username, password });

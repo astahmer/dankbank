@@ -47,7 +47,7 @@ export function MemeForm() {
     const { user, isTokenValid } = useAuth();
     const [async, run] = useRequestAPI<MemeResponse>("/memes/", { method: "post" }, { withToken: isTokenValid });
 
-    const onSubmit: FormSubmitCallback<MemeFormState> = async (data, e) => {
+    const onSubmit: FormSubmitCallback<MemeFormState> = async ({ state: { data }, actions, e }) => {
         e.preventDefault();
         const payload = {
             ...data,
