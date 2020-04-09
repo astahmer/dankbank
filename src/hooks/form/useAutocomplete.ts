@@ -15,9 +15,10 @@ import { AsyncReset, AsyncRunReturn } from "../async/useAsync";
 import { useClickOutside } from "../dom";
 
 export function useAutocomplete<T = any>(
-    { data, fn, response, inputProps = {}, options = defaultOptions }: UseAutocompleteProps<T>,
+    { data, fn, response, inputProps = {}, options: optionsProps }: UseAutocompleteProps<T>,
     { ownRef, inputRef, resultListRef }: UseAutocompleteRefProps
 ): UseAutocompleteReturn<T> {
+    const options = { ...defaultOptions, ...optionsProps };
     const { colorMode } = useColorMode();
     // Input value
     const [value, setValue] = useState("");
