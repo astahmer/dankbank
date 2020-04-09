@@ -44,12 +44,7 @@ export const setProp = (obj: Record<string, any>, path: string[], value: any): R
 
 /** Returns a random string of given length */
 export const getRandomString = (len = 10) =>
-    Math.random()
-        .toString(36)
-        .substring(2, len) +
-    Math.random()
-        .toString(36)
-        .substring(2, len);
+    Math.random().toString(36).substring(2, len) + Math.random().toString(36).substring(2, len);
 
 /** Returns a hash for a given string */
 export function getHashCode(str: string) {
@@ -86,12 +81,12 @@ export const chunk = <T = any>(arr: T[], size: number): T[][] =>
 
 export const makeTranslate3d = (x: string | number, y: string | number = 0, z: string | number = 0, unit = "px") =>
     `translate3d(${x}${unit},${y}${unit},${z}${unit})`;
-export const vwToPixel = (value: number) => (window.innerWidth * value) / 100;
-export const vhToPixel = (value: number) => (window.innerHeight * value) / 100;
+export const vwToPixel = (value: number) => process.browser && (window.innerWidth * value) / 100;
+export const vhToPixel = (value: number) => process.browser && (window.innerHeight * value) / 100;
 
 export function debounce(fn: Function, wait: number) {
     let t: NodeJS.Timeout;
-    return function(...args: any) {
+    return function (...args: any) {
         clearTimeout(t);
         t = setTimeout(() => fn.apply(this, args), wait);
     };
