@@ -58,10 +58,14 @@ export function MemeForm() {
 
     const onSubmit: FormSubmitCallback<MemeFormState> = async ({ state: { data }, actions, e }) => {
         e.preventDefault();
+
+        const isMultipartMeme = data.pictures.length > 1;
         const payload = {
-            visibility: Visibility.PUBLIC,
-            ...data,
-            owner: user && user.id,
+            tags: data.tags,
+            isMultipartMeme,
+            pictures: isMultipartMeme ? data.pictures : [],
+            image: !isMultipartMeme ? data.pictures[0] : null,
+            owner: user?.id,
         };
 
         if (!data.pictures.length || !data.tags.length) {
@@ -71,11 +75,12 @@ export function MemeForm() {
         const [err, result] = await run(payload);
         toast({
             title: err ? "There was an error" : "Meme successfully posted.",
-            description: err && err.message,
+            description: err?.message,
             status: err ? "error" : "success",
             duration: 2000,
             isClosable: true,
         });
+
         if (!err) {
             setKey(key + 1);
         } else {

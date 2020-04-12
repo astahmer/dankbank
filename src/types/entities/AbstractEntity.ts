@@ -7,6 +7,7 @@ export interface IAbstractEntity {
 }
 
 export interface IAbstractEntityDocument {
+    "@id": string;
     iri: string;
     id: number;
 }

@@ -136,4 +136,4 @@ enum AuthActionType {
     REFRESH,
 }
 type AuthActionPayload = { type: AuthActionType; accessToken?: string; user?: JwtPayload };
-type AuthInitialState = { accessToken: string; user: JwtPayload; isTokenValid: boolean };
+type AuthInitialState = { accessToken?: string; user?: JwtPayload; isTokenValid: boolean };

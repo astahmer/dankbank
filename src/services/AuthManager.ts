@@ -14,7 +14,7 @@ let atobFn = process.browser ? atob : require("atob");
 const axiosRefresh = axios.create({ baseURL, timeout: 5000 });
 
 export type Token = { token: string; expiresAt: number };
-export type JwtPayload = Pick<IUser, "id" | "name"> & { defaultMemeBank: number; isRefreshToken?: boolean };
+export type JwtPayload = Pick<IUser, "id" | "name"> & { isRefreshToken?: boolean };
 export type JwtDecoded = JwtPayload & { iat: number; exp: number };
 type LoginArgs = { accessToken: string; refreshToken: string; user: JwtPayload };
 

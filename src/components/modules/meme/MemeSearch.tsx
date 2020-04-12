@@ -1,7 +1,14 @@
-import { Box, ButtonGroup, Flex, Portal, Tag } from "@chakra-ui/core";
+import { Box, ButtonGroup, Flex, Portal, Tag, useToast } from "@chakra-ui/core";
 import { AxiosRequestConfig } from "axios";
 import React, {
-    ForwardRefExoticComponent, memo, RefAttributes, useCallback, useContext, useMemo, useState
+    ForwardRefExoticComponent,
+    memo,
+    RefAttributes,
+    useCallback,
+    useContext,
+    useMemo,
+    useState,
+    useEffect,
 } from "react";
 import { IoMdHeart, IoMdHeartEmpty, IoMdImages } from "react-icons/io";
 
@@ -12,10 +19,12 @@ import { Picture } from "@/components/common/Picture";
 import { AutocompleteItem } from "@/components/field/Autocomplete/AutocompleteItem";
 import { ExpandableGrid } from "@/components/layout/ExpandableItem/ExpandableGrid";
 import {
-    ExpandableList as ExpList, ExpandableListFlipperData, ExpandableListProps,
-    ExpandableListRenderBoxArgs, ExpandableListRenderItemArgs
+    ExpandableList as ExpList,
+    ExpandableListFlipperData,
+    ExpandableListProps,
+    ExpandableListRenderBoxArgs,
+    ExpandableListRenderItemArgs,
 } from "@/components/layout/ExpandableItem/ExpandableList";
-import { getAuthorizedAccess } from "@/components/layout/Page/PageLayout";
 import { SwipableProps, SwipeDirection, SwipePosition } from "@/components/layout/Swipable";
 import { API_ROUTES } from "@/config/api";
 import { downloadUrl, isType, shallowDiffers } from "@/functions/utils";
@@ -23,10 +32,12 @@ import { useInitialAPI, useRequestAPI, useTriggerAPI } from "@/hooks/async/useAP
 import { AuthContext, useAuth } from "@/hooks/async/useAuth";
 import { useWindowSize } from "@/hooks/dom";
 import {
-    AutocompleteResponse, AutocompleteResultListRenderPropArg, AutocompleteSelectedListRenderPropArg
+    AutocompleteResponse,
+    AutocompleteResultListRenderPropArg,
+    AutocompleteSelectedListRenderPropArg,
 } from "@/hooks/form/useAutocomplete";
 import { useCallbackRef } from "@/hooks/useCallbackRef";
-import { Auth, AuthAccess } from "@/services/AuthManager";
+import { Auth } from "@/services/AuthManager";
 import { FlipperProps } from "@/services/Flipper";
 import { IMeme } from "@/types/entities/Meme";
 
@@ -78,7 +89,7 @@ export const MemeResultList = memo(function (
     const [sliderPos, setSliderPos] = useState<Record<string, SwipePosition>>({});
     const storeSliderPos = (id: string, pos: SwipePosition) => setSliderPos((prevPos) => ({ ...prevPos, [id]: pos }));
 
-    const { isTokenValid } = useContext(AuthContext);
+    const { user, isTokenValid } = useContext(AuthContext);
 
     const onBeforeFlip: FlipperProps<ExpandableListFlipperData>["onBeforeFlip"] = ({ id, element, data }) => {
         if (data?.isLeaving) return;
@@ -95,28 +106,19 @@ export const MemeResultList = memo(function (
             getId={(item) => item._id}
             memoData={sliderPos}
             onBeforeFlip={onBeforeFlip}
-            renderBox={(props) => props.selected && <MemeBox {...props} isTokenValid={isTokenValid} />}
+            renderBox={(props) => props.selected && <MemeBox {...props} {...{ user, isTokenValid }} />}
             renderList={(props) => <ExpandableGrid {...props} />}
             renderItem={(props) => <MemeResult {...props} {...{ storeSliderPos, resultListRef: args.resultListRef }} />}
         />
     );
 });
 
-type MemeBoxProps = ExpandableListRenderBoxArgs<MemeSearchResult> & {
-    isTokenValid: AuthContext["isTokenValid"];
-};
-
-const getFavReqParams = (defaultMemeBankId: number, memeId: number, shouldAdd: boolean): AxiosRequestConfig => ({
-    method: shouldAdd ? "post" : "delete",
-    data: shouldAdd ? { id: memeId } : null,
-    url: API_ROUTES.MemeBank.baseRoute + defaultMemeBankId + API_ROUTES.Meme.baseRoute + (!shouldAdd ? memeId : ""),
-});
+type MemeBoxProps = ExpandableListRenderBoxArgs<MemeSearchResult> & Pick<AuthContext, "isTokenValid" | "user">;
 
 // TODO Check how to merge Swipable.as component's props to SwipableProps automatically
 // const Swipable = BaseSwipable as React.ForwardRefExoticComponent<React.PropsWithChildren<SwipableProps<StackProps>>>;
 const MemeBox = (props: MemeBoxProps) => {
     const meme = props.selected._source;
-    const decoded = Auth.getDecoded();
 
     // On Meme selected check that it is in any User.MemeBank if logged
     const [isInAnyBankReq] = useTriggerAPI<{ result: boolean }>(
@@ -130,11 +132,26 @@ const MemeBox = (props: MemeBoxProps) => {
     const wasFavorited = async.data && isType<ItemResponse<IMeme>>(async.data, "id" in async.data);
     const isInAnyBank = async.data ? wasFavorited : isInAnyBankReq.data?.result;
 
-    const toggleFavorite = () => run(null, getFavReqParams(decoded.defaultMemeBank, meme.id, !isInAnyBank));
-    const addFavorite = () => run(null, getFavReqParams(decoded.defaultMemeBank, meme.id, true));
+    const toggleFavorite = async () => {
+        const [err, result] = await run(null, {
+            method: !isInAnyBank ? "post" : "delete",
+            data: !isInAnyBank ? { id: meme.id } : null,
+            url: `${API_ROUTES.User.baseRoute}/${props.user.id}/favorites${isInAnyBank ? "/" + meme.id : ""}`,
+        });
+
+        toast({
+            title: err ? "There was an error" : `${isInAnyBank ? "Removed from" : "Added as"} favorites`,
+            status: err ? "error" : isInAnyBank ? "info" : "success",
+            duration: 2000,
+            isClosable: true,
+        });
+    };
+    const removeMeme = () => run(null, { method: "delete", url: meme.iri });
 
     // TODO add to specific MemeBank / create it
     // TOOD loading state heart (opacity down / icon change)
+
+    const toast = useToast();
 
     return (
         <>
@@ -155,14 +172,17 @@ const MemeBox = (props: MemeBoxProps) => {
                         items={[
                             {
                                 label: "Enregistrer",
-                                onClick: () => {
-                                    downloadUrl(meme.pictures[0].url, meme.pictures[0].originalName);
-                                },
+                                onClick: () => downloadUrl(meme.pictures[0].url, meme.pictures[0].originalName),
                             },
                             {
-                                label: "Ajouter aux favoris",
-                                onClick: addFavorite,
-                                hidden: !getAuthorizedAccess(props.isTokenValid).includes(AuthAccess.LOGGED),
+                                label: `${isInAnyBank ? "Retirer des" : "Ajouter aux"} favoris`,
+                                onClick: toggleFavorite,
+                                hidden: !props.isTokenValid,
+                            },
+                            {
+                                label: "Supprimer le meme",
+                                onClick: removeMeme,
+                                hidden: !props.isTokenValid && `/api/users/${props.user?.id}` !== meme.owner,
                             },
                             { label: "Signaler", onClick: () => console.log("report") },
                         ]}
@@ -226,13 +246,13 @@ const MemeResult = memo(
         storeSliderPos,
         memoData: currentPos = { x: 0, y: 0 },
         isResting,
-        columnWidth,
         resultListRef,
     }: MemeResultProps) {
         const onSwipe = (direction: SwipeDirection, pos: SwipePosition) => storeSliderPos(index, pos);
 
         const { width } = useWindowSize();
-        const isMultipartMeme = useMemo(() => item._source.pictures.length > 1, [item]);
+        const meme = item._source;
+        const currentPicture = meme.image || meme.pictures[currentPos.x];
 
         const sliderSelectedProps: Partial<MemeSliderProps> = {
             wrapperProps: {
@@ -242,21 +262,23 @@ const MemeResult = memo(
             slideProps: { height: "auto" },
         };
 
-        const shouldHidePreview = isMultipartMeme && isSelected && isResting && !isDragging;
+        const shouldHidePreview = meme.isMultipartMeme && isSelected && isResting && !isDragging;
         const shouldHideSlider = !(isSelected && isResting) || isDragging;
 
-        const component = (
-            <>
+        return (
+            <Flex w="100%" h="100%">
                 <Box overflow="hidden" w="100%" h={!isSelected ? "100%" : undefined}>
-                    <Picture
-                        useResponsive={false}
-                        item={item._source.pictures[currentPos.x]}
-                        w="100%"
-                        minH={!isSelected ? "96px" : undefined}
-                        style={{ visibility: shouldHidePreview ? "hidden" : undefined }}
-                    />
+                    {currentPicture && (
+                        <Picture
+                            useResponsive={false}
+                            item={currentPicture}
+                            w="100%"
+                            minH={!isSelected ? "96px" : undefined}
+                            style={{ visibility: shouldHidePreview ? "hidden" : undefined }}
+                        />
+                    )}
                 </Box>
-                {isMultipartMeme ? (
+                {meme.isMultipartMeme ? (
                     <Portal container={resultListRef.current}>
                         <MemeSlider
                             {...(isSelected ? sliderSelectedProps : {})}
@@ -273,7 +295,7 @@ const MemeResult = memo(
                                 top: "calc(100% - 32px)",
                                 style: { display: isDragging ? "none" : undefined },
                             }}
-                            width={isSelected ? width : columnWidth}
+                            width={width}
                             isFullHeight
                             onSwipe={onSwipe}
                             currentPos={currentPos}
@@ -282,7 +304,7 @@ const MemeResult = memo(
                     </Portal>
                 ) : null}
 
-                {isMultipartMeme && !isSelected ? (
+                {meme.isMultipartMeme && !isSelected ? (
                     <CustomIcon icon={IoMdImages} color="white" pos="absolute" top="5px" right="5px" size="20px" />
                 ) : null}
                 <Box pos="absolute" bottom="0">
@@ -290,12 +312,6 @@ const MemeResult = memo(
                     {isDragging ? "oui" : "non"}
                     {isResting ? "stop" : "start"}
                 </Box>
-            </>
-        );
-
-        return (
-            <Flex w="100%" h="100%">
-                {component}
             </Flex>
         );
     },

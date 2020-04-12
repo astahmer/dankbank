@@ -22,6 +22,7 @@ export const API_ROUTES = {
         crop: "/images/upload/crop",
         chunks: "/images/upload/chunk",
     },
+    User: { baseRoute: "/users" },
     Meme: {
         baseRoute: "/memes/",
         isInAnyBank: "/isInAnyBank",

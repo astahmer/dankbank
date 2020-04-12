@@ -11,6 +11,8 @@ export interface IMeme extends IAbstractEntity {
     downvoteCount: number;
     views: number;
     visibility: Visibility;
+    isMultipartMeme: boolean;
+    image: IImage;
     pictures: IImage[];
     banks: IMemeBank[];
     comments: Comment[];
@@ -19,7 +21,19 @@ export interface IMeme extends IAbstractEntity {
 
 export type MemeDocument = IAbstractEntityDocument & {
     owner: string;
+    ownerId: number;
     tags: string[];
-} & Pick<IMeme, "upvoteCount" | "downvoteCount" | "views" | "visibility" | "pictures" | "dateCreated">;
+} & Pick<
+        IMeme,
+        | "upvoteCount"
+        | "downvoteCount"
+        | "views"
+        | "visibility"
+        | "pictures"
+        | "dateCreated"
+        | "dateUpdated"
+        | "isMultipartMeme"
+        | "image"
+    >;
 
 export type Meme = IMeme | MemeDocument;
